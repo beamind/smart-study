@@ -1,0 +1,65 @@
+src/ui/components.tsx
+  s_853e3a05582c7f::t_3ca74938f09302 2,5-16
+src/data/validate.test.ts
+  s_853e3a05582c7f::t_89455fdd46b23e 59-63
+src/features/errorBook/ErrorBookPage.tsx
+  s_853e3a05582c7f::t_944fd90ea32fdc 242,292,296-303
+docs/decisions/002-public-documents-storage-via-saf.md
+  s_853e3a05582c7f::t_dacd8409a8cff4 27
+  s_853e3a05582c7f::t_7d3a53aae85fe4 28
+src/storage/nativeFolder.ts
+  s_853e3a05582c7f::t_b58ff9aa7c07c6 9-10,16-20,27,32,41,46,51,57
+src/features/dictation/MarkAnswers.tsx
+  s_853e3a05582c7f::t_3ca74938f09302 4,19,31
+src/storage/jsonFiles.test.ts
+  s_853e3a05582c7f::t_5e5af7aab57f14 200-208
+src/features/errorBook/RunPractice.tsx
+  s_853e3a05582c7f::t_3ca74938f09302 6,27,47,63
+tools/build_android.ps1
+  s_853e3a05582c7f::t_992f23bcb93b79 4,12-14,100-104
+  s_853e3a05582c7f::t_8e7eb2e05e1720 99
+src/storage/jsonFiles.ts
+  s_853e3a05582c7f::t_2775f37eea6a79 152-154,162-164
+src/ai/ai.test.ts
+  s_853e3a05582c7f::t_8d398690f23b56 15
+  s_853e3a05582c7f::t_f5288c76c4ed61 215-239
+src/data/validate.ts
+  s_853e3a05582c7f::t_9778ce3d50306d 93-94
+src/features/errorBook/MarkPractice.tsx
+  s_853e3a05582c7f::t_f103a3c39f9d78 3
+  s_853e3a05582c7f::t_3ca74938f09302 18,31
+src/app/Start.tsx
+  s_853e3a05582c7f::t_4d14627a74c26f 83-84
+src/ai/parse.ts
+  s_853e3a05582c7f::t_8d398690f23b56 153-154
+  s_853e3a05582c7f::t_4f7c3ada0b9545 184-187,193-202,207,209-210
+  s_853e3a05582c7f::t_ddf97ed4500eaa 15-24,26,32,37-38,40,45-47,52-53,78-93
+android/app/src/main/java/com/smartstudy/SafFolderPlugin.java
+  s_853e3a05582c7f::t_b58ff9aa7c07c6 94,153,165,199,226,253,265,285-296
+src/app/startup.ts
+  s_853e3a05582c7f::t_b58ff9aa7c07c6 45,61
+README.md
+  s_853e3a05582c7f::t_bc4fe957c14cca 60
+docs/data-contract.md
+  s_853e3a05582c7f::t_b7a02219a62a97 46
+src/features/dictation/RunDictation.tsx
+  s_853e3a05582c7f::t_3ca74938f09302 8,32,77,94
+src/features/dictation/DictationPage.tsx
+  s_853e3a05582c7f::t_b5fae84e8da7c9 228,251,255-262
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "de446d3ea573a294483fd55aeb7932fbdfb3cd78",
+  "prompts": {},
+  "sessions": {
+    "s_853e3a05582c7f": {
+      "agent_id": {
+        "tool": "kiro-desktop",
+        "id": "sess_9412c325-cac8-43f4-88c4-d85afc226aaf",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "yandali <yandali@trip.com>"
+    }
+  }
+}
