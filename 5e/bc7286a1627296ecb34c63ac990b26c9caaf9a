@@ -1,0 +1,105 @@
+src/data/schema.ts
+  s_853e3a05582c7f::t_9dff14b10c7d3f 31,61
+src/features/dictation/types.ts
+  s_853e3a05582c7f::t_9dff14b10c7d3f 18
+src/services/photo.ts
+  s_853e3a05582c7f::t_9dff14b10c7d3f 52
+src/features/dictation/DictationPage.tsx
+  s_853e3a05582c7f::t_9dff14b10c7d3f 52
+src/features/records/RecordsPage.tsx
+  s_853e3a05582c7f::t_9dff14b10c7d3f 53
+docs/decisions/003-release-signing.md
+  s_853e3a05582c7f::t_6fd5bab8d2c2ad 9
+android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+  s_853e3a05582c7f::t_9dff14b10c7d3f 2
+src/features/errorBook/ErrorBookPage.tsx
+  s_853e3a05582c7f::t_9dff14b10c7d3f 52,253
+src/features/errorBook/RunPractice.tsx
+  s_853e3a05582c7f::t_9dff14b10c7d3f 11-12
+src/ai/tasks.ts
+  s_853e3a05582c7f::t_9dff14b10c7d3f 26
+src/ai/parse.ts
+  s_853e3a05582c7f::t_9dff14b10c7d3f 6,32
+src/domain/dictation.test.ts
+  s_853e3a05582c7f::t_9dff14b10c7d3f 94
+src/features/dictation/RunDictation.tsx
+  s_853e3a05582c7f::t_9dff14b10c7d3f 14
+src/features/errorBook/CaptureQuestions.tsx
+  s_853e3a05582c7f::t_9dff14b10c7d3f 16-17
+src/features/errorBook/GenerateVariations.tsx
+  s_853e3a05582c7f::t_9dff14b10c7d3f 20
+src/features/errorBook/types.ts
+  s_853e3a05582c7f::t_9dff14b10c7d3f 16
+AGENTS.md
+  s_853e3a05582c7f::t_27d39ec9cc594f 8
+src/features/errorBook/MarkPractice.tsx
+  s_853e3a05582c7f::t_9dff14b10c7d3f 8-9
+src/domain/stats.ts
+  s_853e3a05582c7f::t_9dff14b10c7d3f 63
+src/domain/sampling.ts
+  s_853e3a05582c7f::t_9dff14b10c7d3f 7
+src/domain/errorBook.ts
+  s_853e3a05582c7f::t_9dff14b10c7d3f 82,155
+src/features/errorBook/QuestionEditor.tsx
+  s_853e3a05582c7f::t_9dff14b10c7d3f 8
+src/services/device.ts
+  s_853e3a05582c7f::t_9dff14b10c7d3f 31
+docs/data-contract.md
+  s_853e3a05582c7f::t_eda8a48d0ef618 1,3,84,112,114,146
+docs/decisions/002-public-documents-storage-via-saf.md
+  s_853e3a05582c7f::t_e74e28db74e2d1 43
+  s_853e3a05582c7f::t_6fd5bab8d2c2ad 7,28,33,44-45
+src/services/tts.ts
+  s_853e3a05582c7f::t_9dff14b10c7d3f 5
+tools/smoke_android.mjs
+  s_853e3a05582c7f::t_ae2e1d4fe9b8e1 2,14,77
+src/data/defaults.ts
+  s_853e3a05582c7f::t_9dff14b10c7d3f 9
+tools/screenshots.mjs
+  s_853e3a05582c7f::t_ae2e1d4fe9b8e1 10
+src/domain/underline.test.ts
+  s_853e3a05582c7f::t_9dff14b10c7d3f 28
+android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+  s_853e3a05582c7f::t_9dff14b10c7d3f 2
+src/domain/errorBook.test.ts
+  s_853e3a05582c7f::t_9dff14b10c7d3f 87
+src/domain/underline.ts
+  s_853e3a05582c7f::t_9dff14b10c7d3f 36-37
+src/features/dictation/MarkAnswers.tsx
+  s_853e3a05582c7f::t_9dff14b10c7d3f 8-9
+src/domain/dictation.ts
+  s_853e3a05582c7f::t_9dff14b10c7d3f 73,185
+src/app/startup.ts
+  s_853e3a05582c7f::t_332aef81898483 90
+  s_853e3a05582c7f::t_cff1af31faf525 74
+docs/software-plan.md
+  s_853e3a05582c7f::t_a53172b4fffb06 1,3,5,7,9,11-13,15,17,19-42,46-47,49-50,52,60,64-65,67-68,72,76,92,94,96,103,107,109-110,114,116-118
+src/features/dictation/WordBook.tsx
+  s_853e3a05582c7f::t_9dff14b10c7d3f 14
+docs/decisions/001-web-stack-without-voice-commands.md
+  s_853e3a05582c7f::t_a99c67c5339eaa 1,7,11-15,19-21,25-26
+src/features/dictation/ConfirmWords.tsx
+  s_853e3a05582c7f::t_9dff14b10c7d3f 11
+src/app/Start.tsx
+  s_853e3a05582c7f::t_9cfc085d10db70 64,66
+  s_853e3a05582c7f::t_4bd028feeb847d 25-26,35
+  s_853e3a05582c7f::t_4e6061ffbadb13 84
+src/ai/prompts.ts
+  s_853e3a05582c7f::t_9dff14b10c7d3f 5-6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "5ebc7286a1627296ecb34c63ac990b26c9caaf9a",
+  "prompts": {},
+  "sessions": {
+    "s_853e3a05582c7f": {
+      "agent_id": {
+        "tool": "kiro-desktop",
+        "id": "sess_9412c325-cac8-43f4-88c4-d85afc226aaf",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "yandali <yandali@trip.com>"
+    }
+  }
+}
