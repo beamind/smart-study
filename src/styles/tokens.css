@@ -1,0 +1,56 @@
+/* All colours, sizes and spacing live here. Colour scheme: 晴空 (sky), chosen 2026-10-31. */
+:root {
+  --bg: #f6f9ff;
+  --surface: #ffffff;
+  --surface-muted: #edf2fb;
+  --ink: #1c2733;
+  --muted: #5f6b7a;
+  --line: #e1e8f4;
+
+  --primary: #1f6feb;
+  --primary-hover: #185ccc;
+  --primary-ink: #ffffff;        /* text on --primary */
+  --primary-text: #1a62d6;       /* primary-coloured text on light backgrounds */
+  --primary-soft: #e6efff;
+  --primary-line: #c2d6fa;       /* border of secondary buttons */
+  --primary-shadow: #1f6feb2e;
+  --focus: #ffb020;
+
+  --ok: #12a36b;
+  --ok-soft: #e4f7ee;
+  --danger: #e5484d;
+  --danger-text: #c7363b;
+  --danger-soft: #fdecec;
+  --danger-line: #f5c2c3;
+  --warn-soft: #fff4d6;
+  --warn-ink: #8a5a00;
+
+  --toast-bg: #1c2733;
+  --toast-action: #9cc3ff;
+  --backdrop: #1c273352;
+
+  /* Home page entries, one colour each */
+  --tile-chinese: #f07a2a;   --tile-chinese-soft: #fff0e3;
+  --tile-english: #1f6feb;   --tile-english-soft: #e6efff;
+  --tile-errorbook: #7c5cff; --tile-errorbook-soft: #efeaff;
+  --tile-records: #12a36b;   --tile-records-soft: #e4f7ee;
+
+  --radius: 14px;
+  --radius-small: 10px;
+  --tap: 48px;          /* minimum touch target for parent actions */
+  --tap-child: 64px;    /* buttons the child presses during dictation and practice */
+  --space: 16px;
+  --page-width: 960px;
+  --toast-lift: 96px;   /* toasts sit above the page footer, so they never cover its buttons */
+
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'HarmonyOS Sans SC', 'Microsoft YaHei', sans-serif;
+  --text: 16px;
+  --text-small: 14px;
+  --text-large: 19px;
+  --title: 22px;
+  --text-tiny: 13px;      /* badges */
+  --text-question: 20px;  /* the question during practice */
+  --text-run: 24px;       /* the big 下一个 button */
+  --text-number: 32px;    /* totals on the records page */
+  --display: clamp(56px, 14vw, 96px);
+}

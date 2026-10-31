@@ -1,0 +1,40 @@
+# Web app: dependencies, builds and test output
+node_modules/
+dist/
+test-results/
+playwright-report/
+artifacts/
+*.tsbuildinfo
+
+# Android (Capacitor): generated web assets, build output, local SDK path
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+android/app/src/main/assets/capacitor.plugins.json
+.gradle/
+build/
+local.properties
+.kotlin/
+*.apk
+*.aab
+*.idsig
+*.hprof
+
+# Signing keys and passwords, local environment files: never commit (docs/decisions/003-release-signing.md)
+*.jks
+*.keystore
+*.p12
+*.pfx
+keystore.properties
+.env*
+
+# Local-only data: real children's data, API key, one-off scripts (AGENTS.md)
+.local/
+
+# IDE and OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+*.swp
+*~

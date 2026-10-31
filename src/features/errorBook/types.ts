@@ -1,0 +1,45 @@
+import type { ErrorBookSource } from '../../data/schema';
+
+/** A question on its way through practice or 举一反三. `key` keeps React lists stable. */
+export interface PracticeItem {
+  key: string;
+  text: string;
+  answer: string;
+  /** Set for practice: the question in the book. */
+  questionId?: string;
+  /** Set for 举一反三: the original question the new one was made from. */
+  sourceQuestionId?: string;
+}
+
+export type RunKind = 'practice' | 'variation';
+
+/** Practice in progress. Saved as a draft after every step so it can be resumed. */
+export interface PracticeRun {
+  kind: RunKind;
+  items: PracticeItem[];
+  index: number;
+  phase: 'running' | 'answers';
+  /** Keys of the items answered wrong. */
+  wrong: string[];
+  startedAt: string;
+}
+
+/** A recognised or typed question before it is saved. */
+export interface CaptureItem {
+  key: string;
+  text: string;
+  answer: string;
+  checked: boolean;
+  /** Set when the user changed the tick, so the duplicate check no longer overrides it. */
+  touched?: boolean;
+  origin: 'photo' | 'manual';
+}
+
+let counter = 0;
+export const newKey = () => `k${Date.now().toString(36)}${(counter++).toString(36)}`;
+
+export const draftKey = (userId: string) => `error-book:${userId}`;
+
+export const runTitle = (kind: RunKind) => (kind === 'practice' ? '错题练习' : '举一反三');
+
+export const SESSION_LABELS: Record<ErrorBookSource, string> = { capture: '录入', practice: '练习', variation: '举一反三', legacy: '记录' };

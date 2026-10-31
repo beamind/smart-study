@@ -1,0 +1,11 @@
+// Optional, scoped to a single build via --init-script. The mirror is tried first and the official repositories
+// remain as fallbacks: gradle.allprojects runs when the projects are created, before any build script adds
+// google() and mavenCentral().
+gradle.allprojects { project ->
+    [project.buildscript.repositories, project.repositories].each { repositories ->
+        repositories.maven {
+            name = 'HuaweiPublicMirror'
+            url = uri('https://repo.huaweicloud.com/repository/maven/')
+        }
+    }
+}

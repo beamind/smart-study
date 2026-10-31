@@ -1,0 +1,135 @@
+/* Layout pieces shared by feature pages. Values come from tokens.css. */
+.stack { display: flex; flex-direction: column; gap: 12px; }
+.stack-tight { display: flex; flex-direction: column; gap: 8px; }
+.ellipsis { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ok { color: var(--ok); }
+.bad { color: var(--danger-text); }
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 999px;
+  background: var(--primary-soft); color: var(--primary-text); font-size: var(--text-tiny); font-weight: 600; white-space: nowrap;
+}
+.start-icon { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; background: var(--primary-soft); color: var(--primary-text); }
+.avatar {
+  width: 36px; height: 36px; border-radius: 50%; display: inline-grid; place-items: center; flex: 0 0 auto;
+  background: var(--primary); color: var(--primary-ink); font-weight: 700;
+}
+
+/* ---------- app frame: start-up notices above the page, the page fills the rest ---------- */
+.app-frame { display: flex; flex-direction: column; height: 100%; }
+/* The notices take over the status-bar inset from the page header while they are shown. */
+.app-notices { display: flex; flex-direction: column; gap: 8px; padding: calc(8px + env(safe-area-inset-top)) var(--space) 0; }
+.app-frame:has(.app-notices) .page-header { padding-top: 6px; }
+.app-content { flex: 1; min-height: 0; }
+
+/* ---------- home ---------- */
+.user-switch { display: inline-flex; align-items: center; gap: 10px; min-height: var(--tap); padding: 4px 12px 4px 4px; border-radius: 999px; font-size: var(--text-large); font-weight: 650; }
+.user-switch:hover { background: var(--surface-muted); }
+.home-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding-top: 8px; }
+@media (min-width: 900px) { .home-grid { grid-template-columns: repeat(4, 1fr); } }
+.home-tile {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px; text-align: left;
+  min-height: 150px; padding: 20px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line);
+}
+.home-tile:hover { border-color: var(--tile); }
+.home-tile b { font-size: var(--text-large); margin-top: auto; }
+@media (min-width: 900px) { .home-tile { min-height: 220px; padding: 24px; } .home-tile b { font-size: var(--title); } }
+.home-icon { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; background: var(--tile-soft); color: var(--tile); }
+.tile-dictation-chinese { --tile: var(--tile-chinese); --tile-soft: var(--tile-chinese-soft); }
+.tile-dictation-english { --tile: var(--tile-english); --tile-soft: var(--tile-english-soft); }
+.tile-error-book { --tile: var(--tile-errorbook); --tile-soft: var(--tile-errorbook-soft); }
+.tile-records { --tile: var(--tile-records); --tile-soft: var(--tile-records-soft); }
+
+/* ---------- settings ---------- */
+.advanced summary { cursor: pointer; font-weight: 600; min-height: var(--tap); display: flex; align-items: center; }
+.advanced[open] summary { margin-bottom: 12px; }
+.slider input { width: min(220px, 40vw); accent-color: var(--primary); }
+.slider-value { width: 72px; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+.wrap-row { flex-wrap: wrap; }
+textarea.prompt { min-height: 40vh; font-size: var(--text-small); }
+
+/* ---------- actions ---------- */
+.action-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.action-tile {
+  min-height: 104px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-weight: 600; color: var(--primary-text);
+}
+.action-tile:hover { border-color: var(--primary); background: var(--primary-soft); }
+.segmented { display: flex; padding: 4px; border-radius: 999px; background: var(--surface-muted); }
+.segmented button { flex: 1; min-height: var(--tap); border-radius: 999px; font-weight: 600; color: var(--muted); }
+.segmented button.selected { background: var(--surface); color: var(--primary-text); box-shadow: 0 1px 4px var(--primary-shadow); }
+.index { width: 28px; color: var(--muted); font-variant-numeric: tabular-nums; flex: 0 0 auto; }
+.time { width: 52px; color: var(--muted); font-variant-numeric: tabular-nums; flex: 0 0 auto; }
+
+/* ---------- dictation / practice in progress ---------- */
+.run { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; min-height: 45vh; text-align: center; }
+.run-progress { font-size: var(--text-large); color: var(--muted); text-align: center; }
+.run-progress b { display: block; font-size: var(--display); line-height: 1.1; color: var(--ink); }
+.run-status { display: flex; align-items: center; gap: 8px; font-size: var(--text-large); min-height: 32px; }
+.timer { position: relative; width: min(420px, 100%); height: 36px; border-radius: 999px; background: var(--surface-muted); overflow: hidden; display: grid; place-items: center; }
+.timer-bar { position: absolute; inset: 0 auto 0 0; background: var(--primary-soft); transition: width 1s linear; }
+.timer span { position: relative; font-weight: 600; font-variant-numeric: tabular-nums; }
+.run-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+.run-next { grid-column: 1 / -1; min-height: 88px; font-size: var(--text-run); }
+.page-footer .run-next { min-height: 80px; }
+@media (min-width: 900px) and (orientation: landscape) {
+  .run-actions { grid-template-columns: 1fr 1fr 2fr; }
+  .run-next { grid-column: auto; }
+}
+.answer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.answer {
+  min-height: 64px; padding: 10px 12px; border-radius: var(--radius-small); background: var(--surface); border: 2px solid var(--line);
+  display: flex; flex-direction: column; align-items: flex-start; justify-content: center; text-align: left; font-size: var(--text-large);
+}
+.answer.wrong { border-color: var(--danger); background: var(--danger-soft); color: var(--danger-text); }
+
+/* ---------- error book ---------- */
+.search { display: flex; align-items: center; gap: 8px; min-height: var(--tap); padding: 0 12px; border-radius: var(--radius-small); background: var(--surface); border: 1px solid var(--line); }
+.search input { flex: 1; border: 0; outline: 0; background: none; min-height: 44px; }
+.question-row { align-items: flex-start; }
+.question-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.question-text u { text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.answer-line { color: var(--primary-text); font-weight: 600; margin-top: 4px; }
+.score { flex: 0 0 auto; font-size: var(--text-small); color: var(--muted); font-variant-numeric: tabular-nums; padding-top: 2px; }
+.score.bad { color: var(--danger-text); }
+.dup { display: inline-block; margin-bottom: 4px; padding: 2px 8px; border-radius: 6px; background: var(--warn-soft); color: var(--warn-ink); font-size: var(--text-tiny); font-weight: 600; }
+.check { width: 22px; height: 22px; accent-color: var(--primary); }
+/* The checkbox is small; the area around it takes the tap. */
+.check-area { display: grid; place-items: center; min-width: var(--tap); min-height: var(--tap); flex: 0 0 auto; align-self: flex-start; margin: -12px 0 -12px -12px; }
+.wrong-row, button.list-row.wrong-row:hover { background: var(--danger-soft); }
+.practice-card { font-size: var(--text-question); line-height: 1.7; min-height: 30vh; }
+.practice-actions { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; width: 100%; }
+.practice-actions .run-next { grid-column: auto; }
+.no-shrink { flex: 0 0 auto; white-space: nowrap; }
+.practice-card.paused { display: grid; place-items: center; }
+.timer.centered { margin: 0 auto; }
+.question-button { text-align: left; min-width: 0; }
+.question-input { min-height: 160px; }
+.preview { display: flex; flex-direction: column; gap: 4px; padding: 12px var(--space); background: var(--surface-muted); }
+.latest { padding: 6px 8px 6px var(--space); min-height: 48px; }
+
+/* ---------- records ---------- */
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.big-number { font-size: var(--text-number); line-height: 1.2; margin-right: 4px; }
+.date-field { flex: 1; min-width: 150px; }
+.sheet-list { max-height: 50vh; overflow-y: auto; }
+
+/* ---------- dictation flow ---------- */
+.resume { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border-color: var(--primary-line); background: var(--primary-soft); }
+.link-row { padding: 12px var(--space); }
+.crop-area { height: min(62vh, 640px); border-radius: var(--radius); overflow: hidden; background: var(--surface-muted); }
+.crop-area img { display: block; max-width: 100%; }
+.recognizing { display: flex; flex-direction: column; align-items: center; gap: 16px; padding-top: 12px; text-align: center; }
+.recognizing img { max-width: min(480px, 100%); max-height: 40vh; border-radius: var(--radius); border: 1px solid var(--line); object-fit: contain; }
+.spinner { width: 40px; height: 40px; border-radius: 50%; border: 4px solid var(--primary-soft); border-top-color: var(--primary); animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.confirm-row { gap: 8px; padding-inline: 12px; }
+.confirm-row .input { min-width: 0; }
+
+/* ---------- start, settings, users ---------- */
+.start-shell { display: grid; place-items: center; }
+.start-card { width: min(480px, 100%); display: flex; flex-direction: column; gap: var(--space); padding: 24px; }
+.start-title { font-size: var(--title); }
+.settings-links { margin-top: 12px; }
+.user-choice { text-align: left; min-height: var(--tap); }
+.users-hint { padding: 0 4px; }
+.header-spacer { width: 8px; }
