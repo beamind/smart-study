@@ -1,0 +1,34 @@
+src/ai/trial.ts
+  s_853e3a05582c7f::t_12c12258f43e43 5-6
+  s_853e3a05582c7f::t_182df72a968cd9 9
+docs/decisions/004-trial-proxy.md
+  s_853e3a05582c7f::t_6cf7c1d80e0cd0 98
+  s_853e3a05582c7f::t_3aac2b627a2e74 3
+  s_853e3a05582c7f::t_52aaf45e1ea87d 86
+docs/software-plan.md
+  s_853e3a05582c7f::t_cfa33992946dfb 115
+docs/trial-proxy.md
+  s_853e3a05582c7f::t_f6b741fe9e8441 29
+  s_853e3a05582c7f::t_e630c8a8f529b8 45
+  s_853e3a05582c7f::t_2fae68db00f216 114
+tools/smoke_android.mjs
+  s_853e3a05582c7f::t_521014b8d4be07 126-130
+  s_853e3a05582c7f::t_bb07e3db9b44a8 148
+  s_853e3a05582c7f::t_17e590fe58d31f 199
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "354f630edf4652838193acd76179a89832567cc9",
+  "prompts": {},
+  "sessions": {
+    "s_853e3a05582c7f": {
+      "agent_id": {
+        "tool": "kiro-desktop",
+        "id": "sess_9412c325-cac8-43f4-88c4-d85afc226aaf",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "yandali <liyanda2017@163.com>"
+    }
+  }
+}
