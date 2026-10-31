@@ -1,0 +1,34 @@
+docs/decisions/002-public-documents-storage-via-saf.md
+  s_853e3a05582c7f::t_e14b0830912a11 44
+  s_853e3a05582c7f::t_a5d4311dbb3f3e 23
+docs/data-contract.md
+  s_853e3a05582c7f::t_44276eff9e1c4d 3
+  s_853e3a05582c7f::t_fc55aa0ceed3f4 126,128
+docs/software-plan.md
+  s_853e3a05582c7f::t_138a2b1a58a1aa 3
+  s_853e3a05582c7f::t_7021b2db1f4ef4 138
+  s_853e3a05582c7f::t_8b1a9806af14d8 201
+  s_853e3a05582c7f::t_d05d3010b05007 30,33,35
+  s_853e3a05582c7f::t_288e8dee1e945e 141
+  s_853e3a05582c7f::t_aa124e332540a4 65
+  s_853e3a05582c7f::t_830cf78f3277fc 73-88
+AGENTS.md
+  s_853e3a05582c7f::t_5df0bbd62c35cd 13-14
+  s_853e3a05582c7f::t_ca7957a5f56e0b 11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "066520c7a6f1a868c96113e5911e16a28e05a9f3",
+  "prompts": {},
+  "sessions": {
+    "s_853e3a05582c7f": {
+      "agent_id": {
+        "tool": "kiro-desktop",
+        "id": "sess_9412c325-cac8-43f4-88c4-d85afc226aaf",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "yandali <yandali@trip.com>"
+    }
+  }
+}
