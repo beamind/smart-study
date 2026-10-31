@@ -1,3 +1,5 @@
+import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { AiError } from '../../src/ai/dashscope';
 import { modelRequest, type ModelTask } from '../../src/ai/tasks';
@@ -117,6 +119,15 @@ describe('trial proxy', () => {
 });
 
 describe('Tablestore counters', () => {
+  it('are bundled without strict mode, which the Tablestore SDK does not survive', () => {
+    // The SDK assigns undeclared variables; a "use strict" at the top of the bundle broke every counter read.
+    const built = spawnSync(process.execPath, ['server/trial-proxy/build.mjs'], { encoding: 'utf8' });
+    expect(built.status, built.stderr).toBe(0);
+    const bundle = readFileSync('server/trial-proxy/dist/index.cjs', 'utf8');
+    expect(bundle.trimStart().startsWith('"use strict"')).toBe(false);
+    expect(bundle).toContain('for (key in primaryKeys[i])');
+  });
+
   it('recognises a failed write condition in the shape SDK 5.6.6 reports it, and in a fixed one', () => {
     // 5.6.6: code is the HTTP status, message is the protobuf error body.
     expect(isConditionFailure({ code: 403, message: '\n\x15OTSConditionCheckFail\x12\x17Condition check failed. requestId:x' })).toBe(true);

@@ -13,7 +13,7 @@
     "preview": "vite preview --host 127.0.0.1",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "trial:build": "esbuild server/trial-proxy/src/index.ts --bundle --platform=node --target=node20 --format=cjs --outfile=server/trial-proxy/dist/index.cjs",
+    "trial:build": "node server/trial-proxy/build.mjs",
     "android:sync": "npm run build && cap sync android",
     "android:build": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/build_android.ps1",
     "android:release": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/build_android.ps1 -Release"
