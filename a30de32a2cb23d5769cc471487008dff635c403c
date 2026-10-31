@@ -1,0 +1,104 @@
+src/features/errorBook/QuestionText.tsx
+  s_853e3a05582c7f::t_dce8d9684b7f5c 1-16
+src/features/errorBook/RunPractice.tsx
+  s_853e3a05582c7f::t_816400927e77e8 1-40,42-66
+  s_853e3a05582c7f::t_e317c7901b4b60 41
+tools/legacy/convert.ts
+  s_853e3a05582c7f::t_65f93feaeba5a1 204-207
+  s_853e3a05582c7f::t_933e313f123bef 71-90
+docs/software-plan.md
+  s_853e3a05582c7f::t_de788c07979eb4 179
+e2e/errorBook.spec.ts
+  s_853e3a05582c7f::t_75dbecfff40fda 52,67-128
+  s_853e3a05582c7f::t_949104ce03d1d5 28,59
+src/ai/parse.ts
+  s_853e3a05582c7f::t_cfeab5595c348c 55-81
+src/features/useUserData.ts
+  s_853e3a05582c7f::t_c0c2ef98fa1895 51-63
+src/features/errorBook/MarkPractice.tsx
+  s_853e3a05582c7f::t_2801d2eaf04075 1-56
+src/ai/ai.test.ts
+  s_853e3a05582c7f::t_1306164a589fb8 47,61,63-64
+  s_853e3a05582c7f::t_336669f8b66f22 5
+  s_853e3a05582c7f::t_a26f61d7d86f89 2,4
+  s_853e3a05582c7f::t_e343d7a7ff1580 33-45,59-60,62,65-67
+  s_853e3a05582c7f::t_8c3573926f635f 46,48-58
+src/styles/app.css
+  s_853e3a05582c7f::t_bcdc2586dd8d15 95-100
+  s_853e3a05582c7f::t_45d56b56e61748 90,92-94
+src/domain/errorBook.ts
+  s_853e3a05582c7f::t_5b78a5dedca40a 1-157
+src/domain/underline.ts
+  s_853e3a05582c7f::t_c231e23372ac64 28-76
+  s_853e3a05582c7f::t_ba5ba9a035d622 24-27
+docs/data-contract.md
+  s_853e3a05582c7f::t_e7774317e528f6 150
+  s_853e3a05582c7f::t_1afdbecb1eccdb 189
+  s_853e3a05582c7f::t_5b0b5a4282a24c 119-121
+src/features/errorBook/CaptureQuestions.tsx
+  s_853e3a05582c7f::t_885e400d4f6d47 1-128
+src/ai/prompts.ts
+  s_853e3a05582c7f::t_b0d041cdfa3e58 47-48,51-54
+  s_853e3a05582c7f::t_eaa3b3dd47fbb6 91
+tools/legacy/convert.test.ts
+  s_853e3a05582c7f::t_e7d16659cca6b0 83-92
+  s_853e3a05582c7f::t_9551a083d5f242 4
+src/ai/tasks.ts
+  s_853e3a05582c7f::t_fae757ee4579e6 18-19,21
+  s_853e3a05582c7f::t_d80d0689c5d1e5 148
+  s_853e3a05582c7f::t_2207c4ae29f83f 49-50,53-56,58-61,69-70,73-74,79,84-90
+  s_853e3a05582c7f::t_b6fb17d63eb82b 186-188
+  s_853e3a05582c7f::t_e45e78653f064a 98-103,105-112,114
+  s_853e3a05582c7f::t_e376781c2eb769 104,113,115-122
+  s_853e3a05582c7f::t_3426fa58f95181 149
+  s_853e3a05582c7f::t_a195626e24f45f 191,193
+  s_853e3a05582c7f::t_766d5f58093e32 7-8,15-17,20,22-23,57,91-97,126-129,132,142-147,150-159,163-165,169,173,176-185,189-190,192,194-198
+  s_853e3a05582c7f::t_896ebb7ac57258 51-52,62-68,71-72,75-78,80-83
+src/app/navigation.tsx
+  s_853e3a05582c7f::t_dcc54bdd700fbd 18,21
+src/features/dictation/CropPhoto.tsx
+  s_853e3a05582c7f::t_44063368ee51ca 9-11
+  s_853e3a05582c7f::t_ab713d7c9bd85a 34
+src/ai/prompts.test.ts
+  s_853e3a05582c7f::t_38ab933008339d 3
+  s_853e3a05582c7f::t_498100b636dcdb 14
+  s_853e3a05582c7f::t_126060eb30a179 15
+src/app/App.tsx
+  s_853e3a05582c7f::t_580dc0042524cb 3,30
+src/domain/underline.test.ts
+  s_853e3a05582c7f::t_613e540dc2db63 38-39
+  s_853e3a05582c7f::t_bfd8412484779b 2,27-31,34-37,40-42,45-46,48
+  s_853e3a05582c7f::t_1844e3657772fd 26,32-33,43-44,47
+src/features/errorBook/GenerateVariations.tsx
+  s_853e3a05582c7f::t_fa2baf0e05722d 1-29,37-45,47-48,50,52-74,76-89,91-97
+  s_853e3a05582c7f::t_e5f757edb0bec0 90
+  s_853e3a05582c7f::t_052acf89efde09 30-36,46,49,51
+  s_853e3a05582c7f::t_3c6d9e2c502f62 75
+src/features/errorBook/types.ts
+  s_853e3a05582c7f::t_b72464817bbfb2 1-45
+src/features/errorBook/ErrorBookPage.tsx
+  s_853e3a05582c7f::t_f77ca2dcdd8533 211
+  s_853e3a05582c7f::t_b82beb33bb6bac 345
+  s_853e3a05582c7f::t_a8e54ae14aafaf 1-2,4-210,212-219,221,223-228,232,234-240,242,245-251,253-265,268-302,305,309,311,313-331,336-338,342-344,346-359,364-367,369-376,378-379
+src/features/errorBook/QuestionEditor.tsx
+  s_853e3a05582c7f::t_ed647f21d48be0 1-45,47-61
+  s_853e3a05582c7f::t_fb11c8fc97ae47 46
+src/features/dictation/DictationPage.tsx
+  s_853e3a05582c7f::t_bd7d1f412243de 156
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "854937d4f99cdc55ce5b5b14ffea7a33b487fdd3",
+  "prompts": {},
+  "sessions": {
+    "s_853e3a05582c7f": {
+      "agent_id": {
+        "tool": "kiro-desktop",
+        "id": "sess_9412c325-cac8-43f4-88c4-d85afc226aaf",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "yandali <yandali@trip.com>"
+    }
+  }
+}
