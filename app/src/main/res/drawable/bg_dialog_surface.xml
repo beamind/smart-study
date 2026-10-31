@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Dialog 背景保持浅色卡片，只改 DatePicker 的强调色/选中态为 primary_bule -->
+    <solid android:color="@color/white" />
+    <corners android:radius="18dp" />
+</shape>
+

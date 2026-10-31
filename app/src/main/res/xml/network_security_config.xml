@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- 默认配置：只允许HTTPS连接，禁止明文HTTP流量 -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <!-- 信任系统证书 -->
+            <certificates src="system" />
+            <!-- Release 环境不信任用户证书，避免被部分安全扫描判为“可被中间人攻击的风险配置” -->
+        </trust-anchors>
+    </base-config>
+    
+    <!-- 阿里云API域名配置：使用HTTPS/WSS -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">dashscope.aliyuncs.com</domain>
+        <domain includeSubdomains="true">aliyuncs.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>
+

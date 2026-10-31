@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Layout_StandardPage">
+
+    <!-- 卡片容器 -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:paddingStart="@dimen/spacing_xl"
+        android:paddingTop="@dimen/spacing_xl"
+        android:paddingEnd="@dimen/spacing_xl"
+        android:paddingBottom="@dimen/spacing_xxl"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- 语文听写卡片 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/dictationCard"
+                style="@style/Card_Standard">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/spacing_lg"
+                    android:gravity="center_vertical"
+                    android:clipToPadding="true"
+                    android:clipChildren="true">
+
+                    <!-- 图标容器 -->
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="@dimen/spacing_md"
+                        app:cardCornerRadius="@dimen/radius_lg"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="@color/icon_bg_blue">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_dictation"
+                            android:layout_gravity="center"
+                            android:contentDescription="语文听写图标" />
+                    </androidx.cardview.widget.CardView>
+
+                    <!-- 文字内容 -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/dictation_module"
+                            style="@style/Text_Title"
+                            android:layout_marginBottom="@dimen/spacing_xs" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/dictation_module_description"
+                            style="@style/Text_Caption" />
+                    </LinearLayout>
+
+                    <!-- 箭头图标 -->
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- 英语听写卡片 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/englishDictationCard"
+                style="@style/Card_Standard">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/spacing_lg"
+                    android:gravity="center_vertical"
+                    android:clipToPadding="true"
+                    android:clipChildren="true">
+
+                    <!-- 图标容器 -->
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="@dimen/spacing_md"
+                        app:cardCornerRadius="@dimen/radius_lg"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="@color/icon_bg_orange">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_english"
+                            android:layout_gravity="center"
+                            android:contentDescription="英语听写图标" />
+                    </androidx.cardview.widget.CardView>
+
+                    <!-- 文字内容 -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/english_dictation_module"
+                            style="@style/Text_Title"
+                            android:layout_marginBottom="@dimen/spacing_xs" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/english_dictation_module_description"
+                            style="@style/Text_Caption" />
+                    </LinearLayout>
+
+                    <!-- 箭头图标 -->
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- 英语错题本卡片 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/englishErrorBookCard"
+                style="@style/Card_Standard">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/spacing_lg"
+                    android:gravity="center_vertical"
+                    android:clipToPadding="true"
+                    android:clipChildren="true">
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="@dimen/spacing_md"
+                        app:cardCornerRadius="@dimen/radius_lg"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="@color/icon_bg_orange">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@android:drawable/ic_menu_edit"
+                            android:layout_gravity="center"
+                            android:contentDescription="英语错题本图标" />
+                    </androidx.cardview.widget.CardView>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/error_book_title"
+                            style="@style/Text_Title"
+                            android:layout_marginBottom="@dimen/spacing_xs" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/error_book_description"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_secondary" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- 学习记录卡片 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/learningRecordCard"
+                style="@style/Card_Standard">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/spacing_lg"
+                    android:gravity="center_vertical"
+                    android:clipToPadding="true"
+                    android:clipChildren="true">
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="@dimen/spacing_md"
+                        app:cardCornerRadius="@dimen/radius_lg"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="@color/icon_bg_purple">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_folder_24"
+                            android:layout_gravity="center"
+                            android:contentDescription="学习记录图标" />
+                    </androidx.cardview.widget.CardView>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/learning_record"
+                            style="@style/Text_Title"
+                            android:layout_marginBottom="@dimen/spacing_xs" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/learning_record_description"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_secondary" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- 用户管理卡片 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/userManagementCard"
+                style="@style/Card_Standard">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/spacing_lg"
+                    android:gravity="center_vertical"
+                    android:clipToPadding="true"
+                    android:clipChildren="true">
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="@dimen/spacing_md"
+                        app:cardCornerRadius="@dimen/radius_lg"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="@color/icon_bg_blue">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@android:drawable/ic_menu_manage"
+                            android:layout_gravity="center"
+                            android:contentDescription="用户管理图标" />
+                    </androidx.cardview.widget.CardView>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/user_management"
+                            style="@style/Text_Title"
+                            android:layout_marginBottom="@dimen/spacing_xs" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/user_management_description"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_secondary" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+

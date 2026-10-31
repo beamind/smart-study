@@ -1,0 +1,32 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+// AGP 8.x requires running Gradle with JDK 17+ (this is about the Gradle runtime, not just Kotlin/Java compilation).
+// If you see variant-matching errors mentioning "compatible with Java 8", your JAVA_HOME / Gradle JDK is too old.
+if (!JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
+    throw new GradleException("This project requires JDK 17+ to run Gradle/AGP. " +
+            "Please set Android Studio's Gradle JDK to 17+ or set JAVA_HOME to a JDK 17+ installation, then re-run the build.")
+}
+
+buildscript {
+    repositories {
+        // Gradle plugin portal (ktlint/detekt plugins are published here)
+        gradlePluginPortal()
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        // Gradle 8.5 + Android Studio 自带 JDK(21) 环境下，AGP 8.2.0 容易触发 androidJdkImage/jlink 失败
+        // 升级到更高版本以兼容新 JDK 与 platform 34 的 system modules 处理
+        classpath 'com.android.tools.build:gradle:8.5.2'
+        // Code style / quality tools
+        classpath 'org.jlleitschuh.gradle:ktlint-gradle:12.1.2'
+        classpath 'io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.6'
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+

@@ -1,0 +1,429 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Layout_StandardPage">
+
+    <!-- Toolbar -->
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/layout_toolbar_standard" />
+
+    <!-- 操作按钮卡片 -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardActions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="visible"
+        android:layout_marginStart="@dimen/spacing_xl"
+        android:layout_marginEnd="@dimen/spacing_xl"
+        app:cardCornerRadius="0dp"
+        app:cardElevation="0dp"
+        app:cardBackgroundColor="@android:color/transparent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.5">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_xxl"
+            android:gravity="center_horizontal">
+
+            <!-- 解析按钮 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/btnParse"
+                style="@style/Card_ActionButton">
+
+                <LinearLayout
+                    style="@style/Layout_ActionButtonContent"
+                    android:background="@drawable/bg_button_blue_gradient">
+
+                    <!-- 图标 -->
+                    <ImageView
+                        style="@style/Image_ActionButtonIcon"
+                        android:src="@android:drawable/ic_menu_camera"
+                        android:tint="@color/primary_blue"
+                        android:contentDescription="拍照识别错题图标" />
+
+                    <!-- 文字内容 -->
+                    <TextView
+                        android:id="@+id/tvParseButton"
+                        style="@style/Text_ActionButton"
+                        android:text="@string/error_book_parse_button" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- 查看按钮 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/btnView"
+                style="@style/Card_ActionButton">
+
+                <LinearLayout
+                    style="@style/Layout_ActionButtonContent"
+                    android:background="@drawable/bg_button_green_gradient">
+
+                    <!-- 图标 -->
+                    <ImageView
+                        style="@style/Image_ActionButtonIcon"
+                        android:src="@android:drawable/ic_menu_view"
+                        android:tint="@color/accent_green"
+                        android:contentDescription="查看图标" />
+
+                    <!-- 文字内容 -->
+                    <TextView
+                        android:id="@+id/tvViewButton"
+                        style="@style/Text_ActionButton"
+                        android:text="@string/view_error_words" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- 错题练习按钮 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/btnPractice"
+                style="@style/Card_ActionButton">
+
+                <LinearLayout
+                    style="@style/Layout_ActionButtonContent"
+                    android:background="@drawable/bg_button_orange_gradient">
+
+                    <!-- 图标 -->
+                    <ImageView
+                        style="@style/Image_ActionButtonIcon"
+                        android:src="@android:drawable/ic_media_play"
+                        android:tint="@color/accent_orange"
+                        android:contentDescription="错题练习图标" />
+
+                    <!-- 文字内容 -->
+                    <TextView
+                        style="@style/Text_ActionButton"
+                        android:text="@string/error_book_practice_button" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- 举一反三按钮 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/btnVariation"
+                style="@style/Card_ActionButton">
+
+                <LinearLayout
+                    style="@style/Layout_ActionButtonContent"
+                    android:background="@drawable/bg_button_green_gradient">
+
+                    <!-- 图标 -->
+                    <ImageView
+                        style="@style/Image_ActionButtonIcon"
+                        android:src="@android:drawable/ic_menu_rotate"
+                        android:tint="@color/accent_green"
+                        android:contentDescription="举一反三图标" />
+
+                    <!-- 文字内容 -->
+                    <TextView
+                        style="@style/Text_ActionButton"
+                        android:text="@string/error_book_variation_button" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- 照片卡片（用于显示和裁剪照片） -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardPhoto"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        android:layout_marginStart="@dimen/spacing_xl"
+        android:layout_marginEnd="@dimen/spacing_xl"
+        android:layout_marginTop="@dimen/spacing_lg"
+        android:layout_marginBottom="@dimen/spacing_xl"
+        app:cardCornerRadius="@dimen/radius_lg"
+        app:cardElevation="@dimen/elevation_sm"
+        app:cardBackgroundColor="@color/card_background"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintBottom_toTopOf="@id/btnContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="0dp">
+
+            <!-- 照片显示（裁剪后） -->
+            <ImageView
+                android:id="@+id/ivPhoto"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitCenter"
+                android:visibility="gone" />
+
+            <!-- 裁剪视图容器（默认隐藏） -->
+            <FrameLayout
+                android:id="@+id/cropContainer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone"
+                android:background="#000000">
+
+                <com.canhub.cropper.CropImageView
+                    android:id="@+id/cropImageView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <!-- 裁剪操作按钮（浮动在裁剪视图底部） -->
+                <LinearLayout
+                    android:id="@+id/cropButtonLayout"
+                    style="@style/Layout_CropButtons"
+                    android:visibility="gone"
+                    android:layout_gravity="bottom">
+
+                    <Button
+                        android:id="@+id/btnCropCancel"
+                        style="@style/Button_CropAction"
+                        android:layout_marginEnd="@dimen/spacing_sm"
+                        android:text="@string/cancel"
+                        android:backgroundTint="@color/button_gray" />
+
+                    <Button
+                        android:id="@+id/btnCropDone"
+                        style="@style/Button_CropAction"
+                        android:layout_marginStart="@dimen/spacing_sm"
+                        android:text="@string/finish"
+                        android:backgroundTint="@color/primary_blue" />
+                </LinearLayout>
+            </FrameLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- 顶部进度卡片（听写时显示） -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardProgress"
+        style="@style/Card_Transparent"
+        android:layout_marginTop="@dimen/spacing_md"
+        android:layout_marginBottom="@dimen/spacing_md"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            style="@style/Layout_ProgressContent">
+
+            <TextView
+                android:id="@+id/tvQuestionIndex"
+                style="@style/Text_ProgressIndex"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/question_index_format"
+                android:textColor="@color/primary_blue"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tvCurrentQuestion"
+                style="@style/Text_ProgressCurrent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/current_question"
+                android:textColor="@color/primary_blue"
+                android:visibility="gone" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- 状态显示卡片（听写时显示） -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_md"
+        android:layout_marginBottom="@dimen/spacing_md"
+        android:visibility="gone"
+        app:cardCornerRadius="@dimen/radius_lg"
+        app:cardElevation="@dimen/elevation_sm"
+        app:cardBackgroundColor="@color/card_background"
+        app:layout_constraintTop_toBottomOf="@id/cardProgress"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/spacing_lg"
+            android:text="@string/dictation_waiting_start"
+            android:textSize="16sp"
+            android:textColor="@color/text_primary"
+            android:gravity="center" />
+    </androidx.cardview.widget.CardView>
+
+    <!-- 温馨提示卡片 -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardTip"
+        style="@style/Card_Transparent"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            style="@style/Layout_TipContent">
+
+            <!-- 标题 -->
+            <TextView
+                style="@style/Text_TipTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/tips"
+                android:textColor="@color/accent_orange"
+                android:gravity="center" />
+
+            <!-- 内容 -->
+            <TextView
+                android:id="@+id/tvTip"
+                style="@style/Text_TipContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/dictation_tip_after_complete"
+                android:textColor="@color/accent_orange"
+                android:gravity="center" />
+
+            <!-- 下一个按钮 -->
+            <Button
+                android:id="@+id/btnNext"
+                style="@style/Button_TipAction"
+                android:text="@string/next"
+                android:backgroundTint="@color/primary_blue" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- 答案显示卡片（听写完成后显示） -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardAnswers"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="-20dp"
+        android:layout_marginEnd="-20dp"
+        android:layout_marginTop="-20dp"
+        android:layout_marginBottom="0dp"
+        android:visibility="gone"
+        app:cardCornerRadius="0dp"
+        app:cardElevation="0dp"
+        app:cardBackgroundColor="@android:color/transparent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintBottom_toTopOf="@id/btnContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
+            android:paddingBottom="0dp"
+            android:paddingTop="4dp">
+
+            <TextView
+                android:id="@+id/tvAnswersTitle"
+                style="@style/Text_AnswerTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/dictation_answer"
+                android:visibility="gone"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <!-- 分隔线 -->
+            <View
+                android:id="@+id/dividerTop"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/text_secondary"
+                android:alpha="0.8"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvAnswers"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:paddingTop="16dp"
+                android:clipToPadding="false"
+                app:layout_constraintTop_toBottomOf="@id/dividerTop"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- 题目列表 -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvQuestions"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintBottom_toTopOf="@id/btnContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- 底部按钮容器 -->
+    <LinearLayout
+        android:id="@+id/btnContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        android:layout_marginStart="@dimen/spacing_xl"
+        android:layout_marginEnd="@dimen/spacing_xl"
+        android:layout_marginBottom="@dimen/spacing_lg"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- 识别下划线按钮 -->
+        <Button
+            android:id="@+id/btnRecognizeUnderline"
+            style="@style/Button_Bottom"
+            android:text="@string/error_book_recognize_underline_button"
+            android:layout_marginEnd="@dimen/spacing_md"
+            android:visibility="gone" />
+
+        <!-- 手动下划线按钮 -->
+        <Button
+            android:id="@+id/btnManualUnderline"
+            style="@style/Button_Bottom"
+            android:text="@string/error_book_manual_underline_button"
+            android:layout_marginEnd="@dimen/spacing_md"
+            android:visibility="gone" />
+
+        <!-- 预览按钮 -->
+        <Button
+            android:id="@+id/btnPreview"
+            style="@style/Button_Bottom"
+            android:text="@string/error_book_preview_button"
+            android:layout_marginEnd="@dimen/spacing_md"
+            android:layout_weight="0.7"
+            android:visibility="gone" />
+
+        <!-- 编辑按钮 -->
+        <Button
+            android:id="@+id/btnEdit"
+            style="@style/Button_Bottom"
+            android:text="@string/error_book_edit_button"
+            android:layout_marginEnd="@dimen/spacing_md"
+            android:visibility="gone" />
+
+        <!-- 提交按钮 -->
+        <Button
+            android:id="@+id/btnSubmit"
+            style="@style/Button_Bottom"
+            android:text="@string/submit"
+            android:layout_weight="0.7"
+            android:visibility="gone" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

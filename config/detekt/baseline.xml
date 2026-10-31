@@ -1,0 +1,147 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>ComplexCondition:ActivityExtensions.kt$!isFinishing &amp;&amp; !isDestroyed &amp;&amp; dialog != null &amp;&amp; dialog.isShowing</ID>
+    <ID>ComplexCondition:DictationVoiceHandler.kt$DictationVoiceHandler$!activity.isFinishing &amp;&amp; !activity.isDestroyed &amp;&amp; tvRecognitionText != null &amp;&amp; tvRecognitionStatus != null</ID>
+    <ID>ComplexCondition:SherpaKwsService.kt$SherpaKwsService$encoderPath == null || decoderPath == null || joinerPath == null || tokensPath == null || keywordsPath == null</ID>
+    <ID>ComplexCondition:SherpaKwsService.kt$SherpaKwsService$modelFiles.encoderFile.exists() &amp;&amp; modelFiles.decoderFile.exists() &amp;&amp; modelFiles.joinerFile.exists() &amp;&amp; modelFiles.tokensFile.exists() &amp;&amp; modelFiles.keywordsFile.exists()</ID>
+    <ID>ComplexCondition:UserManagementActivity.kt$UserManagementActivity$error.contains("无法创建") || error.contains("SAF") || error.contains("权限") || error.contains("smartstudy")</ID>
+    <ID>CyclomaticComplexMethod:AppErrorMapper.kt$fun Throwable.toAppError(): AppError</ID>
+    <ID>CyclomaticComplexMethod:DictationImageHandler.kt$DictationImageHandler$fun performCrop()</ID>
+    <ID>CyclomaticComplexMethod:DictationImageHandler.kt$DictationImageHandler$fun recognizeText(bitmap: Bitmap)</ID>
+    <ID>CyclomaticComplexMethod:DictationRecordStorage.kt$DictationRecordStorage$private fun listFilesByPattern( userName: String, type: String, ): List&lt;Pair&lt;Uri, Long&gt;&gt;</ID>
+    <ID>CyclomaticComplexMethod:DictationRecordStorage.kt$DictationRecordStorage$suspend fun saveQuestions( userName: String, type: String, questions: List&lt;QuestionRecord&gt;, )</ID>
+    <ID>CyclomaticComplexMethod:DictationRecordStorage.kt$DictationRecordStorage$suspend fun updateWord( userName: String, type: String, oldWord: String, newWord: String, newTranslation: String = "", )</ID>
+    <ID>CyclomaticComplexMethod:DictationViewManager.kt$DictationViewManager$fun areViewsInitialized(): Boolean</ID>
+    <ID>CyclomaticComplexMethod:EnglishErrorBookSampling.kt$EnglishErrorBookSampling$fun selectQuestionsByErrorRate( questionStats: List&lt;EnglishErrorBookStorage.QuestionStat&gt;, count: Int, random: Random = Random(), nowMillis: Long = System.currentTimeMillis(), ): List&lt;String&gt;</ID>
+    <ID>CyclomaticComplexMethod:EnglishErrorBookStorage.kt$EnglishErrorBookStorage$private fun listFilesByPattern(userName: String): List&lt;Pair&lt;Uri, Long&gt;&gt;</ID>
+    <ID>CyclomaticComplexMethod:EnglishErrorBookStorage.kt$EnglishErrorBookStorage$suspend fun loadAllQuestionsWithAnswers(userName: String): List&lt;Pair&lt;com.smartstudy.english.QuestionAnswer, QuestionWithStats&gt;&gt;</ID>
+    <ID>CyclomaticComplexMethod:EnglishErrorBookStorage.kt$EnglishErrorBookStorage$suspend fun loadAllQuestionsWithFullStats(userName: String): List&lt;QuestionStat&gt;</ID>
+    <ID>CyclomaticComplexMethod:ErrorWordListActivity.kt$ErrorWordAdapter$override fun onBindViewHolder( holder: ErrorWordViewHolder, position: Int, )</ID>
+    <ID>CyclomaticComplexMethod:ImageUnderstandingService.kt$ImageUnderstandingService$private fun filterByMode( items: List&lt;String&gt;, mode: ImageUnderstandingMode, ): List&lt;String&gt;</ID>
+    <ID>CyclomaticComplexMethod:ImageUnderstandingService.kt$ImageUnderstandingService$private fun parseWords( text: String, mode: ImageUnderstandingMode, ): List&lt;String&gt;</ID>
+    <ID>CyclomaticComplexMethod:JsonHistoryStore.kt$JsonHistoryStore$suspend fun listFilesByPattern( pattern: Regex, timestampFromFileName: (String) -&gt; Long?, ): List&lt;Pair&lt;Uri, Long&gt;&gt;</ID>
+    <ID>CyclomaticComplexMethod:NetworkRetryHelper.kt$NetworkRetryHelper$private fun shouldRetry(exception: Throwable): Boolean</ID>
+    <ID>CyclomaticComplexMethod:SherpaKwsService.kt$SherpaKwsService$private fun parseKeywordsFile()</ID>
+    <ID>DestructuringDeclarationWithTooManyEntries:DictationRecordStorage.kt$DictationRecordStorage$val (errorCount, totalCount, translation, lastTimestamp) = data</ID>
+    <ID>EmptyFunctionBlock:ErrorWordListActivity.kt$ErrorWordAdapter.&lt;no name provided&gt;${}</ID>
+    <ID>EmptyFunctionBlock:QuestionAdapter.kt$QuestionAdapter.&lt;no name provided&gt;${}</ID>
+    <ID>InstanceOfCheckForException:AppResultHelpers.kt$t is CancellationException</ID>
+    <ID>LargeClass:EnglishErrorBookActivity.kt$EnglishErrorBookActivity : AppCompatActivityResourceManagerImageHandlerUICallbackPracticeFlowUICallbackQuestionManagerUICallback</ID>
+    <ID>LargeClass:EnglishErrorBookStorage.kt$EnglishErrorBookStorage</ID>
+    <ID>LargeClass:SherpaKwsService.kt$SherpaKwsService</ID>
+    <ID>LongMethod:DictationImageHandler.kt$DictationImageHandler$fun recognizeText(bitmap: Bitmap)</ID>
+    <ID>LoopWithTooManyJumpStatements:DictationRecordStorage.kt$DictationRecordStorage$while</ID>
+    <ID>LoopWithTooManyJumpStatements:EnglishErrorBookSampling.kt$EnglishErrorBookSampling$for</ID>
+    <ID>LoopWithTooManyJumpStatements:EnglishErrorBookStorage.kt$EnglishErrorBookStorage$while</ID>
+    <ID>LoopWithTooManyJumpStatements:JsonHistoryStore.kt$JsonHistoryStore$for</ID>
+    <ID>LoopWithTooManyJumpStatements:SherpaKwsService.kt$SherpaKwsService$while</ID>
+    <ID>LoopWithTooManyJumpStatements:WordSelectionHelper.kt$WordSelectionHelper$for</ID>
+    <ID>RethrowCaughtException:DebounceHelper.kt$DebounceHelper$throw e</ID>
+    <ID>RethrowCaughtException:SherpaKwsService.kt$SherpaKwsService$throw e</ID>
+    <ID>SwallowedException:BaseDictationActivity.kt$BaseDictationActivity$e: UninitializedPropertyAccessException</ID>
+    <ID>SwallowedException:DictationRecordStorage.kt$DictationRecordStorage$e: IOException</ID>
+    <ID>SwallowedException:DictationRecordStorage.kt$DictationRecordStorage$e: SecurityException</ID>
+    <ID>SwallowedException:DictationViewManager.kt$DictationViewManager$e: IllegalStateException</ID>
+    <ID>SwallowedException:DictationViewManager.kt$DictationViewManager$e: kotlin.UninitializedPropertyAccessException</ID>
+    <ID>SwallowedException:ErrorBookPracticeFlowManagerTest.kt$ErrorBookPracticeFlowManagerTest$e: Exception</ID>
+    <ID>SwallowedException:ErrorBookQuestionManagerTest.kt$ErrorBookQuestionManagerTest$e: Exception</ID>
+    <ID>SwallowedException:ImageUnderstandingService.kt$ImageUnderstandingService$e: TimeoutCancellationException</ID>
+    <ID>SwallowedException:MemoryLeakPrevention.kt$MemoryLeakPrevention$e: Exception</ID>
+    <ID>SwallowedException:NetworkRetryHelperTest.kt$NetworkRetryHelperTest$e: ConnectException</ID>
+    <ID>SwallowedException:NetworkRetryHelperTest.kt$NetworkRetryHelperTest$e: TimeoutException</ID>
+    <ID>SwallowedException:NetworkRetryHelperTest.kt$NetworkRetryHelperTest$e: UnknownHostException</ID>
+    <ID>SwallowedException:QuestionGenerationService.kt$QuestionGenerationService$e: TimeoutCancellationException</ID>
+    <ID>SwallowedException:TranslationService.kt$TranslationService$e: TimeoutCancellationException</ID>
+    <ID>SwallowedException:TtsService.kt$TtsService$e: RejectedExecutionException</ID>
+    <ID>TooGenericExceptionCaught:AppResultHelpers.kt$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:DashscopeTextExtractor.kt$DashscopeTextExtractor$e: NullPointerException</ID>
+    <ID>TooGenericExceptionCaught:MemoryLeakPrevention.kt$MemoryLeakPrevention$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:NetworkRetryHelper.kt$NetworkRetryHelper$e: Throwable</ID>
+    <ID>TooGenericExceptionCaught:QuestionGenerationService.kt$QuestionGenerationService$e: IndexOutOfBoundsException</ID>
+    <ID>TooGenericExceptionCaught:QuestionGenerationService.kt$QuestionGenerationService$e: NullPointerException</ID>
+    <ID>TooGenericExceptionCaught:ResourceManager.kt$ResourceManagerHelper$e: Exception</ID>
+    <ID>TooGenericExceptionThrown:AppResultHelpersTest.kt$AppResultHelpersTest$throw RuntimeException("运行时错误")</ID>
+    <ID>TooManyFunctions:ActivityExtensions.kt$com.smartstudy.utils.ActivityExtensions.kt</ID>
+    <ID>TooManyFunctions:BaseDictationActivity.kt$BaseDictationActivity : AppCompatActivityResourceManager</ID>
+    <ID>TooManyFunctions:ChineseDictationActivity.kt$ChineseDictationActivity : BaseDictationActivity</ID>
+    <ID>TooManyFunctions:DictationImageHandler.kt$DictationImageHandler</ID>
+    <ID>TooManyFunctions:DictationRecordStorage.kt$DictationRecordStorage</ID>
+    <ID>TooManyFunctions:DictationViewModel.kt$DictationViewModel : ViewModel</ID>
+    <ID>TooManyFunctions:EnglishDictationActivity.kt$EnglishDictationActivity : BaseDictationActivity</ID>
+    <ID>TooManyFunctions:EnglishErrorBookActivity.kt$EnglishErrorBookActivity : AppCompatActivityResourceManagerImageHandlerUICallbackPracticeFlowUICallbackQuestionManagerUICallback</ID>
+    <ID>TooManyFunctions:EnglishErrorBookStorage.kt$EnglishErrorBookStorage</ID>
+    <ID>TooManyFunctions:ErrorBookPracticeFlowManager.kt$ErrorBookPracticeFlowManager</ID>
+    <ID>TooManyFunctions:ErrorBookPracticeManager.kt$ErrorBookPracticeManager : DefaultLifecycleObserver</ID>
+    <ID>TooManyFunctions:ErrorBookQuestionManager.kt$ErrorBookQuestionManager</ID>
+    <ID>TooManyFunctions:ErrorBookQuestionManager.kt$QuestionManagerUICallback</ID>
+    <ID>TooManyFunctions:ErrorBookViewModel.kt$ErrorBookViewModel : ViewModel</ID>
+    <ID>TooManyFunctions:ErrorWordListActivity.kt$ErrorWordListActivity : AppCompatActivityResourceManager</ID>
+    <ID>TooManyFunctions:ErrorWordListViewModel.kt$ErrorWordListViewModel : ViewModel</ID>
+    <ID>TooManyFunctions:JsonHistoryStore.kt$JsonHistoryStore</ID>
+    <ID>TooManyFunctions:LogFileWriter.kt$LogFileWriter</ID>
+    <ID>TooManyFunctions:PermissionHelper.kt$PermissionHelper</ID>
+    <ID>TooManyFunctions:QuestionAdapter.kt$QuestionAdapter : Adapter</ID>
+    <ID>TooManyFunctions:SherpaKwsService.kt$SherpaKwsService</ID>
+    <ID>TooManyFunctions:TtsService.kt$TtsService : ITtsService</ID>
+    <ID>TooManyFunctions:UserManager.kt$UserManager</ID>
+    <ID>UnusedParameter:StorageUtils.kt$StorageUtils$context: Context</ID>
+    <ID>UnusedPrivateMember:DictationRecordStorage.kt$DictationRecordStorage$private fun cacheFileUri( fileName: String, uri: Uri, )</ID>
+    <ID>UnusedPrivateMember:DictationRecordStorage.kt$DictationRecordStorage$private fun clearCachedFileUri(fileName: String)</ID>
+    <ID>UnusedPrivateMember:DictationRecordStorage.kt$DictationRecordStorage$private fun getCachedFileUriOrNull(fileName: String): Uri?</ID>
+    <ID>UnusedPrivateMember:DictationRecordStorage.kt$DictationRecordStorage$private fun isMarkedCorrupt(uri: Uri): Boolean</ID>
+    <ID>UnusedPrivateMember:DictationRecordStorage.kt$DictationRecordStorage$private fun markCorrupt(uri: Uri)</ID>
+    <ID>UnusedPrivateMember:DictationRecordStorage.kt$DictationRecordStorage$private fun readJsonFromUri(uri: Uri): JSONObject?</ID>
+    <ID>UnusedPrivateMember:DictationRecordStorage.kt$DictationRecordStorage$private fun readRecordsFromUri(uri: Uri): List&lt;QuestionRecord&gt;</ID>
+    <ID>UnusedPrivateMember:DictationRecordStorage.kt$DictationRecordStorage$private fun writeViaSaf( treeUri: Uri, fileName: String, json: JSONObject, )</ID>
+    <ID>UnusedPrivateMember:DictationRecordStorage.kt$DictationRecordStorage$private suspend fun cleanupOldFiles( userName: String, type: String, )</ID>
+    <ID>UnusedPrivateMember:EnglishErrorBookActivity.kt$EnglishErrorBookActivity$private fun handlePracticeReady( questions: List&lt;QuestionAnswer&gt;, isVariation: Boolean, )</ID>
+    <ID>UnusedPrivateMember:EnglishErrorBookActivity.kt$EnglishErrorBookActivity$private fun handleRecognitionError(error: String)</ID>
+    <ID>UnusedPrivateMember:EnglishErrorBookActivity.kt$EnglishErrorBookActivity$private fun handleRecognitionSuccess(questions: List&lt;QuestionAnswer&gt;)</ID>
+    <ID>UnusedPrivateMember:EnglishErrorBookActivity.kt$EnglishErrorBookActivity$private fun showRecognizingProgress()</ID>
+    <ID>UnusedPrivateMember:EnglishErrorBookActivity.kt$EnglishErrorBookActivity$private fun stopTimeoutTimer()</ID>
+    <ID>UnusedPrivateMember:EnglishErrorBookStorage.kt$EnglishErrorBookStorage$private fun cacheFileUri( fileName: String, uri: Uri, )</ID>
+    <ID>UnusedPrivateMember:EnglishErrorBookStorage.kt$EnglishErrorBookStorage$private fun clearCachedFileUri(fileName: String)</ID>
+    <ID>UnusedPrivateMember:EnglishErrorBookStorage.kt$EnglishErrorBookStorage$private fun getCachedFileUriOrNull(fileName: String): Uri?</ID>
+    <ID>UnusedPrivateMember:EnglishErrorBookStorage.kt$EnglishErrorBookStorage$private fun isMarkedCorrupt(uri: Uri): Boolean</ID>
+    <ID>UnusedPrivateMember:EnglishErrorBookStorage.kt$EnglishErrorBookStorage$private fun markCorrupt(uri: Uri)</ID>
+    <ID>UnusedPrivateMember:EnglishErrorBookStorage.kt$EnglishErrorBookStorage$private fun readJsonFromUri(uri: Uri): JSONObject?</ID>
+    <ID>UnusedPrivateMember:EnglishErrorBookStorage.kt$EnglishErrorBookStorage$private fun writeJsonToUri( uri: Uri, json: JSONObject, )</ID>
+    <ID>UnusedPrivateMember:EnglishErrorBookStorage.kt$EnglishErrorBookStorage$private fun writeViaSaf( treeUri: Uri, fileName: String, json: JSONObject, )</ID>
+    <ID>UnusedPrivateMember:EnglishErrorBookStorage.kt$EnglishErrorBookStorage$private suspend fun cleanupOldFiles(userName: String)</ID>
+    <ID>UnusedPrivateMember:LogFileWriter.kt$LogFileWriter$private fun rotateLogFile(logDir: File)</ID>
+    <ID>UnusedPrivateProperty:DictationPermissionManager.kt$DictationPermissionManager$val currentUser = userManager.getCurrentUser() ?: userManager.ensureDefaultUser()</ID>
+    <ID>UnusedPrivateProperty:DictationRepositoryTest.kt$DictationRepositoryTest$@Mock private lateinit var mockContext: Context</ID>
+    <ID>UnusedPrivateProperty:DictationRepositoryTest.kt$DictationRepositoryTest$@Mock private lateinit var mockStorage: DictationRecordStorage</ID>
+    <ID>UnusedPrivateProperty:DictationRepositoryTest.kt$DictationRepositoryTest$private lateinit var repository: DictationRepository</ID>
+    <ID>UnusedPrivateProperty:DictationRepositoryTest.kt$DictationRepositoryTest$val dictationType = "chinese"</ID>
+    <ID>UnusedPrivateProperty:DictationRepositoryTest.kt$DictationRepositoryTest$val expectedStats = listOf( DictationWordStat(word = "测试", errorCount = 2, totalCount = 5), )</ID>
+    <ID>UnusedPrivateProperty:DictationRepositoryTest.kt$DictationRepositoryTest$val questions = listOf( QuestionRecord(word = "测试", isCorrect = false, timestamp = System.currentTimeMillis()), )</ID>
+    <ID>UnusedPrivateProperty:DictationRepositoryTest.kt$DictationRepositoryTest$val userName = "testUser"</ID>
+    <ID>UnusedPrivateProperty:DictationUIHelper.kt$DictationUIHelper$private val activity: AppCompatActivity</ID>
+    <ID>UnusedPrivateProperty:DictationViewCoordinator.kt$DictationViewCoordinator.Companion$private const val TAG = "DictationViewCoordinator"</ID>
+    <ID>UnusedPrivateProperty:DictationViewModel.kt$DictationViewModel$private val errorWordStorage: DictationRecordStorage</ID>
+    <ID>UnusedPrivateProperty:DictationViewModel.kt$DictationViewModel$private val imageUnderstandingService: ImageUnderstandingService</ID>
+    <ID>UnusedPrivateProperty:DictationViewModel.kt$DictationViewModel$private val ttsService: TtsService</ID>
+    <ID>UnusedPrivateProperty:DictationViewModel.kt$DictationViewModel$private val voiceRecognitionService: VoiceRecognitionService</ID>
+    <ID>UnusedPrivateProperty:EnglishErrorBookActivity.kt$EnglishErrorBookActivity.Companion$private const val REQUEST_CAMERA = 100</ID>
+    <ID>UnusedPrivateProperty:EnglishErrorBookActivity.kt$EnglishErrorBookActivity.Companion$private const val REQUEST_PERMISSIONS = 200</ID>
+    <ID>UnusedPrivateProperty:ErrorBookPracticeManager.kt$ErrorBookPracticeManager$private val onNextQuestion: () -&gt; Unit</ID>
+    <ID>UnusedPrivateProperty:ErrorBookPracticeManager.kt$ErrorBookPracticeManager$private val ttsService: TtsService</ID>
+    <ID>UnusedPrivateProperty:ErrorBookQuestionManagerTest.kt$ErrorBookQuestionManagerTest$private val testDispatcher = StandardTestDispatcher()</ID>
+    <ID>UnusedPrivateProperty:ErrorBookRepository.kt$ErrorBookRepository$private val storage: EnglishErrorBookStorage by lazy { EnglishErrorBookStorage(context) }</ID>
+    <ID>UnusedPrivateProperty:ErrorBookRepository.kt$ErrorBookRepository.Companion$private const val TAG = "ErrorBookRepository"</ID>
+    <ID>UnusedPrivateProperty:ErrorBookViewModel.kt$ErrorBookViewModel$private val imageUnderstandingService: ImageUnderstandingService</ID>
+    <ID>UnusedPrivateProperty:ErrorBookViewModel.kt$ErrorBookViewModel$private val questionGenerationService: QuestionGenerationService</ID>
+    <ID>UnusedPrivateProperty:ErrorBookViewModel.kt$ErrorBookViewModel$private val ttsService: TtsService</ID>
+    <ID>UnusedPrivateProperty:ErrorBookViewModel.kt$ErrorBookViewModel$private val voiceRecognitionService: VoiceRecognitionService</ID>
+    <ID>UnusedPrivateProperty:ErrorWordListActivity.kt$ErrorWordListActivity.Companion$private const val TAG = "ErrorWordListActivity"</ID>
+    <ID>UnusedPrivateProperty:ImageUnderstandingServiceTest.kt$ImageUnderstandingServiceTest$@Mock private lateinit var mockBitmap: Bitmap</ID>
+    <ID>UnusedPrivateProperty:MainViewModel.kt$MainViewModel.Companion$private const val TAG = "MainViewModel"</ID>
+    <ID>UnusedPrivateProperty:TtsServiceTest.kt$TtsServiceTest$@Mock private lateinit var mockContext: Context</ID>
+    <ID>UnusedPrivateProperty:TtsServiceTest.kt$TtsServiceTest$private lateinit var service: TtsService</ID>
+    <ID>UnusedPrivateProperty:UserManagementActivity.kt$UserManagementActivity.Companion$private const val TAG = "UserManagementActivity"</ID>
+    <ID>UseCheckOrError:SherpaKwsService.kt$SherpaKwsService$throw IllegalStateException("复制后文件验证失败: ${targetFile.absolutePath}, 大小: ${targetFile.length()}")</ID>
+  </CurrentIssues>
+</SmellBaseline>

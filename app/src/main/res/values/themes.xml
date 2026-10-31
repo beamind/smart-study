@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.SmartStudy" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary_blue</item>
+        <item name="colorPrimaryVariant">@color/primary_blue_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/accent_orange</item>
+        <item name="colorSecondaryVariant">@color/accent_green</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="android:statusBarColor">@color/primary_blue_dark</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowBackground">@color/background_light</item>
+    </style>
+
+    <!-- 系统 DatePickerDialog：保持系统默认样式，只把强调色（标题日期/今天圆点/选中态/确定取消）改为 primary_bule -->
+    <style name="ThemeOverlay.SmartStudy.NativeDatePickerDialog" parent="ThemeOverlay.AppCompat.Dialog">
+        <!-- Framework DatePickerDialog 主要读取 android:colorAccent / colorControlActivated -->
+        <item name="android:colorAccent">@color/primary_bule</item>
+        <item name="android:colorControlActivated">@color/primary_bule</item>
+        <!-- 部分实现仍读取 support 的 colorAccent -->
+        <item name="colorAccent">@color/primary_bule</item>
+    </style>
+
+    <style name="SmartStudy.DialogButton" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/primary_bule</item>
+    </style>
+</resources>
+

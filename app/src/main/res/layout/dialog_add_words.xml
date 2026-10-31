@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="@dimen/spacing_xl">
+
+    <TextView
+        android:id="@+id/tvHint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/add_words_dialog_hint"
+        android:textSize="14sp"
+        android:textColor="@color/text_secondary"
+        android:layout_marginBottom="@dimen/spacing_md" />
+
+    <EditText
+        android:id="@+id/etWords"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:inputType="textMultiLine|textNoSuggestions"
+        android:gravity="top|start"
+        android:hint="@string/add_words_dialog_example"
+        android:padding="@dimen/spacing_md"
+        android:background="@android:drawable/edit_text"
+        android:scrollbars="vertical" />
+
+</LinearLayout>

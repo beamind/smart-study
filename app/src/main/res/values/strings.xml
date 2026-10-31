@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">智能学习</string>
+    <string name="app_description">一款专注于听写练习的轻量智能学习应用</string>
+    <string name="dictation_module">语文听写</string>
+    <string name="english_dictation_module">英语听写</string>
+    <string name="take_photo">新的听写</string>
+    <string name="recognizing">图片理解中...</string>
+    <string name="current_word">当前词语：</string>
+    <string name="word_index">第 %1$d / %2$d 个</string>
+    <string name="listening">正在监听语音...</string>
+    <string name="speak_keywords">说\"ok\"或\"next\"继续</string>
+    <string name="permission_camera">需要相机权限</string>
+    <string name="permission_audio">需要麦克风权限</string>
+    <string name="error_image_understanding">图片理解失败</string>
+    <string name="error_tts">TTS播放失败</string>
+    <string name="no_words">未识别到词语</string>
+
+    <!-- 听写记录相关字符串 -->
+    <string name="dictation_choose_folder_title">选择听写记录保存文件夹</string>
+    <string name="dictation_choose_folder_message">为避免生成重复文件，请选择 Documents/DictationQuestions 文件夹（没有就先创建）。只需设置一次。</string>
+    <string name="dictation_choose_folder_action">选择文件夹</string>
+    <string name="dictation_folder_saved">已保存听写记录文件夹权限</string>
+    <string name="dictation_folder_save_failed">保存文件夹权限失败</string>
+
+    <!-- 图片处理相关 -->
+    <string name="image_loading">图片正在加载中，请稍候...</string>
+    <string name="image_load_failed">图片加载失败: %1$s</string>
+    <string name="image_uri_invalid">图片URI无效</string>
+    <string name="image_file_read_failed">文件读取失败</string>
+    <string name="image_crop_failed">裁剪失败</string>
+    <string name="image_crop_failed_with_error">裁剪失败: %1$s</string>
+    <string name="image_process_failed">处理图片失败: %1$s</string>
+    <string name="image_process_failed_file">文件处理失败</string>
+    <string name="image_process_failed_memory">内存不足</string>
+    <string name="image_start_crop_failed">开始裁剪图片失败: %1$s</string>
+    <string name="image_start_crop_permission_denied">权限不足</string>
+    <string name="image_start_crop_state_error">状态错误</string>
+    <string name="image_start_crop_argument_error">参数错误</string>
+    <string name="select_image">选择图片</string>
+    <string name="take_photo_option">拍照</string>
+    <string name="pick_from_gallery_option">从相册选择</string>
+    <string name="manual_input_option">手动输入</string>
+
+    <!-- 拍照相关 -->
+    <string name="photo_failed">拍照失败: %1$s</string>
+    <string name="photo_cancelled">拍照已取消</string>
+    <string name="photo_file_not_found">拍照失败，文件不存在</string>
+    <string name="camera_not_available">无法启动相机</string>
+    <string name="create_image_file_failed">创建图片文件失败</string>
+
+    <!-- 识别相关 -->
+    <string name="recognition_failed">识别失败: %1$s</string>
+    <string name="recognition_success">成功识别 %1$d 道错题</string>
+    <string name="recognition_no_questions">未能识别出题目，请确保图片中包含题目。%1$s</string>
+    <string name="recognition_parsing_failed">未能解析出有效题目，请检查识别结果格式\n%1$s</string>
+    <string name="recognizing_progress">正在识别中，请稍候...</string>
+
+    <!-- 权限相关 -->
+    <string name="camera_permission_required">需要相机权限才能拍照识别错题</string>
+    <string name="storage_permission_required">应用需要访问 Documents/smartstudy 文件夹来存储用户数据。请选择该文件夹并授权。</string>
+    <string name="storage_permission_required_short">应用需要访问 Documents/smartstudy 文件夹来存储数据。请选择该文件夹并授权。</string>
+
+    <!-- 用户管理相关 -->
+    <string name="user_management_not_available">无法启动用户管理功能</string>
+    <string name="activity_start_failed">启动失败: %1$s</string>
+
+    <!-- 听写相关 -->
+    <string name="dictation_timeout">听写已自动停止（超过%1$d分钟）</string>
+    <string name="dictation_timeout_message">听写已自动停止，请重新开始</string>
+    <string name="ready_prompt">我已经准备好了，请对我说开始听写</string>
+    <string name="ready_prompt_practice">我已经准备好了，请对我说开始练习！</string>
+
+    <!-- 错题本相关 -->
+    <string name="no_saved_questions">没有已保存的错题</string>
+    <string name="load_questions_failed">加载失败: %1$s</string>
+    <string name="delete_progress">正在删除...</string>
+    <string name="delete_success">删除成功</string>
+    <string name="delete_failed">删除失败: %1$s</string>
+    <string name="save_progress">保存中...</string>
+    <string name="save_success">保存成功</string>
+    <string name="save_failed">保存失败: %1$s</string>
+    <string name="submit_progress">提交中...</string>
+    <string name="submit_success">成功保存 %1$d 道错题</string>
+    <string name="submit_failed">保存失败: %1$s</string>
+    <string name="select_at_least_one_question">请至少勾选一道题目</string>
+
+    <!-- 手动输入相关 -->
+    <string name="manual_input_title">手动输入词语</string>
+    <string name="manual_input_hint">请输入词语，每行一个词语</string>
+    <string name="manual_input_empty">请输入至少一个词语</string>
+
+    <!-- 练习相关 -->
+    <string name="practice_timeout">练习超时，已自动停止</string>
+    <string name="no_questions_to_practice">没有错题记录</string>
+    <string name="not_enough_questions">无法选择足够的错题</string>
+    <string name="loading_questions">正在加载错题...</string>
+    <string name="generating_questions">正在生成题目，请稍候...</string>
+    <string name="generation_failed">题目生成失败，请稍后重试</string>
+    <string name="generation_partial_success">成功生成 %1$d 道题目，%2$d 道失败</string>
+
+    <!-- 通用 -->
+    <string name="cancel">取消</string>
+    <string name="confirm">确定</string>
+    <string name="ok">知道了</string>
+    <string name="retry">重试</string>
+    <string name="unknown_error">未知错误</string>
+
+    <!-- 初始化相关 -->
+    <string name="init_recognition">初始化识别</string>
+    <string name="init_failed">初始化失败: %1$s</string>
+    <string name="init_complete_hint">初始化完成，隐藏状态提示</string>
+
+    <!-- 听写状态相关 -->
+    <string name="dictation_waiting_start">请说\"开始\"或\"开始听写\"来开始听写</string>
+    <string name="dictation_complete">听写完成！</string>
+    <string name="dictation_tip_next">请对我说下一个</string>
+    <string name="dictation_loading_errors">正在加载错题...</string>
+    <string name="dictation_no_errors">没有错题记录</string>
+    <string name="dictation_not_enough_errors">无法选择足够的错题</string>
+    <string name="dictation_load_errors_failed">加载错题失败: %1$s</string>
+
+    <!-- 存储权限相关 -->
+    <string name="storage_permission_title">需要存储权限</string>
+    <string name="storage_permission_message">应用需要访问 Documents/smartstudy 文件夹来存储用户数据。\n\n请点击\"选择文件夹\"按钮，选择 Documents/smartstudy 文件夹并授权。</string>
+    <string name="storage_permission_select_folder">选择文件夹</string>
+
+    <!-- 保存相关 -->
+    <string name="no_questions_to_save">没有题目需要保存</string>
+    <string name="questions_saved">题目已保存（共%1$d个，正确%2$d个，错误%3$d个）</string>
+    <string name="save_failed_with_error">保存失败: %1$s</string>
+    <string name="btn_return">返回</string>
+
+    <!-- 错题听写相关 -->
+    <string name="error_dictation_title">错题听写</string>
+    <string name="error_dictation_input_count">请输入要练习的错题数量（1-%1$d）</string>
+    <string name="error_dictation_invalid_count">请输入有效的数量</string>
+
+    <!-- API Key相关 -->
+    <string name="api_key_config_title">配置 API Key</string>
+    <string name="api_key_config_message" formatted="false">当前配置的 API Key: DASHSCOPE_API_KEY 不存在，请配置正确的 API Key\n1) 在 %USERPROFILE%\\.gradle\\gradle.properties 中添加 DASHSCOPE_API_KEY=正确的 API Key\n2) 在命令行中运行：\n   .\\gradlew.bat :app:assembleDebug -PDASHSCOPE_API_KEY=正确的 API Key\n\n重新构建 APK 以应用配置</string>
+
+    <!-- 图片识别相关 -->
+    <string name="image_unrecognizable_title">图片无法识别</string>
+    <string name="image_unrecognizable_message">图片可能过大或内容不清晰。\n\n建议：\n1) 在裁剪界面缩小范围（只保留题目/词语区域）\n2) 重新拍摄或选择更清晰的图片\n3) 重试识别</string>
+
+    <!-- 用户相关 -->
+    <string name="guest">游客</string>
+
+    <!-- 错题本相关 - 新增 -->
+    <string name="error_book_title">英语错题本</string>
+    <string name="error_book_parse_button">拍照识别错题</string>
+    <string name="error_book_view_button">查看错题</string>
+    <string name="error_book_practice_button">错题练习</string>
+    <string name="error_book_variation_button">举一反三</string>
+    <string name="error_book_submit_button">提交</string>
+    <string name="error_book_save_button">保存</string>
+    <string name="error_book_edit_button">编辑</string>
+    <string name="error_book_return_button">返回</string>
+    <string name="error_book_submit_error_button">提交错题</string>
+    <string name="error_book_loading_questions">正在加载错题...</string>
+    <string name="error_book_recognition_success">成功识别 %1$d 道错题</string>
+    <string name="error_book_recognition_failed">识别失败: %1$s</string>
+    <string name="error_book_recognize_underline_button">下划线</string>
+    <string name="error_book_manual_underline_button">手动下划线</string>
+    <string name="error_book_manual_underline_no_focus">请先点击要添加下划线的文本位置</string>
+    <string name="error_book_preview_button">预览</string>
+    <string name="error_book_recognizing_underline">正在识别下划线，请稍候...</string>
+    <string name="error_book_underline_recognition_success">下划线识别成功</string>
+    <string name="error_book_underline_recognition_failed">下划线识别失败：%1$s</string>
+    <string name="error_book_invalid_count">请输入有效的数量</string>
+    <string name="error_book_start_failed">启动失败: %1$s</string>
+    <string name="error_book_delete_success">删除成功</string>
+    <string name="error_book_save_success">成功保存 %1$d 道错题</string>
+    <string name="error_book_questions_saved">题目已保存（共%1$d个，正确%2$d个，错误%3$d个）</string>
+    <string name="error_book_questions_saved_simple">成功保存 %1$d 道错题</string>
+    <string name="error_book_practice_timeout">练习超时，已自动停止</string>
+    <string name="error_book_practice_failed">错题练习失败: %1$s</string>
+    <string name="error_book_variation_failed">举一反三失败: %1$s</string>
+    <string name="error_book_generation_failed">题目生成失败，请稍后重试</string>
+    <string name="error_book_enter_edit_mode">已进入编辑模式</string>
+
+    <!-- 图片处理相关 - 新增 -->
+    <string name="image_crop_failed_simple">裁剪失败</string>
+    <string name="image_process_failed_with_error">处理图片失败: %1$s</string>
+    <string name="image_start_crop_failed_with_error">开始裁剪图片失败: %1$s</string>
+    <string name="image_loading_progress">图片正在加载中，请稍候...</string>
+    <string name="photo_failed_with_error">拍照失败: %1$s</string>
+
+    <!-- 对话框相关 -->
+    <string name="dialog_practice_title">错题练习</string>
+    <string name="dialog_variation_title">举一反三</string>
+    <string name="dialog_practice_hint">请输入练习题目的数量：</string>
+    <string name="dialog_variation_hint">请输入要生成的题目数量：</string>
+    <string name="dialog_start">开始</string>
+
+    <!-- 用户管理相关 - 新增 -->
+    <string name="user_switched">已切换到: %1$s</string>
+    <string name="user_name_required">请输入用户名</string>
+    <string name="user_added">已添加用户: %1$s</string>
+    <string name="user_add_failed">添加用户失败: %1$s</string>
+
+    <!-- 存储相关 - 新增 -->
+    <string name="storage_folder_auto_created">已自动创建并授权 smartstudy 文件夹</string>
+    <string name="storage_folder_authorized">已授权 smartstudy 文件夹</string>
+    <string name="storage_permission_save_failed">保存存储文件夹权限失败</string>
+
+    <!-- 系统相关 -->
+    <string name="system_init_not_complete">系统初始化未完成，请稍后重试</string>
+    <string name="no_valid_words_input">没有有效的单词输入</string>
+    <string name="no_content_changed">没有修改内容</string>
+    <string name="translation_failed">翻译失败: %1$s</string>
+    <string name="all_words_translation_failed">所有单词翻译失败，无法进行听写</string>
+    <string name="recognition_error">识别错误: %1$s</string>
+    <string name="cannot_start_activity">无法启动%1$s</string>
+
+    <!-- Activity名称（用于错误提示） -->
+    <string name="activity_name_chinese_dictation">语文听写功能</string>
+    <string name="activity_name_english_dictation">英语听写功能</string>
+    <string name="activity_name_english_error_book">英语错题本功能</string>
+    <string name="activity_name_user_management">用户管理功能</string>
+
+    <!-- 错题列表相关 -->
+    <string name="chinese_error_word_list_title">中文错题查看</string>
+    <string name="english_error_word_list_title">英语错题查看</string>
+    <string name="error_word_list_load_failed">加载失败: %1$s</string>
+    <string name="error_word_list_delete_success">删除成功</string>
+    <string name="error_word_list_delete_failed">删除失败: %1$s</string>
+    <string name="error_word_list_save_success">保存成功</string>
+    <string name="error_word_list_save_failed">保存失败: %1$s</string>
+    <string name="error_word_list_add_success">成功添加 %1$d 条错题记录</string>
+    <string name="error_word_list_add_failed">添加失败: %1$s</string>
+    <string name="error_word_list_input_at_least_one">请输入至少一个单词</string>
+    <string name="error_word_list_delete_button">删除</string>
+    <string name="error_word_list_select_all">全选</string>
+    <string name="error_word_list_deselect_all">取消全选</string>
+    <string name="error_word_list_add_dialog_title">手动添加错题</string>
+    <string name="error_word_list_add_dialog_hint">每行输入一个单词，每条记录将被视为一次错误的听写</string>
+    <string name="error_word_list_delete_dialog_input_hint">请输入答案</string>
+    <string name="error_word_list_delete_dialog_wrong_answer">答案错误，请重试</string>
+
+    <!-- 错题本相关 - 新增字符串 -->
+    <string name="error_book_question_index">第 %1$d 题 / 共 %2$d 题</string>
+    <string name="answer_prefix">答案：</string>
+
+    <!-- 用户管理相关 -->
+    <string name="user_management">用户管理</string>
+    <string name="register">注册</string>
+    <string name="add_user">添加</string>
+    <string name="switch_user">切换</string>
+    <string name="storage_permission_issue">存储权限问题</string>
+    <string name="storage_permission_issue_message">无法保存用户数据。\n\n可能原因：\n1. 未正确授权 smartstudy 文件夹权限\n2. 在华为设备上需要手动创建 Documents/smartstudy 文件夹\n\n请返回主界面重新选择并授权 smartstudy 文件夹。</string>
+
+    <!-- 主界面描述 -->
+    <string name="dictation_module_description">拍照识别词语，语音听写</string>
+    <string name="english_dictation_module_description">拍照识别单词，语音听写</string>
+    <string name="error_book_description">记录和管理英语错题</string>
+    <string name="user_management_description">切换用户、添加新用户</string>
+
+    <!-- 通用按钮和标签 -->
+    <string name="word">词语</string>
+    <string name="translation">翻译</string>
+    <string name="username">用户名</string>
+    <string name="current_user">当前用户</string>
+    <string name="guest_user">游客</string>
+    <string name="finish">完成</string>
+    <string name="select_all">全选</string>
+    <string name="deselect_all">取消全选</string>
+    <string name="delete">删除</string>
+    <string name="save">保存</string>
+    <string name="submit">提交</string>
+    <string name="start_dictation">开始听写</string>
+    <string name="next">下一个</string>
+    <string name="answer">答案</string>
+    <string name="answer_label">答案：</string>
+    <string name="question_content">题目内容</string>
+    <string name="current_question">当前题目</string>
+    <string name="recognition_in_progress">识别中</string>
+    <string name="tips">温馨提示</string>
+    <string name="submit_error_words">提交错题</string>
+    <string name="dictation_answer">听写答案</string>
+    <string name="view_error_words">错题查看</string>
+    <string name="error_dictation">错题听写</string>
+    <string name="dictation_record">听写记录</string>
+    <string name="no_error_words_record">暂无错题记录</string>
+    <string name="no_dictation_records">暂无听写记录</string>
+    <string name="no_learning_records">暂无学习记录</string>
+    <string name="learning_record">学习记录</string>
+    <string name="learning_record_description">查看所有学习内容记录</string>
+    <string name="start_date">开始日期</string>
+    <string name="end_date">结束日期</string>
+    <string name="date_range">日期范围</string>
+    <string name="filter">筛选</string>
+    <string name="not_selected">未选择</string>
+    <string name="clear">清除</string>
+    <string name="source_new">新的听写</string>
+    <string name="source_error">错题听写</string>
+    <string name="source_last_correct">正确</string>
+    <string name="source_last_error">错误</string>
+    <string name="no_users">暂无用户</string>
+    <string name="click_to_add_user">点击下方按钮添加用户</string>
+    <string name="select_user">请选择用户</string>
+    <string name="add_new_user">添加新用户</string>
+    <string name="input_username">输入用户名</string>
+    <string name="input_count">输入数量</string>
+    <string name="quick_select">快捷选择：</string>
+    <string name="error_dictation_input_hint">请输入听写词语的数量：</string>
+    <string name="error_count_format">错误: %1$d次</string>
+
+    <!-- 对话框相关 -->
+    <string name="delete_verification_title">删除验证</string>
+    <string name="delete_verification_message">为防止误删，请完成以下计算：</string>
+    <string name="delete_verification_question">3 + 5 = ?</string>
+    <string name="delete_verification_answer_hint">答案</string>
+    <string name="add_words_dialog_hint">每行输入一个单词，每条记录将被视为一次错误的听写</string>
+    <string name="add_words_dialog_example">请输入错题，每行一个\n例如：\n苹果\n香蕉\n橙子</string>
+
+    <!-- 存储权限相关 -->
+    <string name="storage_permission_old_file_title">需要存储权限</string>
+    <string name="storage_permission_old_file_message">检测到存在旧的记录文件，但应用没有写入权限。\n\n这通常发生在应用卸载重装后。\n\n请手动删除旧文件 \"%1$s\" 或授予应用存储权限，然后重试。\n\n文件位置：下载/DictationQuestions/ 或 文档/DictationQuestions/</string>
+    <string name="open_file_manager">打开文件管理器</string>
+    <string name="select_file_manager">选择文件管理器</string>
+    <string name="storage_folder_manual_select_title">需要选择 smartstudy 文件夹</string>
+    <string name="storage_folder_manual_select_message">在您的设备上无法自动创建 smartstudy 文件夹。\n\n请按以下步骤操作：\n1. 在文件管理器中手动创建 Documents/smartstudy 文件夹\n2. 重新选择该文件夹并授权</string>
+    <string name="storage_permission_reselect">重新选择</string>
+
+    <!-- 听写提示 -->
+    <string name="dictation_tip_after_finish">写完后说\"下一个\"</string>
+    <string name="dictation_tip_after_complete">做完后说\"下一个\"</string>
+    <string name="dictation_waiting_start_hint">请对我说开始听写</string>
+    <string name="question_index_format">第 %1$d 题 / 共 %2$d 题</string>
+
+    <!-- 错误消息 - 通用 -->
+    <string name="error_io">IO错误</string>
+    <string name="error_permission_denied">权限不足</string>
+    <string name="error_state">状态错误</string>
+    <string name="error_argument">参数错误</string>
+    <string name="error_parse">数据解析失败</string>
+    <string name="error_unknown_user">未知用户</string>
+    <string name="error_file_creation_failed">文件创建失败</string>
+    <string name="error_unknown">未知错误</string>
+
+    <!-- 用户管理相关 -->
+    <string name="user_name_empty">用户名不能为空</string>
+
+    <!-- 错题本相关 -->
+    <string name="error_book_view_button_text">查看错题</string>
+    <string name="error_book_no_saved_questions">没有已保存的错题</string>
+    <string name="error_book_select_at_least_one">请至少勾选一道题目</string>
+    <string name="error_book_save_failed">保存失败: %1$s</string>
+    <string name="error_book_no_questions_to_save">没有题目需要保存</string>
+    <string name="error_book_save_permission_issue">保存题目失败：权限问题</string>
+    <string name="error_book_load_failed">加载失败: %1$s</string>
+    <string name="error_book_delete_failed">删除失败: %1$s</string>
+    <string name="error_book_update_failed">更新失败: %1$s</string>
+
+    <!-- TTS相关 -->
+    <string name="tts_released">TTS已释放</string>
+    <string name="tts_init_failed_or_timeout">TTS引擎初始化失败或超时</string>
+    <string name="tts_process_failed">TTS处理失败: %1$s</string>
+
+    <!-- KWS相关 -->
+    <string name="kws_model_not_initialized">KWS 模型未初始化，请先调用 initialize()</string>
+    <string name="kws_no_keywords">没有可用的关键词</string>
+    <string name="kws_cannot_create_stream">无法创建音频流，已尝试关键词: %1$s</string>
+    <string name="kws_cannot_init_recorder">无法初始化录音器</string>
+    <string name="kws_recorder_init_failed">录音器初始化失败，状态: %1$s</string>
+    <string name="kws_start_recording_failed">启动录音失败: %1$s</string>
+    <string name="kws_audio_stream_not_initialized">音频流未初始化</string>
+    <string name="kws_recorder_operation_invalid">录音器操作无效</string>
+    <string name="kws_recorder_argument_error">录音器参数错误</string>
+
+    <!-- 图片识别相关 -->
+    <string name="image_recognition_failed">图片识别失败: %1$s</string>
+
+    <!-- 验证错误消息 -->
+    <string name="validation_error_username_empty">用户名不能为空</string>
+    <string name="validation_error_question_list_empty">题目列表不能为空</string>
+    <string name="validation_error_question_content_empty">题目内容不能为空</string>
+    <string name="validation_error_delete_question_list_empty">要删除的题目列表不能为空</string>
+    <string name="validation_error_old_question_empty">旧题目内容不能为空</string>
+    <string name="validation_error_new_question_empty">新题目内容不能为空</string>
+    <string name="validation_error_question_order_empty">题目顺序列表不能为空</string>
+
+    <!-- UI状态文本 -->
+    <string name="status_playing_question">正在播放题目...</string>
+    <string name="status_play_failed">播放失败: %1$s</string>
+    <string name="status_recognition_error">识别错误: %1$s</string>
+    <string name="status_recognition_result">识别结果: \"%1$s\"</string>
+    <string name="status_practice_ready_prompt">我已经准备好了，请对我说开始练习！</string>
+
+    <!-- 词语索引格式 -->
+    <string name="word_index_format">第 %1$d 个 / 共 %2$d 个</string>
+
+    <!-- 存储相关错误消息 -->
+    <string name="error_cannot_create_user_data_file">无法创建用户数据文件</string>
+    <string name="error_cannot_create_user_file">无法创建用户文件</string>
+
+</resources>
+

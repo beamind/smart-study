@@ -1,0 +1,17 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{kt,kts}]
+# Keep the project beginner-friendly: stable formatting without IDE-specific quirks.
+indent_style = space
+indent_size = 4
+max_line_length = off
+
+# Work around a ktlint crash seen in this codebase (BaseDictationActivity.kt).
+# Rule id in ktlint 1.x: standard:argument-list-wrapping
+ktlint_standard_argument-list-wrapping = disabled

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 禁用状态：无论是否选中都显示灰色 -->
+    <item android:color="@color/text_tertiary" android:state_enabled="false" />
+    <!-- 选中状态：对钩使用 primary_blue -->
+    <item android:color="@color/primary_blue" android:state_checked="true" />
+    <!-- 未选中状态：不设置颜色，让系统使用默认灰色边框 -->
+    <!-- 注意：Material Design CheckBox 的 buttonTint 会影响整个按钮外观 -->
+    <!-- 如果需要只改变对钩颜色而不改变边框，需要使用自定义 drawable -->
+    <item android:color="?attr/colorControlNormal" />
+</selector>

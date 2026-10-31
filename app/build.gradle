@@ -1,0 +1,494 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android' version '1.9.20'
+    id 'org.jlleitschuh.gradle.ktlint'
+    id 'io.gitlab.arturbosch.detekt'
+    id 'jacoco'
+}
+
+import java.util.Properties
+
+// 可选：从根目录 keystore.properties 读取签名信息（该文件应加入 .gitignore，不要提交到仓库）
+def keystoreProps = new Properties()
+def keystorePropsFile = rootProject.file("keystore.properties")
+if (keystorePropsFile.exists()) {
+    keystorePropsFile.withInputStream { keystoreProps.load(it) }
+}
+
+android {
+    namespace 'com.smartstudy'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.smartstudy"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.3"
+        // 应用描述请在 res/values/strings.xml 中维护（避免构建期覆盖导致文案不一致）
+
+        // DashScope API Key（优先读取 Gradle 属性，其次读取环境变量）
+        def dashscopeApiKey = (project.findProperty("DASHSCOPE_API_KEY") ?: System.getenv("DASHSCOPE_API_KEY") ?: "")
+        buildConfigField "String", "DASHSCOPE_API_KEY", "\"${dashscopeApiKey}\""
+        
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        
+        // 只保留 arm64-v8a（64位架构），减少APK体积
+        // minSdk 24 (Android 7.0) 已支持64位设备
+        ndk {
+            abiFilters 'arm64-v8a'
+        }
+    }
+
+    // Release 签名：强制使用“你本机的私有 keystore”，不要把 .jks 与口令提交到仓库。
+    //
+    // 配置方式（二选一）：
+    // - 本地 gradle.properties / 全局 %USERPROFILE%\.gradle\gradle.properties：
+    //   KEYSTORE_FILE=绝对路径.jks
+    //   KEYSTORE_PASSWORD=...
+    //   KEY_ALIAS=...
+    //   KEY_PASSWORD=...
+    // - 或用环境变量（同名 KEYSTORE_FILE/KEYSTORE_PASSWORD/KEY_ALIAS/KEY_PASSWORD）
+    signingConfigs {
+        release {
+            def keystorePath = (
+                    project.findProperty("KEYSTORE_FILE")
+                            ?: keystoreProps.getProperty("KEYSTORE_FILE")
+                            ?: System.getenv("KEYSTORE_FILE")
+                            ?: ""
+            ).toString().trim()
+            def storePass = (
+                    project.findProperty("KEYSTORE_PASSWORD")
+                            ?: keystoreProps.getProperty("KEYSTORE_PASSWORD")
+                            ?: System.getenv("KEYSTORE_PASSWORD")
+                            ?: ""
+            ).toString()
+            def alias = (
+                    project.findProperty("KEY_ALIAS")
+                            ?: keystoreProps.getProperty("KEY_ALIAS")
+                            ?: System.getenv("KEY_ALIAS")
+                            ?: ""
+            ).toString()
+            def keyPass = (
+                    project.findProperty("KEY_PASSWORD")
+                            ?: keystoreProps.getProperty("KEY_PASSWORD")
+                            ?: System.getenv("KEY_PASSWORD")
+                            ?: ""
+            ).toString()
+
+            if (!keystorePath.isEmpty()) {
+                storeFile file(keystorePath)
+                storePassword storePass
+                keyAlias alias
+                keyPassword keyPass
+            }
+
+            // 兼容部分厂商侧载/扫描：同时开启 v1/v2/v3/v4（v1 对 7.0+ 不是必需，但开启通常不会有副作用）
+            v1SigningEnabled true
+            v2SigningEnabled true
+            enableV3Signing true
+            enableV4Signing true
+        }
+    }
+
+    // 仅当用户确实在构建 release/internal 时，才严格校验签名配置，避免影响日常 debug 开发。
+    def wantsSignedBuild = gradle.startParameter.taskNames.any { t ->
+        def n = (t ?: "").toString().toLowerCase()
+        n.contains("release") || n.contains("internal")
+    }
+    if (wantsSignedBuild) {
+        def keystorePath = (
+                project.findProperty("KEYSTORE_FILE")
+                        ?: keystoreProps.getProperty("KEYSTORE_FILE")
+                        ?: System.getenv("KEYSTORE_FILE")
+                        ?: ""
+        ).toString().trim()
+        def alias = (
+                project.findProperty("KEY_ALIAS")
+                        ?: keystoreProps.getProperty("KEY_ALIAS")
+                        ?: System.getenv("KEY_ALIAS")
+                        ?: ""
+        ).toString().trim()
+        if (keystorePath.isEmpty() || alias.isEmpty()) {
+            throw new GradleException(
+                    "Missing release signing config. " +
+                            "Please set KEYSTORE_FILE/KEYSTORE_PASSWORD/KEY_ALIAS/KEY_PASSWORD in " +
+                            "keystore.properties (recommended), or %USERPROFILE%\\\\.gradle\\\\gradle.properties, or environment variables. " +
+                            "Do NOT commit keystore/passwords to git."
+            )
+        }
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            debuggable true
+            // 启用测试覆盖率
+            testCoverageEnabled = true
+        }
+        // 用于侧载/内部测试：保持 release 签名但关闭混淆/资源压缩，降低部分厂商安全扫描误报概率
+        internal {
+            initWith release
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            shrinkResources false
+            debuggable false
+            versionNameSuffix "-internal"
+            matchingFallbacks = ['release']
+        }
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+            debuggable false
+        }
+    }
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+    
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+            returnDefaultValues = true
+            // 确保生成HTML测试报告
+            all {
+                testLogging {
+                    events "passed", "skipped", "failed", "standardOut", "standardError"
+                    exceptionFormat "full"
+                }
+            }
+        }
+        // 配置Android测试报告
+        animationsDisabled = true
+    }
+
+    buildFeatures {
+        buildConfig true
+        viewBinding true
+    }
+    
+    lint {
+        abortOnError = false  // 临时允许构建通过，后续逐步修复 Lint 问题
+        checkReleaseBuilds = false
+    }
+    
+    // 解决 libonnxruntime.so 文件冲突
+    // sherpa-onnx-1.12.23.aar 和 onnxruntime-android-1.16.0 都包含此文件
+    // 使用 pickFirst 选择第一个找到的文件
+    packagingOptions {
+        pickFirst 'lib/arm64-v8a/libonnxruntime.so'
+        pickFirst 'lib/armeabi-v7a/libonnxruntime.so'
+        pickFirst 'lib/x86/libonnxruntime.so'
+        pickFirst 'lib/x86_64/libonnxruntime.so'
+    }
+}
+
+// ----------------------------
+// Code style / quality tooling
+// ----------------------------
+ktlint {
+    android.set(true)
+    outputToConsole.set(true)
+    // ktlint 检查已通过，启用严格检查
+    ignoreFailures.set(false)
+}
+
+detekt {
+    toolVersion = "1.23.6"
+    buildUponDefaultConfig = true
+    allRules = false
+    parallel = true
+    // 暂时保持 ignoreFailures = true，逐步修复问题
+    // 当前有 166 个问题，包括 LongMethod、SwallowedException、ReturnCount 等
+    // 计划：逐步修复关键问题，最终改为 false
+    ignoreFailures = true
+    config = files("$rootDir/config/detekt/detekt.yml")
+    baseline = file("$rootDir/config/detekt/baseline.xml")
+}
+
+dependencies {
+    implementation(files("libs/sherpa-onnx-1.12.23.aar"))
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.10.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2'
+    // ViewModel 和 LiveData
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.2'
+    // WorkManager 会在合并 Manifest 时自动注入 WAKE_LOCK / RECEIVE_BOOT_COMPLETED 等"后台保活/自启动"特征，
+    // 在部分厂商安全扫描中容易触发风险提示；本项目为教育类应用，仅在前台运行，无需后台任务，因此不使用 WorkManager。
+    // implementation 'androidx.work:work-runtime-ktx:2.9.0'
+    implementation 'androidx.documentfile:documentfile:1.0.1'
+    
+    // Koin 依赖注入（轻量级，适合中小型项目）
+    // 注意：Koin 3.x 版本中，ViewModel 支持已包含在 koin-android 中，无需单独添加 koin-androidx-viewmodel
+    implementation 'io.insert-koin:koin-android:3.5.0'
+    
+    // Koin 测试依赖
+    androidTestImplementation 'io.insert-koin:koin-test:3.5.0'
+    androidTestImplementation 'io.insert-koin:koin-test-junit4:3.5.0'
+    
+    // 网络请求
+    implementation 'com.squareup.okhttp3:okhttp:4.11.0'
+    implementation 'com.google.code.gson:gson:2.13.1'
+    
+    // DashScope SDK (版本不低于2.21.9，支持指定 Dylan、Jada与 Sunny 三种音色)
+    // 注意：SDK 可能已包含 RxJava 2.x 依赖，如果冲突请排除
+    implementation 'com.alibaba:dashscope-sdk-java:2.21.9'
+    
+    // RxJava 2.x for reactive streams (DashScope SDK 使用 RxJava 2.x)
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
+    
+    
+    // ONNX Runtime for Sherpa-onnx KWS (关键词检测)
+    // 注意：sherpa-onnx-1.12.23.aar 也包含了 onnxruntime
+    // 使用 packagingOptions 解决 .so 文件冲突
+    implementation 'com.microsoft.onnxruntime:onnxruntime-android:1.16.0'
+    
+    // 图片加载
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    
+    // EXIF 信息处理（用于处理图片方向）
+    implementation 'androidx.exifinterface:exifinterface:1.3.6'
+    
+    // 图片裁剪 (CanHub Android-Image-Cropper)
+    // 注意：该库的包名是 com.canhub.cropper.*，当前在 Maven Central 以 com.vanniktech:android-image-cropper 发布
+    implementation 'com.vanniktech:android-image-cropper:4.7.0'
+    
+    // 测试依赖
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-core:5.5.0'
+    testImplementation 'org.mockito:mockito-inline:5.2.0'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test:runner:1.5.2'
+    androidTestImplementation 'androidx.test:rules:1.5.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-intents:3.5.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.5.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-idling-resource:3.5.1'
+    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
+    
+    // ViewModel和LiveData测试
+    testImplementation 'androidx.arch.core:core-testing:2.2.0'
+    
+    // 协程测试
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3'
+    
+    // OkHttp测试工具
+    testImplementation 'com.squareup.okhttp3:mockwebserver:4.11.0'
+    
+    // Robolectric for Android unit tests
+    testImplementation 'org.robolectric:robolectric:4.11.1'
+    
+    // LeakCanary for memory leak detection (debug only)
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.12'
+}
+
+// ----------------------------
+// JaCoCo 代码覆盖率配置
+// ----------------------------
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+tasks.withType(Test) {
+    // 确保测试任务生成JaCoCo执行数据
+    jacoco.includeNoLocationClasses = true
+    jacoco.excludes = ['jdk.internal.*']
+}
+
+// 单元测试覆盖率任务
+task jacocoUnitTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest']) {
+    group = "verification"
+    description = "生成单元测试代码覆盖率报告"
+    
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+    
+    def fileFilter = [
+        '**/R.class',
+        '**/R$*.class',
+        '**/BuildConfig.*',
+        '**/Manifest*.*',
+        '**/*Test*.*',
+        'android/**/*.*',
+        '**/models/**',
+        '**/*Module*.*',
+        '**/*Dagger*.*',
+        '**/*MembersInjector*.*',
+        '**/*_Factory*.*',
+        '**/*_Provide*Factory*.*',
+        '**/*Extensions*.*',
+        '**/*Application*.*',
+        '**/*Activity*.*',
+        '**/*Fragment*.*',
+        '**/*Adapter*.*',
+        '**/*ViewHolder*.*',
+        '**/*ViewBinding*.*',
+        '**/BR.*',
+        '**/DataBinderMapperImpl*.*',
+        '**/DataBindingTriggerClass*.*',
+        '**/BuildConfig.*',
+        '**/*$ViewInjector*.*',
+        '**/*Dagger*.*',
+        '**/*Hilt*.*',
+        '**/*MembersInjector*.*',
+        '**/*_Factory*.*',
+        '**/*_Provide*Factory*.*',
+        '**/*Extensions*.*',
+        '**/*_Impl*.*',
+        '**/*_HiltModules*.*',
+        '**/*_Factory*.*',
+        '**/*_Generated*.*',
+        '**/com/smartstudy/dictation/core/sherpa/**',
+        '**/com/smartstudy/dictation/core/tts/**',
+    ]
+    
+    def debugTree = fileTree(dir: "${buildDir}/intermediates/javac/debug/compileDebugJavaWithJavac/classes", excludes: fileFilter)
+    def mainSrc = "${project.projectDir}/src/main/java"
+    
+    sourceDirectories.setFrom(files([mainSrc]))
+    classDirectories.setFrom(files([debugTree]))
+    executionData.setFrom(fileTree(dir: buildDir, includes: [
+        'jacoco/testDebugUnitTest.exec',
+        'outputs/unit_test_code_coverage/debugUnitTest.exec'
+    ]))
+}
+
+// Android测试覆盖率任务（需要设备连接）
+task jacocoAndroidTestReport(type: JacocoReport, dependsOn: ['connectedAndroidTest']) {
+    group = "verification"
+    description = "生成Android集成测试代码覆盖率报告"
+    
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+    
+    def fileFilter = [
+        '**/R.class',
+        '**/R$*.class',
+        '**/BuildConfig.*',
+        '**/Manifest*.*',
+        '**/*Test*.*',
+        'android/**/*.*',
+        '**/models/**',
+        '**/*Module*.*',
+        '**/*Dagger*.*',
+        '**/*MembersInjector*.*',
+        '**/*_Factory*.*',
+        '**/*_Provide*Factory*.*',
+        '**/*Extensions*.*',
+        '**/*Application*.*',
+        '**/*Activity*.*',
+        '**/*Fragment*.*',
+        '**/*Adapter*.*',
+        '**/*ViewHolder*.*',
+        '**/*ViewBinding*.*',
+        '**/BR.*',
+        '**/DataBinderMapperImpl*.*',
+        '**/DataBindingTriggerClass*.*',
+        '**/BuildConfig.*',
+        '**/*$ViewInjector*.*',
+        '**/*Dagger*.*',
+        '**/*Hilt*.*',
+        '**/*MembersInjector*.*',
+        '**/*_Factory*.*',
+        '**/*_Provide*Factory*.*',
+        '**/*Extensions*.*',
+        '**/*_Impl*.*',
+        '**/*_HiltModules*.*',
+        '**/*_Factory*.*',
+        '**/*_Generated*.*',
+        '**/com/smartstudy/dictation/core/sherpa/**',
+        '**/com/smartstudy/dictation/core/tts/**',
+    ]
+    
+    def debugTree = fileTree(dir: "${buildDir}/intermediates/javac/debug/compileDebugJavaWithJavac/classes", excludes: fileFilter)
+    def mainSrc = "${project.projectDir}/src/main/java"
+    
+    sourceDirectories.setFrom(files([mainSrc]))
+    classDirectories.setFrom(files([debugTree]))
+    executionData.setFrom(fileTree(dir: buildDir, includes: [
+        'outputs/code-coverage/connected/*coverage.ec'
+    ]))
+}
+
+// 合并单元测试和Android测试的覆盖率报告
+task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'connectedAndroidTest']) {
+    group = "verification"
+    description = "生成合并的代码覆盖率报告（单元测试 + Android测试）"
+    
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+    
+    def fileFilter = [
+        '**/R.class',
+        '**/R$*.class',
+        '**/BuildConfig.*',
+        '**/Manifest*.*',
+        '**/*Test*.*',
+        'android/**/*.*',
+        '**/models/**',
+        '**/*Module*.*',
+        '**/*Dagger*.*',
+        '**/*MembersInjector*.*',
+        '**/*_Factory*.*',
+        '**/*_Provide*Factory*.*',
+        '**/*Extensions*.*',
+        '**/*Application*.*',
+        '**/*Activity*.*',
+        '**/*Fragment*.*',
+        '**/*Adapter*.*',
+        '**/*ViewHolder*.*',
+        '**/*ViewBinding*.*',
+        '**/BR.*',
+        '**/DataBinderMapperImpl*.*',
+        '**/DataBindingTriggerClass*.*',
+        '**/BuildConfig.*',
+        '**/*$ViewInjector*.*',
+        '**/*Dagger*.*',
+        '**/*Hilt*.*',
+        '**/*MembersInjector*.*',
+        '**/*_Factory*.*',
+        '**/*_Provide*Factory*.*',
+        '**/*Extensions*.*',
+        '**/*_Impl*.*',
+        '**/*_HiltModules*.*',
+        '**/*_Factory*.*',
+        '**/*_Generated*.*',
+        '**/com/smartstudy/dictation/core/sherpa/**',
+        '**/com/smartstudy/dictation/core/tts/**',
+    ]
+    
+    def debugTree = fileTree(dir: "${buildDir}/intermediates/javac/debug/compileDebugJavaWithJavac/classes", excludes: fileFilter)
+    def mainSrc = "${project.projectDir}/src/main/java"
+    
+    sourceDirectories.setFrom(files([mainSrc]))
+    classDirectories.setFrom(files([debugTree]))
+    
+    // 合并单元测试和Android测试的执行数据
+    executionData.setFrom(fileTree(dir: buildDir, includes: [
+        'jacoco/testDebugUnitTest.exec',
+        'outputs/unit_test_code_coverage/debugUnitTest.exec',
+        'outputs/code-coverage/connected/*coverage.ec'
+    ]))
+}

@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 文字层级系统 -->
+    
+    <!-- 标题文字 -->
+    <style name="Text_Headline">
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    
+    <!-- 标题 -->
+    <style name="Text_Title">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    
+    <!-- 副标题 -->
+    <style name="Text_Subtitle">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    
+    <!-- 正文 -->
+    <style name="Text_Body">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    
+    <!-- 正文（中等） -->
+    <style name="Text_BodyMedium">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    
+    <!-- 说明文字 -->
+    <style name="Text_Caption">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+    
+    <!-- 小号说明文字 -->
+    <style name="Text_CaptionSmall">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+    
+    <!-- 按钮样式 -->
+    <style name="Button_Primary" parent="Widget.MaterialComponents.Button">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="background">@drawable/btn_primary_ripple</item>
+        <item name="android:minHeight">56dp</item>
+        <item name="android:paddingStart">@dimen/spacing_lg</item>
+        <item name="android:paddingEnd">@dimen/spacing_lg</item>
+        <item name="android:paddingTop">@dimen/spacing_md</item>
+        <item name="android:paddingBottom">@dimen/spacing_md</item>
+    </style>
+    
+    <style name="Button_Secondary" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="background">@drawable/btn_secondary</item>
+        <item name="android:minHeight">56dp</item>
+        <item name="android:paddingStart">@dimen/spacing_lg</item>
+        <item name="android:paddingEnd">@dimen/spacing_lg</item>
+        <item name="android:paddingTop">@dimen/spacing_md</item>
+        <item name="android:paddingBottom">@dimen/spacing_md</item>
+    </style>
+    
+    <!-- ========== 布局样式 ========== -->
+    
+    <!-- 标准页面根布局样式 -->
+    <style name="Layout_StandardPage">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:background">@color/background_light</item>
+    </style>
+    
+    <!-- Toolbar 标准样式 -->
+    <style name="Toolbar_Standard">
+        <item name="android:background">?attr/colorPrimary</item>
+        <item name="android:theme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
+    </style>
+    
+    <!-- Toolbar 内容容器样式 -->
+    <style name="Layout_ToolbarContent">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingStart">@dimen/spacing_md</item>
+        <item name="android:paddingEnd">@dimen/spacing_md</item>
+    </style>
+    
+    <!-- 底部按钮容器样式 -->
+    <style name="Layout_BottomButtons">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingStart">@dimen/spacing_xl</item>
+        <item name="android:paddingEnd">@dimen/spacing_xl</item>
+        <item name="android:paddingTop">@dimen/spacing_md</item>
+        <item name="android:paddingBottom">@dimen/spacing_md</item>
+    </style>
+    
+    <!-- ========== 文字样式 ========== -->
+    
+    <!-- Toolbar 标题文字样式 -->
+    <style name="Text_ToolbarTitle">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+    
+    <!-- Toolbar 用户信息文字样式 -->
+    <style name="Text_ToolbarUser">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:padding">@dimen/spacing_sm</item>
+    </style>
+    
+    <!-- ========== 按钮样式 ========== -->
+    
+    <!-- 底部按钮样式（用于底部并排按钮） -->
+    <style name="Button_Bottom" parent="Widget.MaterialComponents.Button">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:padding">@dimen/spacing_md</item>
+    </style>
+    
+    <!-- ========== 卡片样式 ========== -->
+    
+    <!-- 大型操作按钮卡片样式 -->
+    <style name="Card_ActionButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">90dp</item>
+        <item name="android:layout_marginBottom">@dimen/spacing_lg</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:foreground">?android:attr/selectableItemBackground</item>
+        <item name="android:clipToPadding">true</item>
+        <item name="android:clipChildren">true</item>
+        <item name="cardCornerRadius">24dp</item>
+        <item name="cardElevation">@dimen/elevation_md</item>
+        <item name="cardBackgroundColor">@android:color/transparent</item>
+        <item name="cardUseCompatPadding">true</item>
+        <item name="cardPreventCornerOverlap">true</item>
+    </style>
+    
+    <!-- 标准卡片样式 -->
+    <style name="Card_Standard">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">@dimen/spacing_md</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:foreground">?android:attr/selectableItemBackground</item>
+        <item name="android:clipToPadding">true</item>
+        <item name="android:clipChildren">true</item>
+        <item name="cardCornerRadius">@dimen/radius_xl</item>
+        <item name="cardElevation">@dimen/elevation_md</item>
+        <item name="cardBackgroundColor">@color/card_background</item>
+        <item name="cardUseCompatPadding">true</item>
+        <item name="cardPreventCornerOverlap">true</item>
+    </style>
+    
+    <!-- 提示卡片样式 -->
+    <style name="Card_Tip">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">@dimen/spacing_md</item>
+        <item name="android:layout_marginBottom">@dimen/spacing_md</item>
+        <item name="cardCornerRadius">@dimen/radius_lg</item>
+        <item name="cardElevation">@dimen/elevation_sm</item>
+        <item name="cardBackgroundColor">@color/card_background</item>
+    </style>
+    
+    <!-- 进度卡片样式 -->
+    <style name="Card_Progress">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">@dimen/spacing_md</item>
+        <item name="android:layout_marginBottom">@dimen/spacing_md</item>
+        <item name="cardCornerRadius">@dimen/radius_lg</item>
+        <item name="cardElevation">@dimen/elevation_sm</item>
+        <item name="cardBackgroundColor">@color/card_background</item>
+    </style>
+    
+    <!-- 透明卡片样式（用于操作按钮容器） -->
+    <style name="Card_Transparent">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="cardCornerRadius">0dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="cardBackgroundColor">@android:color/transparent</item>
+    </style>
+    
+    <!-- ========== 布局样式 ========== -->
+    
+    <!-- 操作按钮内容容器样式 -->
+    <style name="Layout_ActionButtonContent">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:padding">@dimen/spacing_lg</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:clipToPadding">true</item>
+        <item name="android:clipChildren">true</item>
+    </style>
+    
+    <!-- 提示卡片内容容器样式 -->
+    <style name="Layout_TipContent">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:padding">@dimen/spacing_xl</item>
+        <item name="android:gravity">center</item>
+    </style>
+    
+    <!-- 进度卡片内容容器样式 -->
+    <style name="Layout_ProgressContent">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:padding">@dimen/spacing_xl</item>
+        <item name="android:gravity">center</item>
+    </style>
+    
+    <!-- 裁剪按钮容器样式 -->
+    <style name="Layout_CropButtons">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:padding">@dimen/spacing_xl</item>
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+    
+    <!-- ========== 文字样式 ========== -->
+    
+    <!-- 操作按钮文字样式 -->
+    <style name="Text_ActionButton">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+    
+    <!-- 提示标题样式 -->
+    <style name="Text_TipTitle">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:layout_marginBottom">@dimen/spacing_sm</item>
+    </style>
+    
+    <!-- 提示内容样式 -->
+    <style name="Text_TipContent">
+        <item name="android:textSize">18sp</item>
+        <item name="android:layout_marginBottom">@dimen/spacing_lg</item>
+    </style>
+    
+    <!-- 答案标题样式 -->
+    <style name="Text_AnswerTitle">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:layout_marginTop">@dimen/spacing_xl</item>
+        <item name="android:layout_marginBottom">@dimen/spacing_sm</item>
+    </style>
+    
+    <!-- 进度索引文字样式 -->
+    <style name="Text_ProgressIndex">
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    
+    <!-- 进度当前文字样式 -->
+    <style name="Text_ProgressCurrent">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    
+    <!-- 识别状态文字样式 -->
+    <style name="Text_RecognitionStatus">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:layout_marginBottom">@dimen/spacing_sm</item>
+    </style>
+    
+    <!-- 识别文字样式 -->
+    <style name="Text_RecognitionText">
+        <item name="android:textSize">36sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:gravity">center</item>
+        <item name="android:maxLines">3</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+    
+    <!-- ========== 图片样式 ========== -->
+    
+    <!-- 操作按钮图标样式 -->
+    <style name="Image_ActionButtonIcon">
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:layout_marginEnd">@dimen/spacing_xl</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:background">@drawable/bg_icon_circle_white</item>
+    </style>
+    
+    <!-- ========== 按钮样式 ========== -->
+    
+    <!-- 裁剪操作按钮样式 -->
+    <style name="Button_CropAction" parent="Widget.MaterialComponents.Button">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">56dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+    
+    <!-- 提示按钮样式 -->
+    <style name="Button_TipAction" parent="Widget.MaterialComponents.Button">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:minHeight">56dp</item>
+        <item name="android:padding">@dimen/spacing_md</item>
+    </style>
+</resources>
