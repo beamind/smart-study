@@ -1,0 +1,36 @@
+capacitor.config.ts
+  s_853e3a05582c7f::t_5167c869fe0cf1 9
+src/styles/base.css
+  s_853e3a05582c7f::t_f6dcda8f709543 32
+  s_853e3a05582c7f::t_2f65c11df9c645 33
+index.html
+  s_853e3a05582c7f::t_fbf458ec79d0ea 8-12
+src/app/Start.tsx
+  s_853e3a05582c7f::t_d07c1447ba0c38 154-155
+docs/software-plan.md
+  s_853e3a05582c7f::t_f2fb0489138995 64
+tools/smoke_android.mjs
+  s_853e3a05582c7f::t_f2fb0489138995 108
+src/storage/webFolder.ts
+  s_853e3a05582c7f::t_d07c1447ba0c38 35-38,135-144
+src/app/startup.ts
+  s_853e3a05582c7f::t_d07c1447ba0c38 10,36,51-53,72
+src/features/errorBook/ErrorBookPage.tsx
+  s_853e3a05582c7f::t_2f65c11df9c645 281-282
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "67e929a1e0b125cad0f9946f61efee65379a8155",
+  "prompts": {},
+  "sessions": {
+    "s_853e3a05582c7f": {
+      "agent_id": {
+        "tool": "kiro-desktop",
+        "id": "sess_9412c325-cac8-43f4-88c4-d85afc226aaf",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "yandali <yandali@trip.com>"
+    }
+  }
+}
