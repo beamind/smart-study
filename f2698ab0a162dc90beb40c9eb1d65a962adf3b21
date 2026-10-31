@@ -1,0 +1,40 @@
+src/ai/ai.test.ts
+  s_853e3a05582c7f::t_047651da326653 265-276
+src/storage/jsonFiles.ts
+  s_853e3a05582c7f::t_560c680fa58961 69-70
+src/storage/folder.ts
+  s_853e3a05582c7f::t_560c680fa58961 30-34
+src/storage/webFolder.ts
+  s_853e3a05582c7f::t_560c680fa58961 77-81,83-84
+  s_853e3a05582c7f::t_aa9c57cbee274c 82
+src/features/errorBook/GenerateVariations.tsx
+  s_853e3a05582c7f::t_e17848edc39c06 8,64-67,98-106
+src/ai/parse.ts
+  s_853e3a05582c7f::t_9f9ae44ddfeff7 189-198
+  s_853e3a05582c7f::t_4a3ce7eb787b54 166-167,171-172
+src/domain/underline.ts
+  s_853e3a05582c7f::t_ba605ce04c9b36 68-71
+android/app/src/main/java/com/smartstudy/SafFolderPlugin.java
+  s_853e3a05582c7f::t_e8fbbf24fb150b 152,157,176,180-187
+  s_853e3a05582c7f::t_904150320fcdaf 277,381-383,397-405
+src/domain/underline.test.ts
+  s_853e3a05582c7f::t_b93b94fe8d92f1 66-71
+docs/decisions/002-public-documents-storage-via-saf.md
+  s_853e3a05582c7f::t_d6caf6d74dbf32 27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "402393a57c52f61bff55b16522a5a058556fb001",
+  "prompts": {},
+  "sessions": {
+    "s_853e3a05582c7f": {
+      "agent_id": {
+        "tool": "kiro-desktop",
+        "id": "sess_9412c325-cac8-43f4-88c4-d85afc226aaf",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "yandali <liyanda2017@163.com>"
+    }
+  }
+}
