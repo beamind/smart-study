@@ -17,7 +17,7 @@ import { ConfirmWords } from './ConfirmWords';
 import { CropPhoto } from './CropPhoto';
 import { MarkAnswers } from './MarkAnswers';
 import { RunDictation } from './RunDictation';
-import { draftKey, languageTitle, planWord, type Plan, type Run } from './types';
+import { draftKey, languageTitle, planWord, splitWords, type Plan, type Run } from './types';
 
 type Step =
   | { kind: 'home' }
@@ -229,7 +229,10 @@ function DictationHome({ language, file, problem, loading, draft, onResume, onDi
   const [undoing, setUndoing] = useState<{ id: string; at: string; count: number } | null>(null);
   const [discarding, setDiscarding] = useState(false);
   // The tiles sit where the home page's tile was: the second tap of a double tap there must not open the camera.
+  // So does the resume card, which takes the first row when there is a draft.
   const settled = useSettled();
+  // A file that could not be read cannot take a new dictation: do not let the child do one that cannot be saved.
+  const unusable = !file && !loading;
   const rows = useMemo(() => (file ? wordRows(file) : []), [file]);
   const wrongEver = rows.filter(row => row.stats.wrong > 0).length;
   const recent = useMemo(() => {
@@ -252,8 +255,8 @@ function DictationHome({ language, file, problem, loading, draft, onResume, onDi
             <b>{draft.phase === 'running' ? `上次的听写还没完成（第 ${draft.index + 1} / ${draft.words.length} 个）` : `上次的听写还没提交（${draft.words.length} 个词）`}</b>
             <div className="muted small">{formatRelative(draft.startedAt)} 开始</div>
           </div>
-          <button className="button" onClick={() => setDiscarding(true)}>放弃</button>
-          <button className="button primary" onClick={() => onResume(draft)}>{draft.phase === 'running' ? '继续听写' : '继续对答案'}</button>
+          <button className={`button${settled ? '' : ' settling'}`} onClick={() => setDiscarding(true)}>放弃</button>
+          <button className={`button primary${settled ? '' : ' settling'}`} onClick={() => onResume(draft)}>{draft.phase === 'running' ? '继续听写' : '继续对答案'}</button>
         </div>
       )}
       {draft && discarding && (
@@ -269,9 +272,9 @@ function DictationHome({ language, file, problem, loading, draft, onResume, onDi
       <section className="stack-tight">
         <h2 className="section-title">新的听写</h2>
         <div className="action-grid">
-          <button className={`action-tile${settled ? '' : ' settling'}`} onClick={() => onPhoto('camera')}><Camera size={28} />拍照</button>
-          <button className={`action-tile${settled ? '' : ' settling'}`} onClick={() => onPhoto('gallery')}><Image size={28} />相册</button>
-          <button className={`action-tile${settled ? '' : ' settling'}`} onClick={() => setManual(true)}><Keyboard size={28} />手动输入</button>
+          <button className={`action-tile${settled ? '' : ' settling'}`} disabled={unusable} onClick={() => onPhoto('camera')}><Camera size={28} />拍照</button>
+          <button className={`action-tile${settled ? '' : ' settling'}`} disabled={unusable} onClick={() => onPhoto('gallery')}><Image size={28} />相册</button>
+          <button className={`action-tile${settled ? '' : ' settling'}`} disabled={unusable} onClick={() => setManual(true)}><Keyboard size={28} />手动输入</button>
         </div>
       </section>
 
@@ -315,7 +318,7 @@ function DictationHome({ language, file, problem, loading, draft, onResume, onDi
         )}
       </section>
 
-      {manual && <ManualInput onClose={() => setManual(false)} onDone={words => { setManual(false); onWords({ kind: 'dictation', readMode: 'translation', words: words.map(text => planWord(text)) }); }} />}
+      {manual && <ManualInput language={language} onClose={() => setManual(false)} onDone={words => { setManual(false); onWords({ kind: 'dictation', readMode: 'translation', words: words.map(text => planWord(text)) }); }} />}
       {undoing && (
         <ArithmeticConfirm title="撤销这次听写？" confirmLabel="撤销"
           message={<p>将删除 {formatRelative(undoing.at)} 这次的 {undoing.count} 条记录。只在这次出现过的词会从错词本里一起删除。</p>}
@@ -325,12 +328,12 @@ function DictationHome({ language, file, problem, loading, draft, onResume, onDi
   );
 }
 
-function ManualInput({ onDone, onClose }: { onDone(words: string[]): void; onClose(): void }) {
+function ManualInput({ language, onDone, onClose }: { language: DictationLanguage; onDone(words: string[]): void; onClose(): void }) {
   const [text, setText] = useState('');
-  const words = text.split(/[\r\n，,、；;]+/).map(line => line.trim()).filter(Boolean);
+  const words = splitWords(text, language);
   return (
     <Sheet title="手动输入" onClose={onClose} keepOnOutsideTap>
-      <textarea className="input" autoFocus placeholder="每行一个词，也可以用逗号或顿号分隔" value={text} onChange={event => setText(event.target.value)} />
+      <textarea className="input" autoFocus placeholder={language === 'chinese' ? '每行一个词，也可以用空格、逗号或顿号分隔' : '每行一个词或短语，也可以用逗号分隔'} value={text} onChange={event => setText(event.target.value)} />
       <button className="button primary" disabled={!words.length} onClick={() => onDone(words)}>下一步（{words.length} 个词）</button>
     </Sheet>
   );

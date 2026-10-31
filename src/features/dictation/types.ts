@@ -28,6 +28,13 @@ export interface Run extends Plan {
 let counter = 0;
 export const planWord = (text: string, translation = ''): PlanWord => ({ key: `k${Date.now().toString(36)}${(counter++).toString(36)}`, text, translation });
 
+/**
+ * Words typed in a box: one per line, or separated by commas, 、 or ；. Chinese words are also separated by spaces
+ * ("春天 温暖"); English keeps them, because a phrase like "take care" is one item.
+ */
+export const splitWords = (text: string, language: DictationLanguage): string[] =>
+  text.split(language === 'chinese' ? /[\r\n，,、；;\s]+/ : /[\r\n，,、；;]+/).map(item => item.trim()).filter(Boolean);
+
 export const draftKey = (userId: string, language: DictationLanguage) => `dictation:${userId}:${language}`;
 
 export const languageTitle = (language: DictationLanguage) => (language === 'chinese' ? '语文听写' : '英语听写');

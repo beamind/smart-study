@@ -12,6 +12,30 @@ const empty = () => emptyDictationFile('chinese');
 const add = (text: string) => (file: DictationFile) => submit(file, { kind: 'dictation', words: [{ text, correct: true }] }).file;
 
 describe('DataCache', () => {
+  it('reports a restored file once, saying where it came from and that the damaged file was kept', async () => {
+    const folder = new MemoryFolder();
+    await new DataCache(new JsonFiles(folder)).set(path, checkDictationFile, empty, add('一'));
+    folder.files.set(path, '{"schema": "smart-study.dictation/1", "words": [');
+    const notices: string[] = [];
+    const cache = new DataCache(new JsonFiles(folder), (file, message) => notices.push(`${file} ${message}`));
+    const entry = await cache.get(path, checkDictationFile, empty);
+    expect(entry.status === 'ok' && entry.value.words.map(word => word.text)).toEqual(['一']);
+    await cache.set(path, checkDictationFile, empty, add('二'));
+    await cache.get(path, checkDictationFile, empty);
+    expect(notices).toEqual([expect.stringMatching(/^data\/users\/u1\/dictation-chinese\.json 已从历史版本恢复：JSON 无法解析.*\.broken/)]);
+  });
+
+  it('says a temp-file recovery is one, and mentions no .broken copy when the file was only missing', async () => {
+    const folder = new MemoryFolder();
+    const notices: string[] = [];
+    await new DataCache(new JsonFiles(folder)).set(path, checkDictationFile, empty, add('一'));
+    folder.files.set(`${path}.tmp`, folder.files.get(path)!);
+    folder.files.delete(path);
+    await new DataCache(new JsonFiles(folder), (_, message) => notices.push(message)).get(path, checkDictationFile, empty);
+    expect(notices).toHaveLength(1);
+    expect(notices[0]).toMatch(/^已用上次中断保存时留下的临时文件恢复/);
+    expect(notices[0]).not.toContain('.broken');
+  });
   it('serialises concurrent updates so none is lost', async () => {
     const folder = new MemoryFolder();
     const cache = new DataCache(new JsonFiles(folder));

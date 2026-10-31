@@ -23,13 +23,14 @@ export function Page({ title, actions, footer, children, back = true }: {
   title: ReactNode; actions?: ReactNode; footer?: ReactNode; children: ReactNode; back?: boolean;
 }) {
   const navigation = useNavigation();
-  // The footer's buttons often sit where the button that opened this page was (开始 / 下一个, 写完了 / 提交).
+  // The footer's buttons often sit where the button that opened this page was (开始 / 下一个, 写完了 / 提交); the back
+  // button sits where the home page's name button was, so a double tap there must not close the page it opened.
   const settled = useSettled(null, SETTLE_MS);
   return (
     <div className="page">
       <header className="page-header">
         {back && navigation.depth > 1
-          ? <button className="icon-button" aria-label="返回" onClick={() => navigation.back()}><ArrowLeft size={24} /></button>
+          ? <button className={`icon-button${settled ? '' : ' settling'}`} aria-label="返回" onClick={() => navigation.back()}><ArrowLeft size={24} /></button>
           : <span className="header-spacer" />}
         <h1>{title}</h1>
         {actions}

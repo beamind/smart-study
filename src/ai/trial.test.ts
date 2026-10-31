@@ -52,10 +52,21 @@ describe('trialCall', () => {
     expect(requests).toHaveLength(3);
   });
 
-  it('treats an empty reply or a non-JSON page as errors', async () => {
-    const { deps } = fake([reply(200, { reply: '  ', remaining }), new Response('<html>blocked</html>', { status: 503 })]);
-    await expect(trialCall(URL, deps, 1000, 1)({ task: 'translate', text: 'apple' })).rejects.toMatchObject({ kind: 'bad-response' });
-    await expect(trialCall(URL, deps, 1000, 1)({ task: 'translate', text: 'apple' })).rejects.toMatchObject({ kind: 'server' });
+  it('passes an empty reply on, so the parsers give their own message, and treats a non-JSON page as an error', async () => {
+    const { deps } = fake([reply(200, { reply: '', remaining }), new Response('<html>blocked</html>', { status: 503 })]);
+    await expect(trialCall(URL, deps, 1000, 1)({ task: 'translate', text: 'apple' })).resolves.toBe('');
+    await expect(trialCall(URL, deps, 1000, 1)({ task: 'translate', text: 'apple' })).rejects.toMatchObject({ kind: 'rate' });
+  });
+
+  it('retries a platform 429 or a busy proxy, but not a used-up allowance or a request the proxy cannot do', async () => {
+    const { deps, requests } = fake([
+      new Response('{"ErrorCode":"ResourceThrottled"}', { status: 429 }), reply(503, { error: 'busy', message: '试用的人太多，请稍后再试' }), reply(200, { reply: '苹果' }),
+      reply(502, { error: 'upstream-fatal', message: '试用服务暂时不能处理这个请求' }),
+    ]);
+    await expect(trialCall(URL, deps, 1000, 3)({ task: 'translate', text: 'apple' })).resolves.toBe('苹果');
+    expect(requests).toHaveLength(3);
+    await expect(trialCall(URL, deps, 1000, 3)({ task: 'translate', text: 'apple' })).rejects.toMatchObject({ kind: 'bad-response', message: '试用服务暂时不能处理这个请求' });
+    expect(requests).toHaveLength(4);
   });
 
   it('sends nothing when already cancelled', async () => {

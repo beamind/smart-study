@@ -24,7 +24,7 @@ describe('JsonFiles', () => {
     expect(await files.load(path, checkAppFile)).toEqual({ status: 'missing' });
   });
 
-  it('saves, loads and keeps the previous version in history', async () => {
+  it('saves, loads and keeps every saved version in history, the current one included', async () => {
     const { folder, files, tick } = setup();
     await files.save(path, app('小明'));
     tick();
@@ -32,17 +32,29 @@ describe('JsonFiles', () => {
     const loaded = await files.load(path, checkAppFile);
     expect(loaded).toMatchObject({ status: 'ok', value: { users: [{ name: '小红' }] } });
     const history = await files.history(path);
-    expect(history).toHaveLength(1);
-    expect(JSON.parse(folder.files.get(history[0])!).users[0].name).toBe('小明');
+    expect(history.map(version => JSON.parse(folder.files.get(version)!).users[0].name)).toEqual(['小红', '小明']);
     expect(folder.files.has(`${path}.tmp`)).toBe(false);
   });
 
-  it('does not create a history version when nothing changed', async () => {
-    const { files, tick } = setup();
+  it('adds the current file to history first when history does not have it (files from before that rule)', async () => {
+    const { folder, files, tick } = setup();
+    folder.files.set(`${historyDir(path)}/20261030-120000-000.json`, JSON.stringify(app('更早')));
+    folder.files.set(path, JSON.stringify(app('现在')));
+    expect(await files.load(path, checkAppFile)).toMatchObject({ status: 'ok' });
+    tick();
+    await files.save(path, app('新的'));
+    const names = (await files.history(path)).map(version => JSON.parse(folder.files.get(version)!).users[0].name);
+    expect(names).toEqual(['新的', '现在', '更早']);
+  });
+
+  it('does not write anything when nothing changed', async () => {
+    const { folder, files, tick } = setup();
     await files.save(path, app('小明'));
+    const before = new Map(folder.files);
     tick();
     await files.save(path, app('小明'));
-    expect(await files.history(path)).toHaveLength(0);
+    expect(new Map(folder.files)).toEqual(before);
+    expect(await files.history(path)).toHaveLength(1);
   });
 
   it('recovers from an interrupted save that left only the temp file', async () => {
@@ -54,7 +66,7 @@ describe('JsonFiles', () => {
     expect(folder.files.has(`${path}.tmp`)).toBe(false);
   });
 
-  it('recovers from the newest valid history version once, keeping the broken file as a .broken copy', async () => {
+  it('recovers the last save from history once, keeping the broken file as a .broken copy', async () => {
     const { folder, files, tick } = setup();
     await files.save(path, app('小明'));
     tick();
@@ -62,9 +74,9 @@ describe('JsonFiles', () => {
     const broken = '{"schema": "smart-study.app/1", "users": [';
     folder.files.set(path, broken);
     const loaded = await files.load(path, checkAppFile);
-    expect(loaded).toMatchObject({ status: 'ok', value: { users: [{ name: '小明' }] } });
+    expect(loaded).toMatchObject({ status: 'ok', value: { users: [{ name: '小红' }] } });
     expect(loaded.status === 'ok' && loaded.problem).toContain('JSON 无法解析');
-    expect(JSON.parse(folder.files.get(path)!).users[0].name).toBe('小明');
+    expect(JSON.parse(folder.files.get(path)!).users[0].name).toBe('小红');
     expect([...folder.files].filter(([name]) => name.endsWith('.broken')).map(([, text]) => text)).toEqual([broken]);
     // The next load is normal: no second copy, no repeated notice.
     expect(await files.load(path, checkAppFile)).toEqual({ status: 'ok', value: expect.anything() });
@@ -123,7 +135,7 @@ describe('JsonFiles', () => {
     const undecodable = '{"schema": "smart-study.app/1", "users": [\uD800]}'; // a lone surrogate stands for non-UTF-8 bytes
     folder.files.set(path, undecodable);
     const loaded = await files.load(path, checkAppFile);
-    expect(loaded).toMatchObject({ status: 'ok', value: { users: [{ name: '小明' }] }, problem: expect.stringContaining('UTF-8') });
+    expect(loaded).toMatchObject({ status: 'ok', value: { users: [{ name: '小红' }] }, problem: expect.stringContaining('UTF-8') });
     const aside = [...folder.files].filter(([name]) => /^data\/app\.json\.\d{8}-\d{6}-\d{3}\.broken$/.test(name));
     expect(aside.map(([, text]) => text)).toEqual([undecodable]);
     expect(await files.load(path, checkAppFile)).toEqual({ status: 'ok', value: expect.anything() });
@@ -148,7 +160,7 @@ describe('JsonFiles', () => {
     tick(-86_400_000);
     await files.save(path, app('三'));
     const names = (await files.history(path)).map(version => JSON.parse(folder.files.get(version)!).users[0].name);
-    expect(names).toEqual(['二', '一', '更早']);
+    expect(names).toEqual(['三', '二', '一', '更早']);
   });
 
   it('reads files that start with a byte-order mark', async () => {
@@ -160,7 +172,24 @@ describe('JsonFiles', () => {
   it('gives two saves in the same millisecond different history names', async () => {
     const { files } = setup();
     for (const name of ['一', '二', '三']) await files.save(path, app(name));
-    expect(new Set(await files.history(path)).size).toBe(2);
+    expect(new Set(await files.history(path)).size).toBe(3);
+  });
+
+  it('after a save stopped between removing the old file and renaming the new one, restores that save on the next load and saves normally', async () => {
+    const { folder, files, tick } = setup();
+    await files.save(path, app('小明'));
+    const rename = folder.rename.bind(folder);
+    folder.rename = async () => { throw new Error('io'); };
+    tick();
+    await expect(files.save(path, app('小红'))).rejects.toThrow('io');
+    folder.rename = rename;
+    tick();
+    await expect(files.save(path, app('小刚'))).resolves.toBeUndefined();
+    expect(JSON.parse(folder.files.get(path)!).users[0].name).toBe('小刚');
+    // A fresh start after the failure restores the interrupted save from the temp file.
+    const other = setup();
+    other.folder.files.set(`${path}.tmp`, JSON.stringify(app('小红')));
+    expect(await other.files.load(path, checkAppFile)).toMatchObject({ status: 'ok', value: { users: [{ name: '小红' }] } });
   });
 
   it('reports the save as done when only deleting old history versions fails', async () => {

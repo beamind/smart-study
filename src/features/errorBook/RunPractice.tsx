@@ -49,7 +49,7 @@ export function RunPractice({ run, onIndex, onFinish, onQuit }: {
     }>
       <div className="run-progress">第 <b>{index + 1}</b> / {run.items.length} 题</div>
       {limit > 0 && (
-        <div className="timer centered" aria-label={`剩余 ${left} 秒`}>
+        <div className="timer centered" role="timer" aria-label={`剩余 ${left} 秒`}>
           <div className="timer-bar" style={{ width: `${(Math.max(0, left) / limit) * 100}%` }} />
           <span>{left} 秒</span>
         </div>

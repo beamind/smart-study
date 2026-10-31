@@ -1,6 +1,6 @@
-// Checks a deployed trial proxy (docs/trial-proxy.md): status, one translation, CORS, refused requests, and the
-// requests used to check how the client IP is read. Spends one translation (well under 0.01 yuan) and three of the
-// IP's daily allowance.
+// Checks a deployed trial proxy (docs/trial-proxy.md): status, translations, CORS, refused requests, and the
+// requests used to check how the client IP is read. Spends three translations (together well under 0.01 yuan) and
+// three of the IP's daily allowance.
 //
 //   node tools/check_trial.mjs https://<函数地址>/
 const url = process.argv[2];

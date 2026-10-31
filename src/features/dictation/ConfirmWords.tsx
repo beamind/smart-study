@@ -5,7 +5,7 @@ import { wordKey } from '../../data/normalize';
 import type { DictationFile, DictationLanguage } from '../../data/schema';
 import { wordIndex } from '../../domain/dictation';
 import { Page } from '../../ui/components';
-import { languageTitle, planWord, type Plan } from './types';
+import { languageTitle, planWord, splitWords, type Plan } from './types';
 
 /**
  * Check the word list before dictating: fix or delete misrecognised words, add missing
@@ -98,7 +98,7 @@ export function ConfirmWords({ language, plan, file, onChange, onStart }: {
   const translating = needsTranslation ? words.filter(word => !word.translation.trim() && waiting(word)).length : 0;
   const untranslated = needsTranslation ? words.filter(word => !word.translation.trim() && !waiting(word)).length : 0;
   const add = () => {
-    const parts = adding.split(/[\n，,、；;]/).map(item => item.trim()).filter(Boolean);
+    const parts = splitWords(adding, language);
     if (!parts.length) return;
     setWords([...latest.current.words, ...parts.map(text => planWord(text))]);
     setAdding('');

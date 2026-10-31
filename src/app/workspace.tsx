@@ -66,21 +66,32 @@ interface Props {
   settings: Settings;
   apiKey: string;
   onChangeFolder(): void;
+  /** Shows a message until the user dismisses it (the start screen's notices). */
+  onNotice(message: string): void;
   children: ReactNode;
 }
 
-export function WorkspaceProvider({ files, app: initialApp, settings: initialSettings, apiKey: initialKey, onChangeFolder, children }: Props) {
+const FILE_LABELS: Array<[RegExp, string]> = [[/dictation-chinese\.json$/, '语文听写'], [/dictation-english\.json$/, '英语听写'], [/error-book\.json$/, '英语错题本']];
+
+export function WorkspaceProvider({ files, app: initialApp, settings: initialSettings, apiKey: initialKey, onChangeFolder, onNotice, children }: Props) {
   const [app, setApp] = useState(initialApp);
   const [settings, setSettings] = useState(initialSettings);
   const [apiKey, setKey] = useState(initialKey);
   // Keep the latest values for async callbacks without re-creating them on every render.
   const appRef = useRef(app);
   const settingsRef = useRef(settings);
-  const cache = useMemo(() => new DataCache(files), [files]);
+  const noticeRef = useRef(onNotice);
+  noticeRef.current = onNotice;
+  // A restored file is announced app-wide: the page that read it (e.g. 学习记录) may not show the notice.
+  const cache = useMemo(() => new DataCache(files, (path, message) => {
+    const user = appRef.current.users.find(item => path.includes(`/users/${item.id}/`));
+    const what = FILE_LABELS.find(([pattern]) => pattern.test(path))?.[1] ?? path;
+    noticeRef.current(`${user ? `${user.name}的` : ''}${what}：${message}`);
+  }), [files]);
   // Without a key, a build with a trial proxy uses it; otherwise calls fail with 'no-key' and ask for a key.
   const trial = !apiKey && !!TRIAL_URL;
   const ai = useMemo(() => (isFakeAi() ? fakeAi : createAi(trial
-    ? trialCall(TRIAL_URL, TRIAL_DEPS, settings.models.requestTimeoutSeconds * 1000, settings.models.maxAttempts)
+    ? trialCall(TRIAL_URL, TRIAL_DEPS)
     : directCall(settings, apiKey))), [settings, apiKey, trial]);
   const queue = useRef<Promise<unknown>>(Promise.resolve());
 

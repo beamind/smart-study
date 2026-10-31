@@ -54,10 +54,14 @@ async function post(url: string, deps: TrialDependencies, task: ModelTask, timeo
     }
     let body: TrialBody | null = null;
     try { body = JSON.parse(text); } catch { /* not JSON */ }
-    if (response.ok && typeof body?.reply === 'string' && body.reply.trim()) return body.reply;
+    // An empty reply means the model's answer was not usable; the parsers then give their own "nothing found" message.
+    if (response.ok && typeof body?.reply === 'string') return body.reply;
     const message = body?.message ?? '';
-    if (response.status === 429) throw new AiError('quota', message || '试用额度用完了。在设置里填写自己的千问 API Key，就可以继续使用');
+    // Only the proxy's own 429 means the allowance is used up; one from the platform (too many at once) passes.
+    if (response.status === 429 && body?.error === 'quota') throw new AiError('quota', message || '试用额度用完了。在设置里填写自己的千问 API Key，就可以继续使用');
+    if (response.status === 429 || response.status === 503) throw new AiError('rate', message || '试用的人太多，请稍后再试');
     if (response.status === 400 || response.status === 413) throw new AiError('bad-request', `请求被拒绝：${message || response.status}`);
+    if (body?.error === 'upstream-fatal') throw new AiError('bad-response', message || '试用服务暂时不能处理这个请求');
     if (response.ok) throw new AiError('bad-response', '千问没有返回内容');
     throw new AiError('server', message || `试用服务暂时出错（${response.status}）`);
   } finally {
@@ -66,8 +70,16 @@ async function post(url: string, deps: TrialDependencies, task: ModelTask, timeo
   }
 }
 
+/**
+ * Timeout and attempts of trial calls, whatever the settings say: the proxy gives the model up to 40 s and counts
+ * every request, so an app that gives up earlier and retries would be charged for answers it never received.
+ * Within Function Compute's 60 s limit.
+ */
+export const TRIAL_TIMEOUT_MS = 55_000;
+export const TRIAL_ATTEMPTS = 2;
+
 /** Model calls through the trial proxy instead of the user's own key. */
-export function trialCall(url: string, deps: TrialDependencies, timeoutMs: number, maxAttempts: number): ModelCall {
+export function trialCall(url: string, deps: TrialDependencies, timeoutMs = TRIAL_TIMEOUT_MS, maxAttempts = TRIAL_ATTEMPTS): ModelCall {
   return (task, signal) => withRetries(() => post(url, deps, task, timeoutMs, signal), maxAttempts, signal, deps.sleep);
 }
 

@@ -82,7 +82,7 @@ export function RunDictation({ language, run, onIndex, onFinish, onQuit }: {
         <div className="run-progress">第 <b>{index + 1}</b> / {run.words.length} 个</div>
         <div className="run-status">{paused ? '已暂停，点"继续"接着听写' : speaking ? <><Volume2 size={22} />正在朗读{spoken.what}…</> : '请写下来'}</div>
         {limit > 0 && (
-          <div className="timer" aria-label={`剩余 ${left} 秒`}>
+          <div className="timer" role="timer" aria-label={`剩余 ${left} 秒`}>
             <div className="timer-bar" style={{ width: `${(Math.max(0, left) / limit) * 100}%` }} />
             <span>{left} 秒</span>
           </div>

@@ -39,10 +39,25 @@ export class TablestoreCounters implements Counters {
     return Promise.all(keys.map(async key => (await this.read(key)) ?? 0));
   }
 
-  async add(key: string, amount: number): Promise<void> {
+  add(key: string, amount: number): Promise<void> {
+    return this.change(key, () => amount).then(() => undefined);
+  }
+
+  addWithin(key: string, amount: number, limit: number): Promise<boolean> {
+    return this.change(key, current => (current + amount <= limit ? amount : null));
+  }
+
+  /**
+   * Read, then write the new value on condition that the row still holds what was read; on a clash with another
+   * request, wait a random few milliseconds and start again. `amountFor` returns null to leave the value as it is.
+   */
+  private async change(key: string, amountFor: (current: number) => number | null): Promise<boolean> {
     const Long = TableStore.Long;
-    for (let attempt = 0; attempt < 8; attempt++) {
+    for (let attempt = 0; attempt < 12; attempt++) {
+      if (attempt > 0) await new Promise(resolve => setTimeout(resolve, 5 + Math.random() * 20 * attempt));
       const current = await this.read(key);
+      const amount = amountFor(current ?? 0);
+      if (amount === null) return false;
       try {
         if (current === null) {
           await this.call('putRow', {
@@ -57,12 +72,12 @@ export class TablestoreCounters implements Counters {
               new TableStore.SingleColumnCondition('n', Long.fromNumber(current), TableStore.ComparatorType.EQUAL)),
           });
         }
-        return;
+        return true;
       } catch (error) {
         if (!isConditionFailure(error)) throw error;
       }
     }
-    throw new Error(`计数 ${key} 一直在被同时修改，没有加上`);
+    throw new Error(`计数 ${key} 一直在被同时修改，没有改成`);
   }
 }
 

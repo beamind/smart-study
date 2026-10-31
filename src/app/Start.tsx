@@ -122,7 +122,8 @@ export function Start({ children }: { children: ReactNode }) {
       return (
         // A new key per opened folder: after "更换文件夹" every state (users, settings, data cache) starts fresh.
         <WorkspaceProvider key={step.opened.id} files={step.opened.files} app={step.opened.app} settings={step.opened.settings}
-          apiKey={step.apiKey} onChangeFolder={() => void pick()}>
+          apiKey={step.apiKey} onChangeFolder={() => void pick()}
+          onNotice={notice => setNotices(current => (current.includes(notice) ? current : [...current, notice]))}>
           <div className={`app-frame${notices.length > 0 ? ' has-notices' : ''}`}>
             {notices.length > 0 && (
               <div className="app-notices">

@@ -10,7 +10,7 @@ import { addQuestions, deleteQuestions, editQuestion, questionRows, recordPracti
 import { sample } from '../../domain/sampling';
 import { drafts } from '../../services/device';
 import { pickPhoto, type PhotoSource } from '../../services/photo';
-import { ArithmeticConfirm, errorText, Page, Sheet, useToast } from '../../ui/components';
+import { ArithmeticConfirm, errorText, Page, Sheet, useSettled, useToast } from '../../ui/components';
 import { formatRelative, formatTime } from '../../ui/format';
 import { CropPhoto } from '../dictation/CropPhoto';
 import { useErrorBookFile } from '../useUserData';
@@ -228,6 +228,8 @@ function QuestionBook({ file, problem, loading, draft, onResume, onDiscardDraft,
   update: ReturnType<typeof useErrorBookFile>['update'];
 }) {
   const toast = useToast();
+  // The resume card takes the first row, where the home page's tile was: a double tap there must not resume at once.
+  const settled = useSettled();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
   const [shown, setShown] = useState(PAGE);
@@ -289,8 +291,8 @@ function QuestionBook({ file, problem, loading, draft, onResume, onDiscardDraft,
             <b>{draft.phase === 'running' ? `上次的${runTitle(draft.kind)}还没做完（第 ${draft.index + 1} / ${draft.items.length} 题）` : `上次的${runTitle(draft.kind)}还没提交（${draft.items.length} 题）`}</b>
             <div className="muted small">{formatRelative(draft.startedAt)} 开始</div>
           </div>
-          <button className="button" onClick={() => setDiscarding(true)}>放弃</button>
-          <button className="button primary" onClick={() => onResume(draft)}>{draft.phase === 'running' ? '继续做' : '继续对答案'}</button>
+          <button className={`button${settled ? '' : ' settling'}`} onClick={() => setDiscarding(true)}>放弃</button>
+          <button className={`button primary${settled ? '' : ' settling'}`} onClick={() => onResume(draft)}>{draft.phase === 'running' ? '继续做' : '继续对答案'}</button>
         </div>
       )}
       {draft && discarding && (

@@ -29,7 +29,9 @@ describe('example child', () => {
     expect(checkDictationFile(JSON.parse(folder.files.get(paths.dictation(user.id, 'chinese'))!))).toMatchObject({ ok: true });
     expect(checkDictationFile(JSON.parse(folder.files.get(paths.dictation(user.id, 'english'))!))).toMatchObject({ ok: true });
     expect(checkErrorBookFile(JSON.parse(folder.files.get(paths.errorBook(user.id))!))).toMatchObject({ ok: true });
-    expect([...folder.files.keys()].filter(name => name.includes('history'))).toEqual([]);
+    // One history version per new file: history always holds the last save.
+    expect([...folder.files.keys()].filter(name => name.includes('history')).map(name => name.split('/').slice(0, -1).join('/')).sort())
+      .toEqual(['data/history/app', `data/history/users/${user.id}/dictation-chinese`, `data/history/users/${user.id}/dictation-english`, `data/history/users/${user.id}/error-book`]);
     await expect(addDemoUser(files, app)).rejects.toThrow(DEMO_NAME);
   });
 });

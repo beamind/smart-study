@@ -55,7 +55,7 @@ export function Settings() {
         </button>
         {workspace.trial && <TrialRow />}
       </Section>
-      {workspace.trial && <p className="muted small">试用时使用默认的模型和提示词，下面"模型"和"提示词"里的修改要填写自己的 Key 后才生效。</p>}
+      {workspace.trial && <p className="muted small">试用时使用默认的模型、提示词、超时和重试次数，下面"模型"和"提示词"里的修改要填写自己的 Key 后才生效。</p>}
 
       <Section title="朗读">
         <Slider label="语速" value={draft.tts.rate} min={0.2} max={1.2} step={0.05} format={value => `${value.toFixed(2)} 倍`}

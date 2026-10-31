@@ -8,7 +8,7 @@ export const HISTORY_KEEP_DAYS = 30;
 
 export type LoadResult<T> =
   | { status: 'missing' }
-  | { status: 'ok'; value: T; recoveredFrom?: string; problem?: string }
+  | { status: 'ok'; value: T; recoveredFrom?: string; problem?: string; /** A damaged main file was kept as a .broken copy. */ keptBroken?: boolean }
   /** The file exists but cannot be used. It is left untouched. */
   | { status: 'unusable'; reason: 'invalid' | 'newer'; error: string };
 
@@ -28,7 +28,7 @@ interface Read<T> {
 
 /**
  * Reads and writes JSON data files so that an interrupted write never loses data:
- * write "<file>.tmp" and read it back, copy the current file into history/, then swap the files.
+ * write "<file>.tmp" and read it back, add the new version to history/, then swap the files.
  * Writes are serialised. See docs/decisions/002-public-documents-storage-via-saf.md.
  */
 export class JsonFiles {
@@ -114,11 +114,12 @@ export class JsonFiles {
     };
 
     const temp = await this.read(tempPath, check);
+    const keptBroken = main.undecodable || main.text !== null;
     // Data from a newer app version is never replaced by an older copy.
     if (temp.checked?.ok === false && temp.checked.reason === 'newer') return { status: 'unusable', reason: 'newer', error: temp.checked.error };
     if (temp.checked?.ok) {
       await restore(temp.text!, true);
-      return { status: 'ok', value: temp.checked.value, recoveredFrom: tempPath, problem: main.checked ? main.checked.error : '上次保存被中断，已用临时文件恢复' };
+      return { status: 'ok', value: temp.checked.value, recoveredFrom: tempPath, keptBroken, problem: main.checked ? main.checked.error : '上次保存被中断，已用临时文件恢复' };
     }
 
     for (const version of await this.history(path)) {
@@ -127,7 +128,7 @@ export class JsonFiles {
       if (old.checked?.ok) {
         if (temp.checked) await this.folder.remove(tempPath); // an unusable temp file would block the rename
         await restore(old.text!, false);
-        return { status: 'ok', value: old.checked.value, recoveredFrom: version, problem: main.checked ? main.checked.error : '数据文件缺失' };
+        return { status: 'ok', value: old.checked.value, recoveredFrom: version, keptBroken, problem: main.checked ? main.checked.error : '数据文件缺失' };
       }
     }
     return main.checked ? { status: 'unusable', reason: 'invalid', error: main.checked.error } : { status: 'missing' };
@@ -151,18 +152,36 @@ export class JsonFiles {
     const known = this.known.get(path);
     if (known === 'unusable') throw new Error(`${path} 无法使用，没有保存`);
     if (known && previous !== known.text) throw new Error(`${path} 在别处被改过（例如另一个浏览器窗口，或从电脑拷了进来），没有保存。请重新打开 App 再试`);
+    if (previous === text) { this.known.set(path, { text }); return; }
     await this.folder.writeText(tempPath, text);
     if (await this.folder.readText(tempPath) !== text) throw new Error(`写入校验失败：${tempPath}`);
 
-    if (previous !== null) {
-      if (previous === text) { await this.folder.remove(tempPath); this.known.set(path, { text }); return; }
+    // History holds every saved version, the one being saved included, so if the main file is damaged later
+    // (for example edited on a PC) the newest history version is the last save, not the one before it.
+    // The current main file is added first when history does not have it yet: files from before this rule,
+    // or a file restored from a temp file.
+    if (previous !== null && !(await this.isNewestHistory(path, previous))) {
       await this.folder.writeText(`${historyDir(path)}/${await this.nextStamp(path)}.json`, previous);
-      await this.folder.remove(path);
     }
-    await this.folder.rename(tempPath, name);
+    await this.folder.writeText(`${historyDir(path)}/${await this.nextStamp(path)}.json`, text);
+    if (previous !== null) await this.folder.remove(path);
+    try {
+      await this.folder.rename(tempPath, name);
+    } catch (error) {
+      // The main file is gone and the temp file holds this save, as after a crash: the next load restores it.
+      // Within this run the file is now missing, so the next save is not refused as "changed elsewhere".
+      this.known.set(path, { text: null });
+      throw error;
+    }
     this.known.set(path, { text });
     // The new data is in place now; failing to delete old history versions must not report the save as failed.
     await this.prune(path).catch(() => undefined);
+  }
+
+  private async isNewestHistory(path: string, text: string): Promise<boolean> {
+    const newest = (await this.history(path))[0];
+    if (!newest) return false;
+    try { return await this.folder.readText(newest) === text; } catch { return false; }
   }
 
   /**

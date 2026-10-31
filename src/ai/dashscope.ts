@@ -30,6 +30,8 @@ export type AiErrorKind = 'no-key' | 'auth' | 'model' | 'rate' | 'timeout' | 'ne
   | 'quota';
 
 export class AiError extends Error {
+  /** Tokens DashScope reported for a reply that came back but could not be used (the trial proxy still counts them). */
+  usage?: Usage | null;
   constructor(readonly kind: AiErrorKind, message: string) {
     super(message);
   }
@@ -55,7 +57,7 @@ const defaults: Dependencies = {
 /** Tokens the request used, as DashScope reports them. */
 export interface Usage { input: number; output: number }
 
-async function once(request: ChatRequest, deps: Dependencies): Promise<{ reply: string; usage: Usage }> {
+async function once(request: ChatRequest, deps: Dependencies): Promise<{ reply: string; usage: Usage | null }> {
   // An abort listener never fires for a signal that is already aborted, so check first: no request, no cost.
   if (request.signal?.aborted) throw new AiError('cancelled', '已取消');
   const controller = new AbortController();
@@ -110,8 +112,15 @@ async function once(request: ChatRequest, deps: Dependencies): Promise<{ reply: 
     const content = body?.choices?.[0]?.message?.content;
     const reply = typeof content === 'string' ? content
       : Array.isArray(content) ? content.map(part => (part as { text?: string }).text ?? '').join('\n') : '';
-    if (!reply.trim()) throw new AiError('bad-response', '千问没有返回内容');
-    return { reply: reply.trim(), usage: { input: body?.usage?.prompt_tokens ?? 0, output: body?.usage?.completion_tokens ?? 0 } };
+    const reported = body?.usage;
+    const usage = reported && (typeof reported.prompt_tokens === 'number' || typeof reported.completion_tokens === 'number')
+      ? { input: reported.prompt_tokens ?? 0, output: reported.completion_tokens ?? 0 } : null;
+    if (!reply.trim()) {
+      const empty = new AiError('bad-response', '千问没有返回内容');
+      empty.usage = usage;
+      throw empty;
+    }
+    return { reply: reply.trim(), usage };
   } finally {
     clearTimeout(timer);
     request.signal?.removeEventListener('abort', onAbort);
@@ -123,8 +132,8 @@ export async function chat(request: ChatRequest, deps: Dependencies = defaults):
   return (await chatWithUsage(request, deps)).reply;
 }
 
-/** Like chat, also returning the tokens used by the attempt that succeeded (the trial proxy counts cost with it). */
-export async function chatWithUsage(request: ChatRequest, deps: Dependencies = defaults): Promise<{ reply: string; usage: Usage }> {
+/** Like chat, also returning the tokens used by the attempt that succeeded (null when DashScope did not say); the trial proxy counts cost with it. */
+export async function chatWithUsage(request: ChatRequest, deps: Dependencies = defaults): Promise<{ reply: string; usage: Usage | null }> {
   if (!request.apiKey.trim()) throw new AiError('no-key', '还没有填写千问 API Key，请在设置里填写');
   return withRetries(() => once(request, deps), request.maxAttempts, request.signal, deps.sleep);
 }

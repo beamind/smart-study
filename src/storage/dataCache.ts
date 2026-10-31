@@ -19,7 +19,11 @@ export class DataCache {
   private queues = new Map<string, Promise<unknown>>();
   private listeners = new Map<string, Set<Listener>>();
 
-  constructor(private readonly files: JsonFiles) {}
+  /**
+   * @param onRecovered called once when a file was damaged or missing and was restored from its temp file or
+   *   history: the page that read it may not show it, so the app shows it until the user dismisses it.
+   */
+  constructor(private readonly files: JsonFiles, private readonly onRecovered?: (path: string, message: string) => void) {}
 
   get<T>(path: string, check: (input: unknown) => Checked<T>, empty: () => T): Promise<Entry<T>> {
     let entry = this.entries.get(path) as Promise<Entry<T>> | undefined;
@@ -29,7 +33,11 @@ export class DataCache {
         if (result.status === 'unusable') {
           return { status: 'unusable', error: result.reason === 'newer' ? result.error : `数据文件无法读取，已停止写入以免覆盖：${result.error}` };
         }
-        return { status: 'ok', value: result.value, ...(result.problem ? { problem: `已从历史版本恢复：${result.problem}` } : {}) };
+        if (!result.problem) return { status: 'ok', value: result.value };
+        const from = result.recoveredFrom?.endsWith('.tmp') ? '已用上次中断保存时留下的临时文件恢复' : '已从历史版本恢复';
+        const problem = `${from}：${result.problem}${result.keptBroken ? '。损坏的文件另存了一份（.broken），在 smartstudy/data 里' : ''}`;
+        this.onRecovered?.(path, problem);
+        return { status: 'ok', value: result.value, problem };
       }, (error): Entry<T> => {
         // Reading itself failed (e.g. the folder permission was lost). Show it, and read again next time.
         this.entries.delete(path);
@@ -64,6 +72,7 @@ export class DataCache {
       if (!checked.ok) throw new Error(`修改后的数据没有通过校验，未保存：${checked.error}`);
       const next = checked.value;
       await this.files.save(path, next);
+      // The recovery notice, if any, stays in the app-wide notices (onRecovered) until the user dismisses it.
       const saved: Entry<T> = { status: 'ok', value: next };
       this.entries.set(path, Promise.resolve(saved));
       this.latest.set(path, saved);

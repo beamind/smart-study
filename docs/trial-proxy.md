@@ -95,7 +95,7 @@ Compress-Archive -Path server/trial-proxy/dist/index.cjs -DestinationPath server
 | `TABLESTORE_ENDPOINT` | 第 2 步的公网访问地址 | 必填 |
 | `TABLESTORE_INSTANCE` | 实例名，例如 `smartstudy-trial` | 必填 |
 | `TABLESTORE_TABLE` | `trial_counters` | 不填就是这个 |
-| `IP_SALT` | 一串随机字符，见下面 | 必填，不要公开 |
+| `IP_SALT` | 一串随机字符，见下面 | 必填，至少 16 个字符，不要公开。没填或太短时函数启动失败 |
 | `DEVICE_PHOTO`、`DEVICE_TRANSLATE`、`DEVICE_GENERATE` | 每台设备总共的次数 | 不填为 20、100、10 |
 | `IP_BASIC`、`IP_GENERATE` | 每个 IP 每天的次数 | 不填为 60、10 |
 | `BUDGET_BASIC_YUAN`、`BUDGET_GENERATE_YUAN` | 每天的千问费用上限（元） | 不填为 0.7、0.3 |
@@ -145,6 +145,7 @@ const RELEASE_TRIAL_URL = 'https://<触发器地址>/';
 ## 9. 平时
 
 - **看花费**：百炼按业务空间看千问的账单；函数计算和表格存储在费用中心看。
+- **设预算提醒**：千问的花费由代码限制，函数计算和表格存储的没有硬上限（被人用很多 IP 刷请求时会涨）。在费用中心 → 预算管理里，给函数计算和表格存储各建一个月度预算（例如 20 元），超过 80% 时发短信或邮件提醒。
 - **改额度**：改函数的环境变量，保存后生效。
 - **暂停试用**：把 `BUDGET_BASIC_YUAN` 和 `BUDGET_GENERATE_YUAN` 改成 `0`，App 会提示“今天的试用名额用完了”；或者停用 HTTP 触发器，App 会提示网络出错。填了自己 Key 的人不受影响。
 - **Key 泄露或怀疑被滥用**：在百炼里删掉这个 Key，新建一个，改 `DASHSCOPE_API_KEY`。
