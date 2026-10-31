@@ -1,0 +1,35 @@
+src/services/tts.ts
+  s_853e3a05582c7f::t_e834ed4762a706 122,128,148-150,152-158
+  s_853e3a05582c7f::t_3cb4539473f7fb 11-13,20-32,36-43,45-51,81-83,89,91-92,112-115,121,124,127,129-130,140,151
+  s_853e3a05582c7f::t_65595dad029e08 1-10,14-19,33-35,44,80,84,93-95,97-111,116-120,123,126,131-133,137-139,141-147
+  s_853e3a05582c7f::t_3af2ae04a6e3bc 52-79,85-88,90,96
+  s_853e3a05582c7f::t_92c4d8cb62329d 125,134-136
+src/services/tts.test.ts
+  s_853e3a05582c7f::t_8d899e05dffb86 9
+  s_853e3a05582c7f::t_863ddf3a25b6d0 1-8,10-23,25-33,35,37-45,47-51,81
+  s_853e3a05582c7f::t_d22b0d499fbff9 24,34,36,46
+  s_853e3a05582c7f::t_49847fca087c3f 52-70,73-74,76,79-80
+  s_853e3a05582c7f::t_2f1d400099f5b0 71-72,75,77-78
+src/features/prototype/DictationPrototype.tsx
+  s_853e3a05582c7f::t_91b26737f19f82 4,7-8
+  s_853e3a05582c7f::t_1dbfb32a5887ae 13-15
+  s_853e3a05582c7f::t_2c1b3bc74714de 169-170,175-196,198,201,203,205-211,216-217,221,224-230
+e2e/start.spec.ts
+  s_853e3a05582c7f::t_6490ff0d818241 6,29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "36c522daeca552eb22d748468b7eef1a05d09cdb",
+  "prompts": {},
+  "sessions": {
+    "s_853e3a05582c7f": {
+      "agent_id": {
+        "tool": "kiro-desktop",
+        "id": "sess_9412c325-cac8-43f4-88c4-d85afc226aaf",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "yandali <yandali@trip.com>"
+    }
+  }
+}
