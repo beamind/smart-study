@@ -8,6 +8,7 @@ import { errorText } from '../ui/components';
 import {
   chooseFolder, findFolder, openFolder, platform, reopenWebFolder, type FolderState, type OpenResult,
 } from './startup';
+import { addDemoUser, DEMO_NAME } from '../demo/demo';
 import { useNavigation } from './navigation';
 import { validateUserName, WorkspaceProvider } from './workspace';
 import { setApiKey } from '../services/secrets';
@@ -194,29 +195,38 @@ function UserStep({ opened, onDone }: { opened: Opened; onDone(app: AppFile): vo
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const inFlight = useRef(false); // state updates too late to stop a second Enter in the same frame
-  const submit = async () => {
-    if (inFlight.current || !name.trim()) return; // Enter pressed twice must not write app.json twice
+  const run = async (create: () => Promise<AppFile>) => {
+    if (inFlight.current) return; // Enter pressed twice must not write app.json twice
     inFlight.current = true;
     setBusy(true);
     try {
-      const user = { id: crypto.randomUUID(), name: validateUserName(name, opened.app.users), createdAt: nowIso() };
-      const app: AppFile = { ...opened.app, users: [...opened.app.users, user], currentUserId: user.id };
-      await opened.files.save(paths.app, app);
-      onDone(app);
+      onDone(await create());
     } catch (problem) {
       setError(errorText(problem));
       setBusy(false);
       inFlight.current = false;
     }
   };
+  const submit = () => {
+    if (!name.trim()) return;
+    void run(async () => {
+      const user = { id: crypto.randomUUID(), name: validateUserName(name, opened.app.users), createdAt: nowIso() };
+      const app: AppFile = { ...opened.app, users: [...opened.app.users, user], currentUserId: user.id };
+      await opened.files.save(paths.app, app);
+      return app;
+    });
+  };
+  const demo = () => void run(async () => (await addDemoUser(opened.files, opened.app)).app);
   return (
     <Shell icon={<UserRound size={28} />} title="谁在学习？">
       <p>每个孩子的记录分开保存。以后可以在首页添加更多孩子。</p>
       <label className="field"><span>名字</span>
-        <input className="input" value={name} maxLength={20} onChange={event => setName(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') void submit(); }} autoFocus />
+        <input className="input" value={name} maxLength={20} onChange={event => setName(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') submit(); }} autoFocus />
       </label>
       {error && <div className="notice error">{error}</div>}
-      <button className="button primary big" disabled={!name.trim() || busy} onClick={() => void submit()}>开始使用</button>
+      <button className="button primary big" disabled={!name.trim() || busy} onClick={submit}>开始使用</button>
+      <p className="muted small">想先看看效果？可以先用示例孩子“{DEMO_NAME}”，里面有几次听写和一些错题。以后在首页点名字添加自己的孩子，再把{DEMO_NAME}删掉。</p>
+      <button className="button" disabled={busy} onClick={demo}>先看看示例（{DEMO_NAME}）</button>
     </Shell>
   );
 }

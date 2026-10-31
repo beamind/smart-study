@@ -1,0 +1,31 @@
+{
+  "schema": "smart-study.dictation/1",
+  "language": "chinese",
+  "sessions": [
+    {"id":"s_demo_c1","kind":"dictation","at":"2026-10-25T19:30:00+08:00","wordIds":["w_demo_c01","w_demo_c02","w_demo_c03","w_demo_c04","w_demo_c05","w_demo_c06","w_demo_c07","w_demo_c08","w_demo_c09","w_demo_c10"]},
+    {"id":"s_demo_c2","kind":"dictation","at":"2026-10-28T19:40:00+08:00","wordIds":["w_demo_c11","w_demo_c12","w_demo_c13","w_demo_c14","w_demo_c15","w_demo_c16","w_demo_c17","w_demo_c18","w_demo_c19","w_demo_c20"]},
+    {"id":"s_demo_c3","kind":"review","at":"2026-10-30T20:00:00+08:00","wordIds":["w_demo_c08","w_demo_c02","w_demo_c17","w_demo_c06","w_demo_c16"]}
+  ],
+  "words": [
+    {"id":"w_demo_c01","text":"痕迹","createdAt":"2026-10-25T19:30:00+08:00","attempts":[{"sessionId":"s_demo_c1","correct":true}]},
+    {"id":"w_demo_c02","text":"荡漾","createdAt":"2026-10-25T19:30:00+08:00","attempts":[{"sessionId":"s_demo_c1","correct":false},{"sessionId":"s_demo_c3","correct":true}]},
+    {"id":"w_demo_c03","text":"均匀","createdAt":"2026-10-25T19:30:00+08:00","attempts":[{"sessionId":"s_demo_c1","correct":true}]},
+    {"id":"w_demo_c04","text":"空隙","createdAt":"2026-10-25T19:30:00+08:00","attempts":[{"sessionId":"s_demo_c1","correct":true}]},
+    {"id":"w_demo_c05","text":"蜗牛","createdAt":"2026-10-25T19:30:00+08:00","attempts":[{"sessionId":"s_demo_c1","correct":true}]},
+    {"id":"w_demo_c06","text":"枯萎","createdAt":"2026-10-25T19:30:00+08:00","attempts":[{"sessionId":"s_demo_c1","correct":false},{"sessionId":"s_demo_c3","correct":true}]},
+    {"id":"w_demo_c07","text":"弯曲","createdAt":"2026-10-25T19:30:00+08:00","attempts":[{"sessionId":"s_demo_c1","correct":true}]},
+    {"id":"w_demo_c08","text":"重叠","createdAt":"2026-10-25T19:30:00+08:00","attempts":[{"sessionId":"s_demo_c1","correct":false},{"sessionId":"s_demo_c3","correct":false}]},
+    {"id":"w_demo_c09","text":"牢固","createdAt":"2026-10-25T19:30:00+08:00","attempts":[{"sessionId":"s_demo_c1","correct":true}]},
+    {"id":"w_demo_c10","text":"舒服","createdAt":"2026-10-25T19:30:00+08:00","attempts":[{"sessionId":"s_demo_c1","correct":true}]},
+    {"id":"w_demo_c11","text":"飘动","createdAt":"2026-10-28T19:40:00+08:00","attempts":[{"sessionId":"s_demo_c2","correct":true}]},
+    {"id":"w_demo_c12","text":"宇宙","createdAt":"2026-10-28T19:40:00+08:00","attempts":[{"sessionId":"s_demo_c2","correct":true}]},
+    {"id":"w_demo_c13","text":"茂盛","createdAt":"2026-10-28T19:40:00+08:00","attempts":[{"sessionId":"s_demo_c2","correct":true}]},
+    {"id":"w_demo_c14","text":"四肢","createdAt":"2026-10-28T19:40:00+08:00","attempts":[{"sessionId":"s_demo_c2","correct":true}]},
+    {"id":"w_demo_c15","text":"黑乎乎","createdAt":"2026-10-28T19:40:00+08:00","attempts":[{"sessionId":"s_demo_c2","correct":true}]},
+    {"id":"w_demo_c16","text":"污浊","createdAt":"2026-10-28T19:40:00+08:00","attempts":[{"sessionId":"s_demo_c2","correct":false},{"sessionId":"s_demo_c3","correct":true}]},
+    {"id":"w_demo_c17","text":"精疲力竭","createdAt":"2026-10-28T19:40:00+08:00","attempts":[{"sessionId":"s_demo_c2","correct":false},{"sessionId":"s_demo_c3","correct":true}]},
+    {"id":"w_demo_c18","text":"躯干","createdAt":"2026-10-28T19:40:00+08:00","attempts":[{"sessionId":"s_demo_c2","correct":true}]},
+    {"id":"w_demo_c19","text":"整体","createdAt":"2026-10-28T19:40:00+08:00","attempts":[{"sessionId":"s_demo_c2","correct":true}]},
+    {"id":"w_demo_c20","text":"血液","createdAt":"2026-10-28T19:40:00+08:00","attempts":[{"sessionId":"s_demo_c2","correct":true}]}
+  ]
+}

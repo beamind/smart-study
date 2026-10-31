@@ -1,0 +1,19 @@
+{
+  "schema": "smart-study.error-book/1",
+  "sessions": [
+    {"id":"s_demo_q1","kind":"capture","at":"2026-10-25T20:00:00+08:00","questionIds":["q_demo_01","q_demo_02","q_demo_03","q_demo_04","q_demo_05","q_demo_06","q_demo_07","q_demo_08"]},
+    {"id":"s_demo_q2","kind":"practice","at":"2026-10-28T20:00:00+08:00","questionIds":["q_demo_01","q_demo_03","q_demo_04","q_demo_06","q_demo_07","q_demo_08"]},
+    {"id":"s_demo_q3","kind":"variation","at":"2026-10-30T20:20:00+08:00","questionIds":["q_demo_09"]}
+  ],
+  "questions": [
+    {"id":"q_demo_01","text":"It was __foggy__ yesterday. (对画线部分提问)","answer":"What was the weather like yesterday?","origin":"photo","createdAt":"2026-10-25T20:00:00+08:00","attempts":[{"sessionId":"s_demo_q1","correct":false},{"sessionId":"s_demo_q2","correct":true}]},
+    {"id":"q_demo_02","text":"There was __a cat__ on the big blue sofa. (对画线部分提问)","answer":"What was on the big blue sofa?","origin":"photo","createdAt":"2026-10-25T20:00:00+08:00","attempts":[{"sessionId":"s_demo_q1","correct":false}]},
+    {"id":"q_demo_03","text":"I am going to go on a trip __by ship__. (对画线部分提问)","answer":"How are you going to go on a trip?","origin":"photo","createdAt":"2026-10-25T20:00:00+08:00","attempts":[{"sessionId":"s_demo_q1","correct":false},{"sessionId":"s_demo_q2","correct":true}]},
+    {"id":"q_demo_04","text":"My teacher bought us a lot of snacks yesterday. (保持句意基本不变)\nMy teacher ____ a lot of snacks ____ us yesterday.","answer":"bought; for","origin":"photo","createdAt":"2026-10-25T20:00:00+08:00","attempts":[{"sessionId":"s_demo_q1","correct":false},{"sessionId":"s_demo_q2","correct":false}]},
+    {"id":"q_demo_05","text":"Let's join in the Sports Day activities. (保持句意基本不变)\nLet's ____ ____ ____ the Sports Day activities.","answer":"take part in","origin":"photo","createdAt":"2026-10-25T20:00:00+08:00","attempts":[{"sessionId":"s_demo_q1","correct":false}]},
+    {"id":"q_demo_06","text":"We are going to have a picnic ________ Saturday afternoon.\nA. in\nB. at\nC. on\nD. by","answer":"C","origin":"photo","createdAt":"2026-10-25T20:00:00+08:00","attempts":[{"sessionId":"s_demo_q1","correct":false},{"sessionId":"s_demo_q2","correct":true}]},
+    {"id":"q_demo_07","text":"I don't like this dress. Could you show me ______ one?\nA. other\nB. the other\nC. another","answer":"C","origin":"photo","createdAt":"2026-10-25T20:00:00+08:00","attempts":[{"sessionId":"s_demo_q1","correct":false},{"sessionId":"s_demo_q2","correct":false}]},
+    {"id":"q_demo_08","text":"— Would you like ______ coffee?\n— Yes, please.\nA. any\nB. some\nC. a cup","answer":"B","origin":"photo","createdAt":"2026-10-25T20:00:00+08:00","attempts":[{"sessionId":"s_demo_q1","correct":false},{"sessionId":"s_demo_q2","correct":true}]},
+    {"id":"q_demo_09","text":"It was __rainy__ last Sunday. (对画线部分提问)","answer":"What was the weather like last Sunday?","origin":"generated","sourceQuestionId":"q_demo_01","createdAt":"2026-10-30T20:20:00+08:00","attempts":[{"sessionId":"s_demo_q3","correct":false}]}
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "schema": "smart-study.dictation/1",
+  "language": "english",
+  "sessions": [
+    {"id":"s_demo_e1","kind":"dictation","at":"2026-10-26T19:20:00+08:00","wordIds":["w_demo_e01","w_demo_e02","w_demo_e03","w_demo_e04","w_demo_e05","w_demo_e06","w_demo_e07"],"readMode":"translation"},
+    {"id":"s_demo_e2","kind":"dictation","at":"2026-10-29T19:30:00+08:00","wordIds":["w_demo_e08","w_demo_e09","w_demo_e10","w_demo_e11","w_demo_e12","w_demo_e13","w_demo_e14"],"readMode":"translation"},
+    {"id":"s_demo_e3","kind":"review","at":"2026-10-30T20:10:00+08:00","wordIds":["w_demo_e03","w_demo_e07","w_demo_e11","w_demo_e12","w_demo_e05"],"readMode":"translation"}
+  ],
+  "words": [
+    {"id":"w_demo_e01","text":"spoke","translation":"说（过去式）","createdAt":"2026-10-26T19:20:00+08:00","attempts":[{"sessionId":"s_demo_e1","correct":true}]},
+    {"id":"w_demo_e02","text":"stood","translation":"站（过去式）","createdAt":"2026-10-26T19:20:00+08:00","attempts":[{"sessionId":"s_demo_e1","correct":true}]},
+    {"id":"w_demo_e03","text":"swam","translation":"游泳（过去式）","createdAt":"2026-10-26T19:20:00+08:00","attempts":[{"sessionId":"s_demo_e1","correct":false},{"sessionId":"s_demo_e3","correct":true}]},
+    {"id":"w_demo_e04","text":"took","translation":"拿（过去式）","createdAt":"2026-10-26T19:20:00+08:00","attempts":[{"sessionId":"s_demo_e1","correct":true}]},
+    {"id":"w_demo_e05","text":"spent","translation":"花费（过去式）","createdAt":"2026-10-26T19:20:00+08:00","attempts":[{"sessionId":"s_demo_e1","correct":true},{"sessionId":"s_demo_e3","correct":true}]},
+    {"id":"w_demo_e06","text":"bought","translation":"买（过去式）","createdAt":"2026-10-26T19:20:00+08:00","attempts":[{"sessionId":"s_demo_e1","correct":true}]},
+    {"id":"w_demo_e07","text":"caught","translation":"抓住（过去式）","createdAt":"2026-10-26T19:20:00+08:00","attempts":[{"sessionId":"s_demo_e1","correct":false},{"sessionId":"s_demo_e3","correct":true}]},
+    {"id":"w_demo_e08","text":"become","translation":"成为","createdAt":"2026-10-29T19:30:00+08:00","attempts":[{"sessionId":"s_demo_e2","correct":true}]},
+    {"id":"w_demo_e09","text":"born","translation":"出生","createdAt":"2026-10-29T19:30:00+08:00","attempts":[{"sessionId":"s_demo_e2","correct":true}]},
+    {"id":"w_demo_e10","text":"broken","translation":"破碎的","createdAt":"2026-10-29T19:30:00+08:00","attempts":[{"sessionId":"s_demo_e2","correct":true}]},
+    {"id":"w_demo_e11","text":"begun","translation":"开始（过去分词）","createdAt":"2026-10-29T19:30:00+08:00","attempts":[{"sessionId":"s_demo_e2","correct":false},{"sessionId":"s_demo_e3","correct":true}]},
+    {"id":"w_demo_e12","text":"chosen","translation":"选择（过去分词）","createdAt":"2026-10-29T19:30:00+08:00","attempts":[{"sessionId":"s_demo_e2","correct":false},{"sessionId":"s_demo_e3","correct":false}]},
+    {"id":"w_demo_e13","text":"come","translation":"来","createdAt":"2026-10-29T19:30:00+08:00","attempts":[{"sessionId":"s_demo_e2","correct":true}]},
+    {"id":"w_demo_e14","text":"dug","translation":"挖（过去式）","createdAt":"2026-10-29T19:30:00+08:00","attempts":[{"sessionId":"s_demo_e2","correct":true}]}
+  ]
+}

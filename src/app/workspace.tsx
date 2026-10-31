@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useMemo, useRef, useState, type
 import { nowIso } from '../core/time';
 import { paths, type AppFile, type Settings, type User } from '../data/schema';
 import { checkAppFile, checkSettings } from '../data/validate';
+import { addDemoUser } from '../demo/demo';
 import { createAi, fakeAi, isFakeAi, type AiService } from '../ai/tasks';
 import { setApiKey as storeApiKey } from '../services/secrets';
 import { DataCache } from '../storage/dataCache';
@@ -23,6 +24,8 @@ export interface Workspace {
   apiKey: string;
   currentUser: User | null;
   addUser(name: string): Promise<User>;
+  /** Add the example child 小华 with a few records (src/demo) and switch to it. */
+  addDemoUser(): Promise<User>;
   renameUser(id: string, name: string): Promise<void>;
   deleteUser(id: string): Promise<void>;
   switchUser(id: string): Promise<void>;
@@ -103,6 +106,15 @@ export function WorkspaceProvider({ files, app: initialApp, settings: initialSet
       return commitApp(current => {
         const user: User = { id: crypto.randomUUID(), name: validateUserName(name, current.users), createdAt: nowIso() };
         return { value: { ...current, users: [...current.users, user], currentUserId: current.currentUserId ?? user.id }, result: user };
+      });
+    },
+    addDemoUser() {
+      // Through the same queue as other app.json changes, built from the latest saved value.
+      return enqueue(async () => {
+        const { app: next, user } = await addDemoUser(files, appRef.current);
+        appRef.current = next;
+        setApp(next);
+        return user;
       });
     },
     renameUser(id, name) {

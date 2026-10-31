@@ -4,6 +4,7 @@ import { useNavigation } from '../../app/navigation';
 import { useWorkspace } from '../../app/workspace';
 import type { User } from '../../data/schema';
 import { ArithmeticConfirm, errorText, Page, Sheet, useToast } from '../../ui/components';
+import { DEMO_NAME } from '../../demo/demo';
 
 type Editing = { mode: 'add' } | { mode: 'rename'; user: User } | { mode: 'delete'; user: User } | null;
 
@@ -20,6 +21,16 @@ export function Users() {
     switching.current = true;
     setBusy(true);
     try { if (id !== workspace.app.currentUserId) await workspace.switchUser(id); back(); } catch (error) { toast.show(errorText(error)); } finally {
+      switching.current = false;
+      setBusy(false);
+    }
+  };
+  const hasDemo = workspace.app.users.some(user => user.name === DEMO_NAME);
+  const addDemo = async () => {
+    if (switching.current) return;
+    switching.current = true;
+    setBusy(true);
+    try { await workspace.addDemoUser(); toast.show(`已添加示例孩子${DEMO_NAME}`); back(); } catch (error) { toast.show(errorText(error)); } finally {
       switching.current = false;
       setBusy(false);
     }
@@ -45,6 +56,9 @@ export function Users() {
         })}
       </div>
       <p className="muted small users-hint">点名字切换。每个孩子的听写和错题记录分开保存。</p>
+      {!hasDemo && (
+        <button className="button text" disabled={busy} onClick={() => void addDemo()}>添加示例孩子“{DEMO_NAME}”（带几次听写和一些错题，可以随时删除）</button>
+      )}
 
       {editing?.mode === 'add' && (
         <NameSheet title="添加孩子" initial="" onClose={() => setEditing(null)} onSave={async name => { await workspace.addUser(name); toast.show(`已添加 ${name.trim()}`); }} />
