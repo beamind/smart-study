@@ -4,13 +4,23 @@
 
 ![首页](docs/images/home.png)
 
-| 语文听写 | 错词本 |
-|---|---|
-| ![语文听写](docs/images/dictation.png) | ![错词本](docs/images/word-book.png) |
-| **英语错题本** | **学习记录** |
-| ![英语错题本](docs/images/error-book.png) | ![学习记录](docs/images/records.png) |
-
 截图里是示例孩子“小华”的数据，装好 App 后也可以先用它看看效果。
+
+**语文听写**：拍照、相册或手动输入新词，也可以从错词本里抽词听写
+
+![语文听写](docs/images/dictation.png)
+
+**错词本**：每个词错了几次、最近什么时候听写过
+
+![错词本](docs/images/word-book.png)
+
+**英语错题本**：画线的部分会标出来，可以练习，也可以举一反三
+
+![英语错题本](docs/images/error-book.png)
+
+**学习记录**：按天查看每一次的得分，汇总正确率
+
+![学习记录](docs/images/records.png)
 
 ## 能做什么
 
