@@ -17,13 +17,17 @@ export interface ChatRequest {
    * translating one phrase) 5–20× slower. false turns it off; undefined leaves the model's default.
    */
   thinking?: boolean;
+  /** Upper limit for the reply length (the trial proxy sets it, so one request cannot cost much). */
+  maxTokens?: number;
   timeoutMs: number;
   /** Total attempts including the first one. */
   maxAttempts: number;
   signal?: AbortSignal;
 }
 
-export type AiErrorKind = 'no-key' | 'auth' | 'model' | 'rate' | 'timeout' | 'network' | 'server' | 'bad-request' | 'bad-response' | 'cancelled';
+export type AiErrorKind = 'no-key' | 'auth' | 'model' | 'rate' | 'timeout' | 'network' | 'server' | 'bad-request' | 'bad-response' | 'cancelled'
+  /** The trial allowance is used up (docs/decisions/004); retrying does not help, the user's own key does. */
+  | 'quota';
 
 export class AiError extends Error {
   constructor(readonly kind: AiErrorKind, message: string) {
@@ -48,7 +52,10 @@ const defaults: Dependencies = {
   }),
 };
 
-async function once(request: ChatRequest, deps: Dependencies): Promise<string> {
+/** Tokens the request used, as DashScope reports them. */
+export interface Usage { input: number; output: number }
+
+async function once(request: ChatRequest, deps: Dependencies): Promise<{ reply: string; usage: Usage }> {
   // An abort listener never fires for a signal that is already aborted, so check first: no request, no cost.
   if (request.signal?.aborted) throw new AiError('cancelled', '已取消');
   const controller = new AbortController();
@@ -73,6 +80,7 @@ async function once(request: ChatRequest, deps: Dependencies): Promise<string> {
           messages: request.messages,
           ...(request.temperature !== undefined ? { temperature: request.temperature } : {}),
           ...(request.thinking !== undefined ? { enable_thinking: request.thinking } : {}),
+          ...(request.maxTokens !== undefined ? { max_tokens: request.maxTokens } : {}),
         }),
       });
     } catch {
@@ -85,7 +93,10 @@ async function once(request: ChatRequest, deps: Dependencies): Promise<string> {
       // Cancelled or timed out while the reply was arriving: report that, not an empty reply.
       throw stopped() ?? new AiError('network', '接收结果时网络中断，请重试');
     }
-    let body: { choices?: { message?: { content?: unknown } }[]; error?: { code?: string; message?: string }; code?: string; message?: string } | null = null;
+    let body: {
+      choices?: { message?: { content?: unknown } }[]; usage?: { prompt_tokens?: number; completion_tokens?: number };
+      error?: { code?: string; message?: string }; code?: string; message?: string;
+    } | null = null;
     try { body = JSON.parse(text); } catch { /* not JSON */ }
     const code = body?.error?.code ?? body?.code ?? '';
     if (!response.ok) {
@@ -100,7 +111,7 @@ async function once(request: ChatRequest, deps: Dependencies): Promise<string> {
     const reply = typeof content === 'string' ? content
       : Array.isArray(content) ? content.map(part => (part as { text?: string }).text ?? '').join('\n') : '';
     if (!reply.trim()) throw new AiError('bad-response', '千问没有返回内容');
-    return reply.trim();
+    return { reply: reply.trim(), usage: { input: body?.usage?.prompt_tokens ?? 0, output: body?.usage?.completion_tokens ?? 0 } };
   } finally {
     clearTimeout(timer);
     request.signal?.removeEventListener('abort', onAbort);
@@ -109,16 +120,29 @@ async function once(request: ChatRequest, deps: Dependencies): Promise<string> {
 
 /** Chat completion with retries (1 s, 2 s, ... up to 5 s apart) for network, timeout, rate-limit and server errors. */
 export async function chat(request: ChatRequest, deps: Dependencies = defaults): Promise<string> {
+  return (await chatWithUsage(request, deps)).reply;
+}
+
+/** Like chat, also returning the tokens used by the attempt that succeeded (the trial proxy counts cost with it). */
+export async function chatWithUsage(request: ChatRequest, deps: Dependencies = defaults): Promise<{ reply: string; usage: Usage }> {
   if (!request.apiKey.trim()) throw new AiError('no-key', '还没有填写千问 API Key，请在设置里填写');
+  return withRetries(() => once(request, deps), request.maxAttempts, request.signal, deps.sleep);
+}
+
+/**
+ * Run ttempt until it succeeds, a non-retryable error comes, or maxAttempts is reached; waits 1 s, 2 s, ... up to 5 s
+ * between attempts and stops at once when signal aborts.
+ */
+export async function withRetries<T>(attempt: () => Promise<T>, maxAttempts: number, signal: AbortSignal | undefined, sleep: Dependencies['sleep'] = defaults.sleep): Promise<T> {
   let delay = 1000;
-  for (let attempt = 1; ; attempt++) {
+  for (let tries = 1; ; tries++) {
     try {
-      return await once(request, deps);
+      return await attempt();
     } catch (error) {
       const failure = error instanceof AiError ? error : new AiError('network', String(error));
-      if (!failure.retryable || attempt >= request.maxAttempts || request.signal?.aborted) throw failure;
-      await waitOrCancel(deps.sleep(delay, request.signal), request.signal);
-      if (request.signal?.aborted) throw new AiError('cancelled', '已取消');
+      if (!failure.retryable || tries >= maxAttempts || signal?.aborted) throw failure;
+      await waitOrCancel(sleep(delay, signal), signal);
+      if (signal?.aborted) throw new AiError('cancelled', '已取消');
       delay = Math.min(delay * 2, 5000);
     }
   }

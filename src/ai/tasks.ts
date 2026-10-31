@@ -1,6 +1,6 @@
 import type { DictationLanguage, Settings } from '../data/schema';
 import { blanksNotMarks, markUnderlines, stripUnderlines, wordPattern, type UnderlineHit } from '../domain/underline';
-import { AiError, chat } from './dashscope';
+import { AiError, chat, type ChatRequest } from './dashscope';
 import { cleanTranslation, extractJson, listIn, parseGenerated, parseQuestions, parseWords, type QuestionAnswer } from './parse';
 import { prompt } from './prompts';
 
@@ -127,41 +127,76 @@ export function applyHits(questions: QuestionAnswer[], hits: NumberedHit[]): Und
   return { texts, marks, missed };
 }
 
-export function createAi(settings: Settings, apiKey: string): AiService {
-  // Deep thinking off: reading a photo or translating a phrase does not need it and is 5–20× slower with it.
-  const base = { apiKey, thinking: false, timeoutMs: settings.models.requestTimeoutSeconds * 1000, maxAttempts: settings.models.maxAttempts };
-  const vision = (image: string, text: string, signal?: AbortSignal) => chat({
-    ...base, signal, model: settings.models.vision,
-    messages: [{ role: 'user', content: [{ type: 'image_url', image_url: { url: image } }, { type: 'text', text }] }],
+/**
+ * One model call, described by what it is for. The request (model, prompt) is built from it by modelRequest;
+ * the app does that itself with the user's key, the trial proxy (docs/decisions/004) does it on the server.
+ */
+export type ModelTask =
+  | { task: 'words'; image: string; language: DictationLanguage }
+  | { task: 'questions'; image: string }
+  | { task: 'underlines'; image: string; questions: QuestionAnswer[] }
+  | { task: 'translate'; text: string }
+  | { task: 'generate'; source: QuestionAnswer };
+
+/** Sends one task and returns the model's reply text. */
+export type ModelCall = (task: ModelTask, signal?: AbortSignal) => Promise<string>;
+
+/** Longest reply each task may need; the trial proxy caps replies at this, so one request cannot cost much. */
+export const MAX_REPLY_TOKENS: Record<ModelTask['task'], number> = { words: 1500, questions: 4000, underlines: 1500, translate: 200, generate: 1000 };
+
+/** Model, messages and options for a task. Deep thinking is off: these tasks do not need it and are 5–20× slower with it. */
+export function modelRequest(settings: Settings, task: ModelTask): Pick<ChatRequest, 'model' | 'messages' | 'temperature' | 'thinking'> {
+  const vision = (image: string, text: string) => ({
+    model: settings.models.vision, thinking: false,
+    messages: [{ role: 'user' as const, content: [{ type: 'image_url' as const, image_url: { url: image } }, { type: 'text' as const, text }] }],
   });
+  switch (task.task) {
+    case 'words': return vision(task.image, dictationPrompt(settings, task.language));
+    case 'questions': return vision(task.image, prompt(settings, 'errorBookRecognition'));
+    case 'underlines': return vision(task.image, underlinePrompt(settings, task.questions));
+    case 'translate':
+      return { model: settings.models.translation, thinking: false, messages: [{ role: 'user', content: `${prompt(settings, 'translation')}\n英文：${task.text}` }] };
+    case 'generate':
+      return {
+        model: settings.models.generation, thinking: false, temperature: settings.models.generationTemperature,
+        messages: [{ role: 'system', content: prompt(settings, 'questionGenerationSystem') }, { role: 'user', content: generationPrompt(settings, task.source) }],
+      };
+  }
+}
+
+/** Calls DashScope directly with the user's own key (an empty key fails with 'no-key'). */
+export function directCall(settings: Settings, apiKey: string): ModelCall {
+  return (task, signal) => chat({
+    ...modelRequest(settings, task), apiKey, signal,
+    timeoutMs: settings.models.requestTimeoutSeconds * 1000, maxAttempts: settings.models.maxAttempts,
+  });
+}
+
+/** The app's model features on top of a ModelCall: the same parsing for the user's own key and for the trial. */
+export function createAi(call: ModelCall): AiService {
   return {
     async recognizeWords(imageDataUrl, language, signal) {
-      const words = parseWords(await vision(imageDataUrl, dictationPrompt(settings, language), signal), language);
+      const words = parseWords(await call({ task: 'words', image: imageDataUrl, language }, signal), language);
       if (!words.length) throw new AiError('bad-response', '没有从照片里识别出词语，可以换一张更清楚的照片，或手动输入');
       return words;
     },
     async translate(text, signal) {
-      const reply = await chat({ ...base, signal, model: settings.models.translation, messages: [{ role: 'user', content: `${prompt(settings, 'translation')}\n英文：${text}` }] });
-      const translation = cleanTranslation(reply);
+      const translation = cleanTranslation(await call({ task: 'translate', text }, signal));
       if (!translation) throw new AiError('bad-response', '翻译结果为空');
       return translation;
     },
     async recognizeQuestions(imageDataUrl, signal) {
-      const questions = parseQuestions(await vision(imageDataUrl, prompt(settings, 'errorBookRecognition'), signal))
+      const questions = parseQuestions(await call({ task: 'questions', image: imageDataUrl }, signal))
         .map(question => ({ ...question, text: blanksNotMarks(question.text) }));
       if (!questions.length) throw new AiError('bad-response', '没有从照片里识别出题目，可以换一张更清楚的照片，或手动输入');
       return questions;
     },
     async recognizeUnderlines(imageDataUrl, questions, signal) {
       if (!questions.length) return { texts: [], marks: 0, missed: 0 };
-      return applyHits(questions, parseUnderlineHits(await vision(imageDataUrl, underlinePrompt(settings, questions), signal)));
+      return applyHits(questions, parseUnderlineHits(await call({ task: 'underlines', image: imageDataUrl, questions }, signal)));
     },
     async generateQuestion(source, signal) {
-      const reply = await chat({
-        ...base, signal, model: settings.models.generation, temperature: settings.models.generationTemperature,
-        messages: [{ role: 'system', content: prompt(settings, 'questionGenerationSystem') }, { role: 'user', content: generationPrompt(settings, source) }],
-      });
-      const generated = parseGenerated(reply);
+      const generated = parseGenerated(await call({ task: 'generate', source }, signal));
       if (!generated) throw new AiError('bad-response', '生成的题目缺少题干或答案');
       // Without underlines in the source, every "__" in the new question is a blank ("w__t__r"), not a mark.
       return stripUnderlines(source.text) === source.text ? { ...generated, text: blanksNotMarks(generated.text) } : generated;

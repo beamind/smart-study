@@ -38,3 +38,6 @@ keystore.properties
 Thumbs.db
 *.swp
 *~
+
+# Trial proxy bundle (npm run trial:build)
+server/trial-proxy/dist/

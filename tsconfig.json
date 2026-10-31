@@ -7,5 +7,5 @@
     "types": ["vite/client", "node"], "noUnusedLocals": true, "noUnusedParameters": true,
     "allowImportingTsExtensions": true
   },
-  "include": ["src", "tools", "e2e", "vite.config.ts", "capacitor.config.ts", "playwright.config.ts"]
+  "include": ["src", "server", "tools", "e2e", "vite.config.ts", "capacitor.config.ts", "playwright.config.ts"]
 }

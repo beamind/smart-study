@@ -9,6 +9,7 @@
 - [架构决定 001：技术选型](decisions/001-web-stack-without-voice-commands.md)
 - [架构决定 002：数据放在公共 Documents 文件夹，通过 SAF 插件读写](decisions/002-public-documents-storage-via-saf.md)
 - [架构决定 003：release 签名密钥放在仓库外](decisions/003-release-signing.md)
+- [架构决定 004：没有 API Key 时，通过云函数中转试用](decisions/004-trial-proxy.md)
 - [给编码助手的工作约定](../AGENTS.md)：也是给所有贡献者的约定，例如数据安全、界面规则和提交前检查
 
 ## 在电脑上运行
@@ -31,9 +32,23 @@ npm run dev        # http://127.0.0.1:5173
 
 ```powershell
 npm run typecheck
-npm test               # Vitest：数据校验、存储、统计、抽样、模型输出解析
+npm test               # Vitest：数据校验、存储、统计、抽样、模型输出解析、试用中转服务
 npx playwright test    # 浏览器里的界面流程（平板和手机两种尺寸，假的朗读和模型）
 ```
+
+## 试用中转服务
+
+没有 API Key 的设备经 `server/trial-proxy/` 里的中转服务试用千问，原因和额度见[架构决定 004](decisions/004-trial-proxy.md)，部署步骤见[试用中转服务部署](trial-proxy.md)。
+
+- 构建 APK 和 `npm run build` 时用 `src/ai/trial.ts` 里的 `RELEASE_TRIAL_URL`；`npm run dev`、单元测试和 Playwright 不用试用，没有 Key 就不能用千问。环境变量 `VITE_TRIAL_URL` 可以覆盖它，设为 `off` 时不带试用。
+- 服务端和 App 共用 `src/ai/tasks.ts` 里的 `modelRequest`（模型和提示词）和 `src/ai/dashscope.ts`；改提示词会同时影响两边，部署前要重新打包上传。
+- 在电脑上试：
+
+  ```powershell
+  npm run trial:build    # 打包成一个文件 server/trial-proxy/dist/index.cjs
+  $env:DASHSCOPE_API_KEY = '<只用于试用的 Key>'; $env:TRIAL_STORE = 'memory'; node server/trial-proxy/dist/index.cjs   # 端口 9000，计数存在内存里
+  $env:VITE_TRIAL_URL = 'http://127.0.0.1:9000/'; npm run dev    # 另开一个终端，不填 Key 的 App 就会走本机的中转服务
+  ```
 
 ## 测试账号
 
@@ -74,13 +89,14 @@ src/
   data/       数据类型、默认值、校验、序列化
   storage/    数据文件夹（SAF / 浏览器文件夹 / 内存）、防写坏的 JSON 读写、内存缓存
   domain/     与界面无关的业务规则（听写、错题本、抽样、统计、划线标记）
-  ai/         千问调用、提示词默认值、模型输出解析
+  ai/         千问调用、试用中转的客户端、提示词默认值、模型输出解析
   demo/       示例孩子小华的数据
-  services/   设备能力（朗读、拍照、屏幕常亮、草稿、API Key 存储）
+  services/   设备能力（朗读、拍照、屏幕常亮、草稿、API Key 和试用设备标识的存储）
   features/   页面：听写、错词本、错题本、学习记录、用户、设置
   ui/         通用组件
   styles/     tokens.css（颜色、字号、间距）与样式
 android/      Capacitor Android 工程；SafFolderPlugin.java 是唯一的自写原生代码
+server/       试用中转服务（阿里云函数计算），见架构决定 004
 tools/        工具脚本：测试账号、Android 构建与冒烟测试、截图
 e2e/          Playwright 测试
 docs/         规划、数据约定、架构决定、开发说明

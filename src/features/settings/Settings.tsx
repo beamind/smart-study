@@ -1,6 +1,7 @@
-import { ChevronRight, FolderOpen, KeyRound, RotateCcw } from 'lucide-react';
+import { ChevronRight, FolderOpen, Gift, KeyRound, RotateCcw } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { DEFAULT_PROMPTS, PROMPT_LABELS } from '../../ai/prompts';
+import type { TrialRemaining } from '../../ai/trial';
 import { useWorkspace } from '../../app/workspace';
 import { defaultSettings } from '../../data/defaults';
 import { PROMPT_KEYS, type PromptKey, type Settings as SettingsData } from '../../data/schema';
@@ -49,10 +50,12 @@ export function Settings() {
         <button className="list-row" onClick={() => setEditing('key')}>
           <KeyRound size={20} className="muted" />
           <span className="grow">API Key</span>
-          <span className="muted small">{workspace.apiKey ? maskApiKey(workspace.apiKey) : '未填写'}</span>
+          <span className="muted small">{workspace.apiKey ? maskApiKey(workspace.apiKey) : workspace.trial ? '未填写（正在试用）' : '未填写'}</span>
           <ChevronRight size={18} className="muted" />
         </button>
+        {workspace.trial && <TrialRow />}
       </Section>
+      {workspace.trial && <p className="muted small">试用时使用默认的模型和提示词，下面"模型"和"提示词"里的修改要填写自己的 Key 后才生效。</p>}
 
       <Section title="朗读">
         <Slider label="语速" value={draft.tts.rate} min={0.2} max={1.2} step={0.05} format={value => `${value.toFixed(2)} 倍`}
@@ -157,6 +160,28 @@ function TextField({ label, value, onChange }: { label: string; value: string; o
     <label className="field"><span>{label}</span>
       <input className="input" value={value} spellCheck={false} onChange={event => onChange(event.target.value)} />
     </label>
+  );
+}
+
+/** The trial allowance left on this device (docs/decisions/004), asked from the proxy when the page opens. */
+function TrialRow() {
+  const workspace = useWorkspace();
+  const [left, setLeft] = useState<TrialRemaining | null | undefined>(undefined);
+  useEffect(() => {
+    let current = true;
+    void workspace.trialRemaining().then(value => { if (current) setLeft(value); });
+    return () => { current = false; };
+    // Once per opening of the page; the workspace object changes with every settings save.
+  }, []);
+  return (
+    <div className="list-row">
+      <Gift size={20} className="muted" />
+      <span className="grow"><span className="muted small">试用还剩</span><br />
+        {left === undefined ? '正在查询…'
+          : left === null ? '暂时查不到，请检查网络'
+          : `拍照识别 ${left.photo} 次，翻译 ${left.translate} 次，举一反三 ${left.generate} 次`}
+      </span>
+    </div>
   );
 }
 

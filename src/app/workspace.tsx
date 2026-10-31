@@ -3,7 +3,9 @@ import { nowIso } from '../core/time';
 import { paths, type AppFile, type Settings, type User } from '../data/schema';
 import { checkAppFile, checkSettings } from '../data/validate';
 import { addDemoUser } from '../demo/demo';
-import { createAi, fakeAi, isFakeAi, type AiService } from '../ai/tasks';
+import { createAi, directCall, fakeAi, isFakeAi, type AiService } from '../ai/tasks';
+import { trialCall, trialRemaining, TRIAL_URL, type TrialDependencies, type TrialRemaining } from '../ai/trial';
+import { trialDeviceId } from '../services/trialDevice';
 import { setApiKey as storeApiKey } from '../services/secrets';
 import { DataCache } from '../storage/dataCache';
 import type { JsonFiles } from '../storage/jsonFiles';
@@ -22,6 +24,10 @@ export interface Workspace {
   app: AppFile;
   settings: Settings;
   apiKey: string;
+  /** No API key, so model calls go through the trial proxy (docs/decisions/004). */
+  trial: boolean;
+  /** What is left of this device's trial; null when the proxy cannot be reached or there is no trial. */
+  trialRemaining(): Promise<TrialRemaining | null>;
   currentUser: User | null;
   addUser(name: string): Promise<User>;
   /** Add the example child 小华 with a few records (src/demo) and switch to it. */
@@ -43,6 +49,8 @@ export function useWorkspace(): Workspace {
 }
 
 export class UserNameError extends Error {}
+
+const TRIAL_DEPS: TrialDependencies = { fetch: (...args) => fetch(...args), deviceId: trialDeviceId };
 
 export function validateUserName(name: string, users: User[], exceptId?: string): string {
   const trimmed = name.trim();
@@ -69,7 +77,11 @@ export function WorkspaceProvider({ files, app: initialApp, settings: initialSet
   const appRef = useRef(app);
   const settingsRef = useRef(settings);
   const cache = useMemo(() => new DataCache(files), [files]);
-  const ai = useMemo(() => (isFakeAi() ? fakeAi : createAi(settings, apiKey)), [settings, apiKey]);
+  // Without a key, a build with a trial proxy uses it; otherwise calls fail with 'no-key' and ask for a key.
+  const trial = !apiKey && !!TRIAL_URL;
+  const ai = useMemo(() => (isFakeAi() ? fakeAi : createAi(trial
+    ? trialCall(TRIAL_URL, TRIAL_DEPS, settings.models.requestTimeoutSeconds * 1000, settings.models.maxAttempts)
+    : directCall(settings, apiKey))), [settings, apiKey, trial]);
   const queue = useRef<Promise<unknown>>(Promise.resolve());
 
   /**
@@ -100,6 +112,8 @@ export function WorkspaceProvider({ files, app: initialApp, settings: initialSet
     app,
     settings,
     apiKey,
+    trial,
+    trialRemaining: () => (TRIAL_URL ? trialRemaining(TRIAL_URL, TRIAL_DEPS) : Promise.resolve(null)),
     currentUser: app.users.find(user => user.id === app.currentUserId) ?? null,
 
     addUser(name) {
@@ -147,7 +161,7 @@ export function WorkspaceProvider({ files, app: initialApp, settings: initialSet
       setKey(value.trim());
     },
     changeFolder: onChangeFolder,
-  }), [files, cache, ai, app, settings, apiKey, commitApp, enqueue, onChangeFolder]);
+  }), [files, cache, ai, app, settings, apiKey, trial, commitApp, enqueue, onChangeFolder]);
 
   return <Context.Provider value={workspace}>{children}</Context.Provider>;
 }

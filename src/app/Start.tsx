@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { nowIso } from '../core/time';
 import { paths, type AppFile } from '../data/schema';
 import { getApiKey } from '../services/secrets';
+import { TRIAL_URL } from '../ai/trial';
 import type { Folder } from '../storage/folder';
 import { errorText } from '../ui/components';
 import {
@@ -177,6 +178,7 @@ function KeyStep({ onDone }: { onDone(): void }) {
   return (
     <Shell icon={<KeyRound size={28} />} title="填写千问 API Key">
       <p>拍照识别词语和题目、翻译、举一反三需要阿里云百炼（DashScope）的 API Key。</p>
+      {TRIAL_URL && <p>不填也可以先免费试用，次数有限，在"设置"里能看到还剩多少。试用时照片会经过作者的服务器转给千问，不会保存。</p>}
       <p className="muted small">Key 只保存在这台设备的 App 里，不会写入数据文件夹。重装 App 后需要重新填写。以后也可以在"设置"里修改。</p>
       <label className="field"><span>API Key</span>
         <input className="input" value={value} onChange={event => setValue(event.target.value)} placeholder="sk-…" autoComplete="off" spellCheck={false} />
@@ -185,7 +187,7 @@ function KeyStep({ onDone }: { onDone(): void }) {
       <button className="button primary big" disabled={!value.trim()} onClick={async () => {
         try { await setApiKey(value); onDone(); } catch (problem) { setError(errorText(problem)); }
       }}>保存</button>
-      <button className="button text" onClick={onDone}>以后再填</button>
+      <button className="button text" onClick={onDone}>{TRIAL_URL ? '先免费试用' : '以后再填'}</button>
     </Shell>
   );
 }
