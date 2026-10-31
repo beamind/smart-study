@@ -1,0 +1,23 @@
+src/storage/dataCache.test.ts
+  s_853e3a05582c7f::t_6f9d0d74fed5b1 5
+src/storage/dataCache.ts
+  s_853e3a05582c7f::t_70585a9927b0d0 55-60
+docs/decisions/002-public-documents-storage-via-saf.md
+  s_853e3a05582c7f::t_67f6932e3383d1 32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "56721a5216154e7c925c15dc3d4704edf1ff95e3",
+  "prompts": {},
+  "sessions": {
+    "s_853e3a05582c7f": {
+      "agent_id": {
+        "tool": "kiro-desktop",
+        "id": "sess_9412c325-cac8-43f4-88c4-d85afc226aaf",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "yandali <yandali@trip.com>"
+    }
+  }
+}
