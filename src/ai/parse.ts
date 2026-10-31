@@ -163,10 +163,13 @@ export function parseWords(reply: string, language: DictationLanguage): string[]
     : reply.split(/[\s，。、；：！？,.;:!?\[\]"“”]+/).filter(part => part.length <= 30);
   // A number kept from a numbered list ("1. 春天", "(2) apple") is not part of the word.
   const cleaned = raw.map(item => item.trim().replace(/^(?:\d+\s*[.、．)）:：]|[(（]\d+[)）])\s*/, '')).filter(Boolean).filter(item => item.length <= 200)
+    // A poem line sent as one item ("床前明月光，疑是地上霜") is read as its parts.
+    .flatMap(item => (language === 'chinese' ? item.split(/[，。；、！？,;]+/) : [item]))
     .map(item => (language === 'english' ? cleanEnglish(item) : cleanChinese(item)))
     .filter(item => {
       if (!item) return false;
-      if (language === 'chinese') return han.test(item) && !latin.test(item) && !digit.test(item) && item.length <= 10;
+      // Up to 20 characters, so a seven-character couplet line written without punctuation still fits.
+      if (language === 'chinese') return han.test(item) && !latin.test(item) && !digit.test(item) && item.length <= 20;
       return !han.test(item) && !digit.test(item) && englishWord.test(item);
     });
   const seen = new Set<string>();
@@ -183,9 +186,16 @@ export function cleanTranslation(reply: string): string {
 
 export interface QuestionAnswer { text: string; answer: string }
 
-const scalar = (value: unknown) => (typeof value === 'string' ? value : typeof value === 'number' ? String(value) : '');
-/** A text field; a list (e.g. one answer per blank: ["goes", "comes"]) is joined with "; ". */
-const field = (value: unknown) => (Array.isArray(value) ? value.map(scalar).filter(item => item.trim()).join('; ') : scalar(value));
+/** true/false answers (判断题) are written as T and F, as on English worksheets. */
+const scalar = (value: unknown) => (typeof value === 'string' ? value : typeof value === 'number' ? String(value) : typeof value === 'boolean' ? (value ? 'T' : 'F') : '');
+/**
+ * A text field. A list (one answer per blank: ["goes", "comes"]) or an object ({"1": "am", "2": "is"}) is joined
+ * with "; ".
+ */
+const field = (value: unknown): string => {
+  const items = Array.isArray(value) ? value : value && typeof value === 'object' ? Object.values(value) : null;
+  return items ? items.map(scalar).filter(item => item.trim()).join('; ') : scalar(value);
+};
 /** Real line breaks; some replies still contain a literal "\n" after JSON parsing. */
 const lines = (value: string) => value.replace(/\\n/g, '\n').replace(/\r\n?/g, '\n').split('\n').map(line => line.trimEnd()).join('\n').trim();
 

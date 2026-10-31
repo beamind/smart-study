@@ -63,6 +63,12 @@ describe('markUnderlines', () => {
     expect(markUnderlines('I go to\u00A0school.', [{ word: 'go to school', underlined: 'to school' }])).toMatchObject({ text: 'I go __to\u00A0school__.', marks: 1 });
   });
 
+  it('marks the underlined word itself when the model names a whole phrase, not letters of an earlier word', () => {
+    expect(markUnderlines('There is the book on the desk.', [{ word: 'There is the book', underlined: 'the' }]).text).toBe('There is __the__ book on the desk.');
+    expect(markUnderlines('I have a cat.', [{ word: 'I have a cat', underlined: 'a' }]).text).toBe('I have __a__ cat.');
+    expect(markUnderlines('a cake', [{ word: 'cake', underlined: 'a' }]).text).toBe('a c__a__ke');
+  });
+
   it('never puts a mark next to a fill-in blank', () => {
     expect(markUnderlines('Tom___ is Tom', [{ word: 'Tom', underlined: 'Tom' }])).toMatchObject({ text: 'Tom___ is __Tom__', marks: 1, missed: 0 });
     expect(markUnderlines('a ___ter', [{ word: 'ter', underlined: 'ter' }])).toMatchObject({ text: 'a ___ter', marks: 0, missed: 1 });

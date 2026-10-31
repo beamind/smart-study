@@ -74,6 +74,14 @@ export class WebFolder implements Folder {
     await writable.close();
   }
 
+  /**
+   * Two tabs on the same folder would otherwise both write "<file>.tmp" at once, and one tab's change could be
+   * renamed into place as the other's. Web Locks are shared by all tabs of this site.
+   */
+  exclusive<T>(task: () => Promise<T>): Promise<T> {
+    return navigator.locks ? navigator.locks.request('smart-study-data-folder', task) as Promise<T> : task();
+  }
+
   async list(dir: string): Promise<FolderEntry[]> {
     if (dir) assertSafePath(dir);
     const handle = await this.directory(dir, false);

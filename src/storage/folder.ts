@@ -27,6 +27,11 @@ export interface Folder {
   remove(path: string): Promise<void>;
   /** Renames a file inside its own directory, keeping its bytes. The new name must not exist yet. */
   rename(path: string, newName: string): Promise<void>;
+  /**
+   * Runs one load or save so that no other copy of the app (another browser tab on the same folder) runs one at the
+   * same time. Optional: where only one copy of the app can use the folder, tasks run directly.
+   */
+  exclusive?<T>(task: () => Promise<T>): Promise<T>;
 }
 
 export class UndecodableTextError extends Error {

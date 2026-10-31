@@ -149,12 +149,12 @@ public class SafFolderPlugin extends Plugin {
                     Uri created = DocumentsContract.createDocument(resolver(),
                             DocumentsContract.buildDocumentUriUsingTree(treeUri, treeId), Document.MIME_TYPE_DIR, FOLDER_NAME);
                     if (created == null) {
-                        call.reject("无法在所选文件夹中创建 smartstudy 文件夹，请先在文件管理里新建 Documents/smartstudy，再选择它", "CREATE_FAILED");
+                        rejectPick(call, treeUri, "无法在所选文件夹中创建 smartstudy 文件夹，请先在文件管理里新建 Documents/smartstudy，再选择它", "CREATE_FAILED", null);
                         return;
                     }
                     baseId = DocumentsContract.getDocumentId(created);
                     if (!FOLDER_NAME.equals(displayName(treeUri, baseId))) {
-                        call.reject("系统把新文件夹命名成了 " + displayName(treeUri, baseId) + "，请在文件管理里检查后直接选择 smartstudy 文件夹", "CREATE_FAILED");
+                        rejectPick(call, treeUri, "系统把新文件夹命名成了 " + displayName(treeUri, baseId) + "，请在文件管理里检查后直接选择 smartstudy 文件夹", "CREATE_FAILED", null);
                         return;
                     }
                 }
@@ -173,8 +173,18 @@ public class SafFolderPlugin extends Plugin {
             folder.put("folderId", treeUri.toString() + "#" + baseId);
             call.resolve(folder);
         } catch (Exception e) {
-            call.reject("授权文件夹失败：" + e.getMessage(), "PICK_FAILED", e);
+            rejectPick(call, treeUri, "授权文件夹失败：" + e.getMessage(), "PICK_FAILED", e);
         }
+    }
+
+    /** A folder that was picked but not taken into use gives its access back, unless it is the folder in use. */
+    private void rejectPick(PluginCall call, Uri treeUri, String message, String code, Exception e) {
+        String current;
+        synchronized (folderLock) {
+            current = prefs().getString(KEY_TREE, null);
+        }
+        if (!treeUri.toString().equals(current)) releaseQuietly(treeUri);
+        call.reject(message, code, e);
     }
 
     // ---------------------------------------------------------------- file operations
@@ -264,6 +274,7 @@ public class SafFolderPlugin extends Plugin {
             Target target = requireFolder(call);
             String path = call.getString("path", "");
             JSArray entries = new JSArray();
+            if (path == null || path.isEmpty()) requireBase(target);
             String dirId = path == null || path.isEmpty() ? target.base : idOf(resolve(target, path, false, true));
             if (dirId != null) {
                 Uri tree = target.tree;
@@ -367,6 +378,9 @@ public class SafFolderPlugin extends Plugin {
             boolean last = i == parts.length - 1;
             String child = findChild(tree, current, parts[i]);
             if (child == null) {
+                // Missing because the smartstudy folder itself was renamed or moved while the app runs: say so,
+                // instead of reporting every file as missing (the data would look empty).
+                if (i == 0) requireBase(target);
                 if (!create) return null;
                 String mime = last && !isDirectory ? FILE_MIME : Document.MIME_TYPE_DIR;
                 Uri created = DocumentsContract.createDocument(resolver(), DocumentsContract.buildDocumentUriUsingTree(tree, current), mime, parts[i]);
@@ -378,6 +392,17 @@ public class SafFolderPlugin extends Plugin {
             current = child;
         }
         return DocumentsContract.buildDocumentUriUsingTree(tree, current);
+    }
+
+    private void requireBase(Target target) {
+        boolean exists;
+        try (Cursor cursor = resolver().query(DocumentsContract.buildDocumentUriUsingTree(target.tree, target.base),
+                new String[]{Document.COLUMN_DOCUMENT_ID}, null, null, null)) {
+            exists = cursor != null && cursor.moveToFirst();
+        } catch (Exception e) {
+            exists = false;
+        }
+        if (!exists) throw new IllegalStateException("数据文件夹不存在了（可能被改名或移动），请重新选择");
     }
 
     private String findChild(Uri tree, String parentId, String name) {

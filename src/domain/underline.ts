@@ -65,7 +65,10 @@ export function markUnderlines(text: string, hits: UnderlineHit[]): { text: stri
     for (const flags of ['g', 'gi']) {
       for (const match of source.matchAll(new RegExp(`(?<![A-Za-z0-9])${pattern}(?![A-Za-z0-9])`, flags))) {
         // Find the underlined part with the same spacing rule, so "to school" also matches "to\u00A0school".
-        const inner = new RegExp(wordPattern(part), 'i').exec(match[0]);
+        // A whole word first ("the" in "There is the book" is the word, not the start of "There"); then letters
+        // inside a word ("a" in "cake").
+        const inner = new RegExp(`(?<![A-Za-z0-9])${wordPattern(part)}(?![A-Za-z0-9])`, 'i').exec(match[0])
+          ?? new RegExp(wordPattern(part), 'i').exec(match[0]);
         const inWord = inner ? inner.index : 0;
         const length = inner ? inner[0].length : match[0].length;
         const start = match.index + inWord;

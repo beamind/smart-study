@@ -66,7 +66,8 @@ export class JsonFiles {
   }
 
   private enqueue<R>(task: () => Promise<R>): Promise<R> {
-    const run = this.queue.catch(() => undefined).then(task);
+    const exclusive = this.folder.exclusive?.bind(this.folder);
+    const run = this.queue.catch(() => undefined).then(() => (exclusive ? exclusive(task) : task()));
     this.queue = run;
     return run;
   }

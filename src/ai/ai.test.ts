@@ -262,3 +262,15 @@ describe('model replies, round 10', () => {
     expect(extractJson('注意[见下] 结果：["a","b"]')).toEqual(['a', 'b']);
   });
 });
+
+describe('model replies, round 11', () => {
+  it('reads true/false answers and answers given per blank in an object', () => {
+    expect(parseQuestions('[{"question":"The sun is hot. (T/F)","answer":true}]')).toEqual([{ text: 'The sun is hot. (T/F)', answer: 'T' }]);
+    expect(parseQuestions('[{"question":"I ___ Tom. He ___ Ben.","answer":{"1":"am","2":"is"}}]')).toEqual([{ text: 'I ___ Tom. He ___ Ben.', answer: 'am; is' }]);
+  });
+
+  it('keeps poem lines: split at punctuation, up to 20 characters', () => {
+    expect(parseWords('["床前明月光，疑是地上霜","两个黄鹂鸣翠柳一行白鹭上青天","春天"]', 'chinese'))
+      .toEqual(['床前明月光', '疑是地上霜', '两个黄鹂鸣翠柳一行白鹭上青天', '春天']);
+  });
+});

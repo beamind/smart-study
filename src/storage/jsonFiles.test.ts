@@ -222,6 +222,21 @@ describe('JsonFiles', () => {
     expect(folder.files.get('data/settings.json')).toBe(newer);
   });
 
+  it('runs every load and save through the folder\'s exclusive section when it has one', async () => {
+    const { folder } = setup();
+    let active = 0;
+    let most = 0;
+    const calls: string[] = [];
+    (folder as MemoryFolder & { exclusive<T>(task: () => Promise<T>): Promise<T> }).exclusive = async task => {
+      active++; most = Math.max(most, active); calls.push('in');
+      try { return await task(); } finally { active--; }
+    };
+    const files = new JsonFiles(folder);
+    await Promise.all([files.save(path, app('一')), files.load(path, checkAppFile), files.save(path, app('二'))]);
+    expect(calls).toHaveLength(3);
+    expect(most).toBe(1);
+  });
+
   it('serialises concurrent saves so the last call wins', async () => {
     const { files } = setup();
     await Promise.all([files.save(path, app('一')), files.save(path, app('二')), files.save(path, app('三'))]);

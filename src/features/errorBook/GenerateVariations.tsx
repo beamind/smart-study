@@ -5,7 +5,7 @@ import { useWorkspace } from '../../app/workspace';
 import { AiError } from '../../ai/dashscope';
 import type { Question } from '../../data/schema';
 import { plainQuestion } from '../../domain/underline';
-import { errorText, Page } from '../../ui/components';
+import { errorText, Page, Sheet } from '../../ui/components';
 import { QuestionText } from './QuestionText';
 import { newKey, type PracticeItem } from './types';
 
@@ -61,7 +61,10 @@ export function GenerateVariations({ sources, onStart, onCancel }: { sources: Qu
   const failed = slots.map((slot, index) => (slot.status === 'failed' ? index : -1)).filter(index => index >= 0);
   const busy = slots.some(slot => slot.status === 'waiting' || slot.status === 'running');
   const cancel = () => { abort.current.abort(); onCancel(); };
-  useBackHandler(true, cancel);
+  // Questions already generated (or being generated) cost waiting time and model calls: ask before dropping them.
+  const [leaving, setLeaving] = useState(false);
+  const hasProgress = done.length > 0 || slots.some(slot => slot.status === 'running');
+  useBackHandler(!leaving, () => (hasProgress ? setLeaving(true) : cancel()));
 
   return (
     <Page title="举一反三 · 出题"
@@ -92,6 +95,15 @@ export function GenerateVariations({ sources, onStart, onCancel }: { sources: Qu
           );
         })}
       </div>
+      {leaving && (
+        <Sheet title="放弃这些新题？" onClose={() => setLeaving(false)}>
+          <p className="muted">已经出好的 {done.length} 道新题不会保存，下次要重新出题。</p>
+          <div className="row">
+            <button className="button grow" onClick={() => setLeaving(false)}>继续出题</button>
+            <button className="button danger grow" onClick={() => { setLeaving(false); cancel(); }}>放弃</button>
+          </div>
+        </Sheet>
+      )}
     </Page>
   );
 }
