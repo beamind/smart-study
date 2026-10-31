@@ -1,0 +1,271 @@
+src/storage/nativeFolder.ts
+  s_853e3a05582c7f::t_af197ff6efdc0e 2
+  s_853e3a05582c7f::t_a4575910ea67f1 1,3-52
+src/features/prototype/DictationPrototype.tsx
+  s_853e3a05582c7f::t_5da952b679b66b 179
+  s_853e3a05582c7f::t_dc12bddddfa0dc 1-177,180-184,192-229
+  s_853e3a05582c7f::t_dcb7f69bd45689 178
+  s_853e3a05582c7f::t_deb817302cd5ca 185-191
+docs/software-plan.md
+  s_853e3a05582c7f::t_6f2c03cbace86d 90
+  s_853e3a05582c7f::t_e5b05b4fa491e5 34
+  s_853e3a05582c7f::t_08a36057013e72 149
+  s_853e3a05582c7f::t_365f765d52cec4 43-65
+  s_853e3a05582c7f::t_033c0890664896 26,28-29,31,33,41-42
+  s_853e3a05582c7f::t_b1d9b25d1a545b 161-188,190-233
+  s_853e3a05582c7f::t_89f520eaa53cbb 189
+  s_853e3a05582c7f::t_9c46b265fc6aff 1-25,27,30,32,35-40,66-70,72-89,91-148,150-160
+  s_853e3a05582c7f::t_f79f945b13290c 71
+android/app/capacitor.build.gradle
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-23
+src/domain/stats.test.ts
+  s_853e3a05582c7f::t_ba1c7de36e4550 1-33
+android/app/src/main/java/com/smartstudy/SafFolderPlugin.java
+  s_853e3a05582c7f::t_70b54adda86120 1-339
+src/ai/prompts.ts
+  s_853e3a05582c7f::t_31f5ba1080df46 1-99
+src/storage/memoryFolder.ts
+  s_853e3a05582c7f::t_d0caa5cf122cee 1-49
+README.md
+  s_853e3a05582c7f::t_f684170e45fa2c 1,3,5,7,9-12,14,16-18,20,22,24-26,29,31-35,38,40-41,44,46,48,50-53,56-74
+src/core/time.ts
+  s_853e3a05582c7f::t_37d85801da792c 1-50
+docs/decisions/001-web-stack-without-voice-commands.md
+  s_853e3a05582c7f::t_72abb0ed62c21f 1-38
+tools/migrate-legacy.ts
+  s_853e3a05582c7f::t_f15054148542b2 12
+  s_853e3a05582c7f::t_6ce876260a7961 41
+  s_853e3a05582c7f::t_2a3d966e39a735 1-11,13-32,35-40,42-52,54-67
+  s_853e3a05582c7f::t_c745560db6fe05 53
+  s_853e3a05582c7f::t_76330c07f6ee8c 33-34
+android/app/src/main/res/drawable-v24/ic_launcher_foreground.xml
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-34
+android/app/src/main/res/values/strings.xml
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-7
+tools/legacy/convert.ts
+  s_853e3a05582c7f::t_5b68ee74102d2d 281,286,288-289,293-299,301
+  s_853e3a05582c7f::t_d10bc878579ead 313-316,321,325,327-328,334-335
+  s_853e3a05582c7f::t_f8fa535e926246 249
+  s_853e3a05582c7f::t_7ec4b9a45cedac 188,191
+  s_853e3a05582c7f::t_34308eda7ebce3 1-187,189-190,192-248,250-280,282-285,287,290-292,300,302-312,317-320,322-324,326,329-333,337-354,356-358
+  s_853e3a05582c7f::t_93dcfe61249e21 359-363
+  s_853e3a05582c7f::t_26173c9dac1652 336
+  s_853e3a05582c7f::t_e58fa43b8b9ad8 355
+android/gradle/wrapper/gradle-wrapper.properties
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-2,4-7
+  s_853e3a05582c7f::t_dee91fe84d5c0a 3
+android/app/src/main/res/values/styles.xml
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-22
+android/settings.gradle
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-5
+src/features/useUserData.ts
+  s_853e3a05582c7f::t_e80836ad0b3807 1-47
+tools/legacy/report.ts
+  s_853e3a05582c7f::t_763415c6cbe58f 1-57
+android/app/src/main/res/xml/file_paths.xml
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-5
+src/data/validate.ts
+  s_853e3a05582c7f::t_a806b2da05a239 1-66,68-73,75-108,110-147,149-204
+  s_853e3a05582c7f::t_9e756501babd74 67,74
+  s_853e3a05582c7f::t_feb4681d48f8ea 109,148
+android/app/src/main/AndroidManifest.xml
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-41
+src/features/prototype/RecordsPrototype.tsx
+  s_853e3a05582c7f::t_41b8b31f709d71 1-101
+playwright.config.ts
+  s_853e3a05582c7f::t_b737ba07f659d6 1-15
+src/storage/folder.ts
+  s_853e3a05582c7f::t_c61402aaadd7fe 1-37
+src/data/schema.ts
+  s_853e3a05582c7f::t_e245ee4d6df929 41,73
+  s_853e3a05582c7f::t_f96cf08f5f562b 1-26,28-40,42-72,74-118
+src/features/users/Users.tsx
+  s_853e3a05582c7f::t_eec887f64c3677 1-77
+src/main.tsx
+  s_853e3a05582c7f::t_e2d8372c93ddfc 3-5,7
+  s_853e3a05582c7f::t_f1c882c96672fd 1-2,6
+android/app/src/main/res/values/ic_launcher_background.xml
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-4
+src/data/serialize.ts
+  s_853e3a05582c7f::t_d69fece6e77659 1-15
+android/gradlew
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-251
+android/variables.gradle
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-16
+src/styles/app.css
+  s_853e3a05582c7f::t_43ff1392bd9f1c 1-28,30-60,62,64-91
+  s_853e3a05582c7f::t_0a09fbc14e381f 61
+  s_853e3a05582c7f::t_60a12a88452bcd 63
+  s_853e3a05582c7f::t_0d439fb1d12a2c 29
+tools/screenshots.mjs
+  s_853e3a05582c7f::t_932222242c6bbd 3-4,8-12
+  s_853e3a05582c7f::t_ccc537f708f050 32
+  s_853e3a05582c7f::t_906078448ffb81 1-2,5-7,13-31,33-50,52
+  s_853e3a05582c7f::t_f0fda0b4ac4c77 51
+src/domain/stats.ts
+  s_853e3a05582c7f::t_f9cff7441eebf8 2
+  s_853e3a05582c7f::t_3c9b3d621758af 59
+  s_853e3a05582c7f::t_a3ff8ad592fc43 1,3-58,60-72
+tsconfig.json
+  s_853e3a05582c7f::t_4a0e34fc224d4a 1-11
+src/ui/components.tsx
+  s_853e3a05582c7f::t_01c722f9f08fdc 1-99
+vite.config.ts
+  s_853e3a05582c7f::t_a7232804c1d49f 1
+  s_853e3a05582c7f::t_2ac5dcb6352099 2-11
+src/app/App.tsx
+  s_853e3a05582c7f::t_dc0d733bb1bc53 1-35
+src/storage/jsonFiles.ts
+  s_853e3a05582c7f::t_af320ad3d03fdb 1,3-5,7-35,37-113
+  s_853e3a05582c7f::t_404bbf77ed9e66 2,6
+  s_853e3a05582c7f::t_6057c2ac3958c8 36
+src/domain/underline.test.ts
+  s_853e3a05582c7f::t_88fa8a016738ca 1-25
+android/gradlew.bat
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-94
+android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-5
+index.html
+  s_853e3a05582c7f::t_95db029833fcbf 7
+  s_853e3a05582c7f::t_96f4f771657229 2-6,8-13
+  s_853e3a05582c7f::t_78410c8ca2b46e 1
+android/capacitor.settings.gradle
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-18
+docs/data-contract.md
+  s_853e3a05582c7f::t_9fedc5f2732c62 73-74,107-108
+  s_853e3a05582c7f::t_03e959e477f01c 118
+  s_853e3a05582c7f::t_ac372eacc06304 1-13,15-56,66-72,75-82,85-86,90-95,99-106,109-116,128-178,180,183-194,197-198
+  s_853e3a05582c7f::t_5581078b8bc42e 14
+  s_853e3a05582c7f::t_374ea7e622940e 83-84,89
+  s_853e3a05582c7f::t_1cc1e1f09c4dad 179,181
+  s_853e3a05582c7f::t_fc9c24f3f2f671 57-65,87-88
+  s_853e3a05582c7f::t_cc0057accc7985 96-98,117,119,121,123-127
+  s_853e3a05582c7f::t_9c7fc229441e59 195-196
+  s_853e3a05582c7f::t_29e56c33e8edfd 120,122
+  s_853e3a05582c7f::t_39f203d52def59 182
+src/core/time.test.ts
+  s_853e3a05582c7f::t_fa333867a92d1a 1-31
+android/app/src/main/res/layout/activity_main.xml
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-12
+src/services/secrets.ts
+  s_853e3a05582c7f::t_b2164e91df0e65 1-19
+android/app/build.gradle
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-9,12-19,24-58
+  s_853e3a05582c7f::t_fb3185de6d5eb2 10-11
+  s_853e3a05582c7f::t_6b4ca71d225afa 20-23
+docs/decisions/002-public-documents-storage-via-saf.md
+  s_853e3a05582c7f::t_7705875ec2fb8d 1-12,14-27,30-41,44-45
+  s_853e3a05582c7f::t_6041ee7fcb2ef4 13
+  s_853e3a05582c7f::t_9397b943e0dfe1 28-29
+  s_853e3a05582c7f::t_b3cd7725ded679 42-43
+src/app/workspace.tsx
+  s_853e3a05582c7f::t_4b4ab6a489fe95 1-111
+android/app/.gitignore
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-2
+android/app/src/main/res/drawable/ic_launcher_background.xml
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-170
+src/features/prototype/PrototypeBadge.tsx
+  s_853e3a05582c7f::t_87b4a8a0623624 1-3
+src/storage/jsonFiles.test.ts
+  s_853e3a05582c7f::t_0579d58f9f55ed 1-99
+src/app/startup.ts
+  s_853e3a05582c7f::t_792c0ed03632dd 15-29
+  s_853e3a05582c7f::t_44b96fcc8732f7 64
+  s_853e3a05582c7f::t_09948d36c31d68 1-14,30-52,54-63,65-96
+  s_853e3a05582c7f::t_b173b6518e6421 53
+AGENTS.md
+  s_853e3a05582c7f::t_d505119907d4e8 1-25
+src/data/defaults.ts
+  s_853e3a05582c7f::t_78a2d041ded8a0 1-23
+android/.gitignore
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-101
+.gitignore
+  s_853e3a05582c7f::t_1c4d900ed3bc78 122-123
+  s_853e3a05582c7f::t_4546d041b0c357 124-135
+package.json
+  s_853e3a05582c7f::t_15bca983ea93fb 33
+  s_853e3a05582c7f::t_c3300e4e6cd531 1-5,9-32,34-43
+  s_853e3a05582c7f::t_7ad8c189b2282b 6-8
+capacitor.config.ts
+  s_853e3a05582c7f::t_76dd32a9bb9198 1,5
+  s_853e3a05582c7f::t_4200c55d3ba19a 2-4,6-9
+src/ai/prompts.test.ts
+  s_853e3a05582c7f::t_9995cf87e86996 1-20
+src/app/Start.tsx
+  s_853e3a05582c7f::t_1cacb008721e56 1-131,133-189
+  s_853e3a05582c7f::t_244337fc59219f 132
+android/build.gradle
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-29
+android/app/proguard-rules.pro
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-21
+src/styles/tokens.css
+  s_853e3a05582c7f::t_45c2cde62f5e03 1-32
+tools/gradle-china-mirror.init.gradle
+  s_853e3a05582c7f::t_271ed56b3fca1d 1-11
+src/data/normalize.ts
+  s_853e3a05582c7f::t_25b207f819c6dc 1-30
+src/features/settings/Settings.tsx
+  s_853e3a05582c7f::t_d87d19a81f2962 1-17,20-29,36-191
+  s_853e3a05582c7f::t_059d69964cd6fd 18-19,30-35
+src/features/prototype/ErrorBookPrototype.tsx
+  s_853e3a05582c7f::t_6d2f7e022ec22c 7
+  s_853e3a05582c7f::t_695c981d823894 1-6,8-93,95-172,178-182
+  s_853e3a05582c7f::t_d5af71954bfa29 173-177
+  s_853e3a05582c7f::t_0485d199d9beaf 94
+tools/smoke_android.mjs
+  s_853e3a05582c7f::t_62cf0dfccecd22 65
+  s_853e3a05582c7f::t_e76d2b7a250dfa 46,53-59
+  s_853e3a05582c7f::t_4ecbb61c1d9597 47,49-51,60,62
+  s_853e3a05582c7f::t_01390148da216e 117,142
+  s_853e3a05582c7f::t_3cfc00570f6c87 9,161
+  s_853e3a05582c7f::t_bad48f2fc290a3 109-113
+  s_853e3a05582c7f::t_0e51e03b8fa73b 18
+  s_853e3a05582c7f::t_3570300ffe0193 1-8,10-17,19-45,48,52,61,63-64,66-87,91-92,94-108,114-116,118-138,140,143-149,151-160,162
+  s_853e3a05582c7f::t_78aac87ec7c275 93,139,141,150
+android/app/src/debug/res/values/strings.xml
+  s_853e3a05582c7f::t_6ab4cfbb9a1971 1-6
+src/app/navigation.tsx
+  s_853e3a05582c7f::t_c96934458a3661 1-6,10-22,27-36,38-41,43-46,50-51,53-55,62-63,69-70,72,74-75
+  s_853e3a05582c7f::t_8330bfeb982049 7-9,23-26,37,42,47-49,52,56-61,64-68,71,73
+android/app/src/test/java/com/getcapacitor/myapp/ExampleUnitTest.java
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-18
+src/data/validate.test.ts
+  s_853e3a05582c7f::t_bae8e5bdb26944 1-11,13-46,48-60
+  s_853e3a05582c7f::t_1f6ae475c7676e 12,47
+android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-26
+e2e/start.spec.ts
+  s_853e3a05582c7f::t_5e829f2c3e16f6 59
+tools/build_android.ps1
+  s_853e3a05582c7f::t_2c095618d05e8f 1-28,31-80
+  s_853e3a05582c7f::t_7db308e4b1bbdc 29-30
+android/gradle.properties
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-22
+src/styles/base.css
+  s_853e3a05582c7f::t_eac772148e13ea 1-95
+src/features/home/Home.tsx
+  s_853e3a05582c7f::t_c266aba3361edf 1-41
+android/app/src/main/java/com/smartstudy/MainActivity.java
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-2,5-6
+  s_853e3a05582c7f::t_281e7149bb01cd 3-4,7-13
+src/domain/underline.ts
+  s_853e3a05582c7f::t_99b1d1c7e1fd3d 1-23
+android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+  s_853e3a05582c7f::t_fe6ccef3d01f46 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "6c547ed04a989aa834deecb9a63bb9666d0fc18d",
+  "prompts": {},
+  "sessions": {
+    "s_853e3a05582c7f": {
+      "agent_id": {
+        "tool": "kiro-desktop",
+        "id": "sess_9412c325-cac8-43f4-88c4-d85afc226aaf",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "yandali <yandali@trip.com>"
+    }
+  }
+}
