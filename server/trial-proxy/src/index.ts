@@ -6,7 +6,7 @@ import { createProxy, DEFAULT_LIMITS, MemoryCounters, type Counters, type Limits
 import { TablestoreCounters } from './tablestore';
 
 /**
- * Entry point for an Alibaba Cloud Function Compute web function (custom runtime, Node.js 20): a plain HTTP server
+ * Entry point for an Alibaba Cloud Function Compute web function (custom runtime, Node.js 20 or later): a plain HTTP server
  * on FC_SERVER_PORT (9000). Configuration comes from environment variables, see docs/trial-proxy.md.
  */
 

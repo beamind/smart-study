@@ -63,7 +63,7 @@ Compress-Archive -Path server/trial-proxy/dist/index.cjs -DestinationPath server
 
 | 配置 | 值 |
 |---|---|
-| 运行环境 | 自定义运行时，Node.js 20 |
+| 运行环境 | 自定义运行时，Node.js 22（Node.js 20 也可以） |
 | 代码 | 上传第 4 步的 `code.zip` |
 | 启动命令 | `node index.cjs` |
 | 监听端口 | `9000` |
