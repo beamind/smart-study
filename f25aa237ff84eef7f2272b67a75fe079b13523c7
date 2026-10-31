@@ -1,0 +1,76 @@
+src/features/dictation/RunDictation.tsx
+  s_853e3a05582c7f::t_905b46208230be 32
+  s_853e3a05582c7f::t_0ee3f3e290a7e9 77
+src/storage/jsonFiles.ts
+  s_853e3a05582c7f::t_41553e1f6810d9 38-43,48-53,89,112,149-152,157,162
+src/features/errorBook/CaptureQuestions.tsx
+  s_853e3a05582c7f::t_63b738d556d01e 107-110
+src/ai/tasks.ts
+  s_853e3a05582c7f::t_89abbbdafcc266 85
+tools/smoke_android.mjs
+  s_853e3a05582c7f::t_cb77a31357642a 13,19-20
+src/ai/parse.ts
+  s_853e3a05582c7f::t_7753a10cba328d 150-152,155-156
+src/features/errorBook/MarkPractice.tsx
+  s_853e3a05582c7f::t_0ee3f3e290a7e9 31
+src/data/validate.test.ts
+  s_853e3a05582c7f::t_501c26fd9dc067 61-62
+docs/decisions/002-public-documents-storage-via-saf.md
+  s_853e3a05582c7f::t_89abbbdafcc266 27
+src/ui/components.tsx
+  s_853e3a05582c7f::t_0ee3f3e290a7e9 7-8
+  s_853e3a05582c7f::t_905b46208230be 6,10-11,13,15-16
+src/app/navigation.tsx
+  s_853e3a05582c7f::t_a9c5bb9a7a8377 31-32,64,87
+src/features/dictation/DictationPage.tsx
+  s_853e3a05582c7f::t_0ee3f3e290a7e9 13,272-274
+  s_853e3a05582c7f::t_847be1f8664067 231-232
+  s_853e3a05582c7f::t_a9c5bb9a7a8377 33,70-71
+src/styles/base.css
+  s_853e3a05582c7f::t_63b738d556d01e 76,95
+  s_853e3a05582c7f::t_0ee3f3e290a7e9 13-14
+src/domain/underline.ts
+  s_853e3a05582c7f::t_89abbbdafcc266 66
+src/data/validate.ts
+  s_853e3a05582c7f::t_501c26fd9dc067 93
+src/ai/ai.test.ts
+  s_853e3a05582c7f::t_4432c540c0d0b9 240-251
+docs/software-plan.md
+  s_853e3a05582c7f::t_c9087b1662e333 112
+  s_853e3a05582c7f::t_cb77a31357642a 64
+  s_853e3a05582c7f::t_f03f766c31027c 95
+  s_853e3a05582c7f::t_0783a77c5b7f9e 97
+capacitor.config.ts
+  s_853e3a05582c7f::t_4ed6a2656362fe 7-8
+  s_853e3a05582c7f::t_501c26fd9dc067 9
+src/styles/app.css
+  s_853e3a05582c7f::t_c75aa0dfca82f1 97
+  s_853e3a05582c7f::t_63b738d556d01e 58,95-96
+README.md
+  s_853e3a05582c7f::t_f7dcf9814d90f3 66
+src/storage/jsonFiles.test.ts
+  s_853e3a05582c7f::t_723c32e8c76991 209-224
+vite.config.ts
+  s_853e3a05582c7f::t_501c26fd9dc067 9-10
+src/features/errorBook/RunPractice.tsx
+  s_853e3a05582c7f::t_0ee3f3e290a7e9 47
+  s_853e3a05582c7f::t_905b46208230be 27
+src/features/dictation/MarkAnswers.tsx
+  s_853e3a05582c7f::t_0ee3f3e290a7e9 31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "2c7c5c4ea8f23e36041991d6c9e0f6d703056ca9",
+  "prompts": {},
+  "sessions": {
+    "s_853e3a05582c7f": {
+      "agent_id": {
+        "tool": "kiro-desktop",
+        "id": "sess_9412c325-cac8-43f4-88c4-d85afc226aaf",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "yandali <yandali@trip.com>"
+    }
+  }
+}
