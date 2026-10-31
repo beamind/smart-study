@@ -1,0 +1,23 @@
+tools/clone-user.ts
+  s_853e3a05582c7f::t_d7a88655d404c0 1-58
+tools/nodeFolder.ts
+  s_853e3a05582c7f::t_0dd4ea4ba2d3b7 1-43
+README.md
+  s_853e3a05582c7f::t_ce360b0a8edadd 46-56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "5fbb77e9235f6ef10a087b996652df6160f39dd6",
+  "prompts": {},
+  "sessions": {
+    "s_853e3a05582c7f": {
+      "agent_id": {
+        "tool": "kiro-desktop",
+        "id": "sess_9412c325-cac8-43f4-88c4-d85afc226aaf",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "yandali <yandali@trip.com>"
+    }
+  }
+}

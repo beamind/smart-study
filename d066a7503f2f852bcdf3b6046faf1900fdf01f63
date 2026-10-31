@@ -1,0 +1,50 @@
+src/ai/tasks.ts
+  s_853e3a05582c7f::t_9e0dd16252df5a 95-97,99-102,166-167
+src/features/dictation/DictationPage.tsx
+  s_853e3a05582c7f::t_b5f56bdbd9877b 318
+src/features/dictation/WordBook.tsx
+  s_853e3a05582c7f::t_b5f56bdbd9877b 120,149
+src/features/errorBook/QuestionEditor.tsx
+  s_853e3a05582c7f::t_b5f56bdbd9877b 42
+src/features/errorBook/RunPractice.tsx
+  s_853e3a05582c7f::t_b5f56bdbd9877b 62-64
+src/features/settings/Settings.tsx
+  s_853e3a05582c7f::t_b5f56bdbd9877b 168,185
+src/ui/components.tsx
+  s_853e3a05582c7f::t_b5f56bdbd9877b 24-28,31
+src/ai/parse.ts
+  s_853e3a05582c7f::t_706aa02304c73d 133,136-138
+  s_853e3a05582c7f::t_29a5cbc190a9b7 28-29,35-36,38-41,47-62
+  s_853e3a05582c7f::t_411697e7c2d007 101
+src/app/Start.tsx
+  s_853e3a05582c7f::t_ac1659db55a722 64-65,70
+  s_853e3a05582c7f::t_c3b2e11861cdd2 69,72-84
+keystore.properties.example
+  s_853e3a05582c7f::t_ce4b865102b0d1 6
+src/storage/jsonFiles.test.ts
+  s_853e3a05582c7f::t_233f6a5567ccde 87-102
+src/features/users/Users.tsx
+  s_853e3a05582c7f::t_b5f56bdbd9877b 78
+docs/software-plan.md
+  s_853e3a05582c7f::t_99f224cc896863 112
+README.md
+  s_853e3a05582c7f::t_dfc0a7b0196423 30
+src/features/dictation/RunDictation.tsx
+  s_853e3a05582c7f::t_b5f56bdbd9877b 93-95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "d066a7503f2f852bcdf3b6046faf1900fdf01f63",
+  "prompts": {},
+  "sessions": {
+    "s_853e3a05582c7f": {
+      "agent_id": {
+        "tool": "kiro-desktop",
+        "id": "sess_9412c325-cac8-43f4-88c4-d85afc226aaf",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "yandali <yandali@trip.com>"
+    }
+  }
+}

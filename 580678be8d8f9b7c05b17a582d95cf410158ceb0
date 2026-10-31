@@ -1,0 +1,25 @@
+src/features/settings/Settings.tsx
+  s_853e3a05582c7f::t_d82e19a72a384e 102
+README.md
+  s_853e3a05582c7f::t_bedc5ba9f0db76 1
+docs/software-plan.md
+  s_853e3a05582c7f::t_9b711c824847f2 43
+android/app/build.gradle
+  s_853e3a05582c7f::t_86a334d7761673 21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "580678be8d8f9b7c05b17a582d95cf410158ceb0",
+  "prompts": {},
+  "sessions": {
+    "s_853e3a05582c7f": {
+      "agent_id": {
+        "tool": "kiro-desktop",
+        "id": "sess_9412c325-cac8-43f4-88c4-d85afc226aaf",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "yandali <yandali@trip.com>"
+    }
+  }
+}

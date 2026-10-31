@@ -1,0 +1,90 @@
+src/storage/jsonFiles.ts
+  s_853e3a05582c7f::t_c56f5624484c61 69-72,74-81,83-92,96-98,100-101
+src/domain/dictation.test.ts
+  s_853e3a05582c7f::t_47db802fafcb00 20
+src/domain/dictation.ts
+  s_853e3a05582c7f::t_446f80b2ff6594 48,50
+  s_853e3a05582c7f::t_79c82e1ce0102d 39-40,46-47,49,51,60-62
+tools/build_android.ps1
+  s_853e3a05582c7f::t_5be6457be8abb8 62-63
+src/app/Start.tsx
+  s_853e3a05582c7f::t_795a476929891e 53-60
+src/features/settings/Settings.tsx
+  s_853e3a05582c7f::t_9bddea6c944e55 8
+docs/decisions/002-public-documents-storage-via-saf.md
+  s_853e3a05582c7f::t_dc42fcf5b078b0 27
+vite.config.ts
+  s_853e3a05582c7f::t_5e6ac82189d11a 10
+src/styles/tokens.css
+  s_853e3a05582c7f::t_cc1c5481ddc00f 44
+src/features/dictation/MarkAnswers.tsx
+  s_853e3a05582c7f::t_0b578d6d5fb228 19-20
+src/styles/base.css
+  s_853e3a05582c7f::t_aca7c5646d6f3c 88
+AGENTS.md
+  s_853e3a05582c7f::t_dc42fcf5b078b0 7
+tools/clone-user.ts
+  s_853e3a05582c7f::t_bd692621617018 53-62,67
+src/ai/tasks.ts
+  s_853e3a05582c7f::t_aeae331b21054e 67,70
+  s_853e3a05582c7f::t_a4952dc7da0a93 69
+  s_853e3a05582c7f::t_e8c8aff314b739 4
+  s_853e3a05582c7f::t_36afa896ef3489 83
+src/ai/ai.test.ts
+  s_853e3a05582c7f::t_3ccec759663ede 141-159
+src/domain/underline.ts
+  s_853e3a05582c7f::t_c91c9663e954ec 56-57
+src/features/dictation/ConfirmWords.tsx
+  s_853e3a05582c7f::t_d00abce27f5389 110-116
+  s_853e3a05582c7f::t_c74402ad4e72db 59-63
+src/domain/errorBook.ts
+  s_853e3a05582c7f::t_6e6bbf846e61a3 16
+src/features/errorBook/CaptureQuestions.tsx
+  s_853e3a05582c7f::t_0b578d6d5fb228 76-77
+src/features/errorBook/ErrorBookPage.tsx
+  s_853e3a05582c7f::t_02a8c96fe46904 137
+  s_853e3a05582c7f::t_ea251a4a5da62f 353
+  s_853e3a05582c7f::t_f4c2560e2a7239 98-99
+src/features/errorBook/MarkPractice.tsx
+  s_853e3a05582c7f::t_0b578d6d5fb228 19-20
+src/domain/errorBook.test.ts
+  s_853e3a05582c7f::t_51a54515c11a3f 110
+docs/decisions/003-release-signing.md
+  s_853e3a05582c7f::t_c133846facb098 15-16
+src/domain/underline.test.ts
+  s_853e3a05582c7f::t_5f684caf413ab1 54-57
+src/styles/app.css
+  s_853e3a05582c7f::t_307280ce421264 19-21
+src/features/dictation/DictationPage.tsx
+  s_853e3a05582c7f::t_5342680dcb1839 72-80
+src/ai/dashscope.ts
+  s_853e3a05582c7f::t_1f2052ac1cd9a3 120
+android/app/build.gradle
+  s_853e3a05582c7f::t_5e6ac82189d11a 3-4,37-39
+src/storage/jsonFiles.test.ts
+  s_853e3a05582c7f::t_c2c7af73b518f8 57,62-63,67-84
+tools/smoke_android.mjs
+  s_853e3a05582c7f::t_00d28584689e0f 7
+src/ai/parse.ts
+  s_853e3a05582c7f::t_f3be37af155a71 5,7,9,12-17,21-22,29-30,36-64
+  s_853e3a05582c7f::t_7697848d2372bd 71-75
+  s_853e3a05582c7f::t_4b36cf82bea705 82
+  s_853e3a05582c7f::t_e62683c5ddb363 107,112-114,119-121,124
+  s_853e3a05582c7f::t_9b7b9a50e5c82a 123
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "0fe4d7103dcf8997781015d869d9348cae464627",
+  "prompts": {},
+  "sessions": {
+    "s_853e3a05582c7f": {
+      "agent_id": {
+        "tool": "kiro-desktop",
+        "id": "sess_9412c325-cac8-43f4-88c4-d85afc226aaf",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "yandali <yandali@trip.com>"
+    }
+  }
+}

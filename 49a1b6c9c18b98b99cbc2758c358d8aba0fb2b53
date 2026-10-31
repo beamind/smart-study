@@ -1,0 +1,87 @@
+src/domain/underline.ts
+  s_853e3a05582c7f::t_275aec06b9615a 40-45,63,71-72
+src/styles/base.css
+  s_853e3a05582c7f::t_5cc4a340702a06 89-90
+docs/decisions/002-public-documents-storage-via-saf.md
+  s_853e3a05582c7f::t_15c96b7071fdad 27-28
+android/app/build.gradle
+  s_853e3a05582c7f::t_30bc1d4e44806f 4-8,42-43,45
+src/storage/nativeFolder.ts
+  s_853e3a05582c7f::t_f99f938ebdec5f 2
+src/ai/tasks.ts
+  s_853e3a05582c7f::t_1553d21a612619 67-69,71-72,85
+  s_853e3a05582c7f::t_a7f7a05c75bf09 2
+src/core/time.test.ts
+  s_853e3a05582c7f::t_1806c6bbc9a2fb 2
+android/app/src/main/java/com/smartstudy/SafFolderPlugin.java
+  s_853e3a05582c7f::t_e30a41bc7b22d9 31-34
+  s_853e3a05582c7f::t_cd9d935e9cfa93 174-184
+tools/clone-user.ts
+  s_853e3a05582c7f::t_2de37301f4ef48 57,59,61-70,73-74,77-80,82,84-85,87-88
+  s_853e3a05582c7f::t_7dcb9079aab04d 18
+  s_853e3a05582c7f::t_56ff2425a83e1a 86
+src/storage/folder.ts
+  s_853e3a05582c7f::t_4d350fffcb60b2 16-20
+  s_853e3a05582c7f::t_f51e8596c3a2f2 28,32-45
+src/ai/parse.ts
+  s_853e3a05582c7f::t_002e6896a8e9da 4-6
+  s_853e3a05582c7f::t_88faef2a9511b6 27-35,88-92,134-136
+tools/build_android.ps1
+  s_853e3a05582c7f::t_573bdab3d2a3b2 4,56-60
+.editorconfig
+  s_853e3a05582c7f::t_81b90de524528d 16-18
+src/features/dictation/RunDictation.tsx
+  s_853e3a05582c7f::t_4dc05f6b63f7c5 8,29-31
+docs/data-contract.md
+  s_853e3a05582c7f::t_5c21c74328aef5 10,28-29
+src/app/Start.tsx
+  s_853e3a05582c7f::t_81ad48986a7089 88-89
+  s_853e3a05582c7f::t_ce4fef7f040c50 34
+src/ui/components.tsx
+  s_853e3a05582c7f::t_bd164ade944af0 77-82,94-95
+src/core/time.ts
+  s_853e3a05582c7f::t_54951e315e6a01 45-48,51-61
+src/features/errorBook/RunPractice.tsx
+  s_853e3a05582c7f::t_4dc05f6b63f7c5 6,24-26
+src/features/dictation/ConfirmWords.tsx
+  s_853e3a05582c7f::t_54a8f219b6c6e6 75-85,115
+tools/nodeFolder.ts
+  s_853e3a05582c7f::t_5d2fffeb8f45d4 3
+src/storage/memoryFolder.ts
+  s_853e3a05582c7f::t_e9b6d74debdf61 1
+src/app/startup.ts
+  s_853e3a05582c7f::t_94570c6194932c 75,79
+  s_853e3a05582c7f::t_2c179952ad09d3 84,88
+README.md
+  s_853e3a05582c7f::t_94b2db89a8ac23 59
+docs/software-plan.md
+  s_853e3a05582c7f::t_aef8fdff2a7cd4 112
+src/storage/jsonFiles.test.ts
+  s_853e3a05582c7f::t_c51474086c1d3c 102-137
+src/domain/underline.test.ts
+  s_853e3a05582c7f::t_741bb880ce0ad4 65-66
+  s_853e3a05582c7f::t_ee7656dcf49913 58-64,67
+src/storage/webFolder.ts
+  s_853e3a05582c7f::t_8e96c2f41f96a8 1
+  s_853e3a05582c7f::t_7d4edfc75cd7b3 55,59-62,66
+src/storage/jsonFiles.ts
+  s_853e3a05582c7f::t_5813e526629b48 1,4,21-28,63-74,76-79,83-87,90-93,100,103,105-108,112-117,120,123-131,143,151-154
+src/features/errorBook/CaptureQuestions.tsx
+  s_853e3a05582c7f::t_9cdb9f83cb96bb 2,17,32-33,89,93,104,106,111
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "49a1b6c9c18b98b99cbc2758c358d8aba0fb2b53",
+  "prompts": {},
+  "sessions": {
+    "s_853e3a05582c7f": {
+      "agent_id": {
+        "tool": "kiro-desktop",
+        "id": "sess_9412c325-cac8-43f4-88c4-d85afc226aaf",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "yandali <yandali@trip.com>"
+    }
+  }
+}

@@ -1,0 +1,167 @@
+src/storage/nativeFolder.ts
+  s_853e3a05582c7f::t_9c1ecc48b3f155 2
+src/storage/memoryFolder.ts
+  s_853e3a05582c7f::t_c4ac9fe269500d 41
+  s_853e3a05582c7f::t_18cd0097156a9b 1
+src/domain/underline.ts
+  s_853e3a05582c7f::t_b05f92848f7efd 28-32
+  s_853e3a05582c7f::t_70085bb4ba690b 73,75-80,83,88
+src/ai/tasks.ts
+  s_853e3a05582c7f::t_3303c40d8e7d77 143-144
+  s_853e3a05582c7f::t_d7436d9e482e63 2
+src/features/records/RecordsPage.tsx
+  s_853e3a05582c7f::t_70cc6ac00cf921 116,120
+src/features/dictation/WordBook.tsx
+  s_853e3a05582c7f::t_c77121f481ab5b 152,155-156
+  s_853e3a05582c7f::t_3ed59ae1403296 62,66
+  s_853e3a05582c7f::t_886ecea3ed771c 142
+src/domain/stats.ts
+  s_853e3a05582c7f::t_4534b8b7bd60aa 63-67,69,71
+tools/smoke_android.mjs
+  s_853e3a05582c7f::t_0870efeb2189ae 7-8,13,16
+  s_853e3a05582c7f::t_b76e3ba5c82dc0 17,71-105,131-132,141,150,152-155,162,181-183,192
+src/storage/jsonFiles.ts
+  s_853e3a05582c7f::t_17fb9eccfcb273 28-29
+  s_853e3a05582c7f::t_8ab033764b8ba5 58-59,64-65,70-74,82,89,96-101,111,115-116
+tsconfig.json
+  s_853e3a05582c7f::t_352fa439f44457 10
+src/app/startup.ts
+  s_853e3a05582c7f::t_ecf8fe3575f3a6 74,77-78
+  s_853e3a05582c7f::t_847af6e54d2fcc 91,93-95
+src/ai/parse.ts
+  s_853e3a05582c7f::t_246c6008090b9f 15-21,33-34,37,41-45,47-53
+  s_853e3a05582c7f::t_cce033194ef8e2 35-36
+src/storage/jsonFiles.test.ts
+  s_853e3a05582c7f::t_e89320c91d46d2 69-72,75-102
+  s_853e3a05582c7f::t_ce57ff0f5065ff 73-74
+android/app/build.gradle
+  s_853e3a05582c7f::t_fa4223a0799438 5-7
+  s_853e3a05582c7f::t_49415c8b91c58e 26
+  s_853e3a05582c7f::t_b579ad91bfd4bb 12,14-16,22-25
+  s_853e3a05582c7f::t_831de9ea4c8ac8 10-11,13,17-20
+README.md
+  s_853e3a05582c7f::t_acbfe1694c0450 72
+  s_853e3a05582c7f::t_a7302ba4a27e9f 46-47
+  s_853e3a05582c7f::t_a2acbf3851cb27 65
+src/domain/errorBook.test.ts
+  s_853e3a05582c7f::t_8b34b718a9d3f2 106-110
+tools/nodeFolder.ts
+  s_853e3a05582c7f::t_5828e98b2e9562 3
+src/styles/app.css
+  s_853e3a05582c7f::t_7088ca4460a4f0 17-21
+docs/data-contract.md
+  s_853e3a05582c7f::t_352fa439f44457 84,114
+  s_853e3a05582c7f::t_f26710f6ec519f 123
+android/app/src/main/AndroidManifest.xml
+  s_853e3a05582c7f::t_2f52eac56b5bc1 5
+src/domain/dictation.ts
+  s_853e3a05582c7f::t_a13332e6a2fb86 3
+  s_853e3a05582c7f::t_a790252543b0bb 119
+  s_853e3a05582c7f::t_0a2f649fe165fc 145-146,148-153
+e2e/dictation.spec.ts
+  s_853e3a05582c7f::t_e324709cd56847 63-64
+src/services/device.ts
+  s_853e3a05582c7f::t_390aa9c7c759e5 11,14-17,19
+src/ui/components.tsx
+  s_853e3a05582c7f::t_3e94357f9cf8fd 42,44-47,49
+src/app/workspace.tsx
+  s_853e3a05582c7f::t_062e8e066f9d94 4
+  s_853e3a05582c7f::t_7ba3fc585c0b0a 70,72-90,102-106,108-112,114,116-119,121-122,124-131
+  s_853e3a05582c7f::t_14dfc8af9e1452 138
+src/data/schema.ts
+  s_853e3a05582c7f::t_352fa439f44457 31,61
+src/features/errorBook/ErrorBookPage.tsx
+  s_853e3a05582c7f::t_d829cbbc48c542 235
+  s_853e3a05582c7f::t_3ed59ae1403296 306,310
+  s_853e3a05582c7f::t_facef4028f35db 343-354
+src/app/Start.tsx
+  s_853e3a05582c7f::t_1f2032afa182fa 2
+  s_853e3a05582c7f::t_516ba0559cf914 164,167,177
+  s_853e3a05582c7f::t_1b3d8b5fef2408 88,91-92,94-101
+  s_853e3a05582c7f::t_688ef015ebb224 166
+  s_853e3a05582c7f::t_955c3736ee6a20 30,35
+e2e/start.spec.ts
+  s_853e3a05582c7f::t_a7302ba4a27e9f 19,33,35
+src/domain/dictation.test.ts
+  s_853e3a05582c7f::t_e9f716a535bffc 58-68
+  s_853e3a05582c7f::t_345f2080aa8b98 99,102-104,108-116
+e2e/records.spec.ts
+  s_853e3a05582c7f::t_6c168baeadba6a 7-9,12
+  s_853e3a05582c7f::t_7ad0fd33dbdaa7 48,110
+tools/clone-user.ts
+  s_853e3a05582c7f::t_99787e581dd31b 44-49,51-68
+  s_853e3a05582c7f::t_772dc491188d91 73-75
+  s_853e3a05582c7f::t_d5f4e2790272f6 14,16
+  s_853e3a05582c7f::t_fb59deae534125 69
+src/data/validate.test.ts
+  s_853e3a05582c7f::t_884b7b3b6da3ef 3
+  s_853e3a05582c7f::t_29b35ff06d82b4 40-58
+src/features/users/Users.tsx
+  s_853e3a05582c7f::t_84f5ca0d0824f2 2
+docs/decisions/002-public-documents-storage-via-saf.md
+  s_853e3a05582c7f::t_9977ac59c4cce9 33
+  s_853e3a05582c7f::t_352fa439f44457 21
+  s_853e3a05582c7f::t_a2acbf3851cb27 27,30
+src/storage/dataCache.test.ts
+  s_853e3a05582c7f::t_c67b5a874ac04c 72-91
+src/ai/dashscope.ts
+  s_853e3a05582c7f::t_94b735810b6bac 44-45,51-55,71-78
+  s_853e3a05582c7f::t_7d69129de10f26 112,118-127
+src/storage/dataCache.ts
+  s_853e3a05582c7f::t_db808534f6f780 33-36,38-39
+src/domain/underline.test.ts
+  s_853e3a05582c7f::t_4ca59afb0922cd 48-60
+  s_853e3a05582c7f::t_c4dc5c3e43a9c9 2
+android/app/src/main/java/com/smartstudy/SafFolderPlugin.java
+  s_853e3a05582c7f::t_c468b90244b505 185-197
+  s_853e3a05582c7f::t_8d168abf001844 28,30
+  s_853e3a05582c7f::t_5cf07ce9be1fbb 12
+src/data/validate.ts
+  s_853e3a05582c7f::t_3c9fafc7d5593a 45-49,52-53,55-58
+  s_853e3a05582c7f::t_dfa3547c3ff229 128
+  s_853e3a05582c7f::t_6392f4dfa42183 88-91
+src/features/dictation/DictationPage.tsx
+  s_853e3a05582c7f::t_4ad0b7989e4d52 64-68,70
+  s_853e3a05582c7f::t_5ede83089ea08e 148-159
+  s_853e3a05582c7f::t_9d6dde8f9031ae 48-49
+src/ai/ai.test.ts
+  s_853e3a05582c7f::t_286b7dbdc6f502 95-139
+src/features/dictation/ConfirmWords.tsx
+  s_853e3a05582c7f::t_e17bb7f79b1cac 85-86
+  s_853e3a05582c7f::t_8af2c803d2dce3 72-75
+  s_853e3a05582c7f::t_d6c1129100cbe2 21-22
+  s_853e3a05582c7f::t_e11546e1abcd1d 36-37,40-68
+src/domain/stats.test.ts
+  s_853e3a05582c7f::t_fddc3080ec166f 31
+src/domain/errorBook.ts
+  s_853e3a05582c7f::t_94e38d6305ad66 15-16
+src/storage/folder.ts
+  s_853e3a05582c7f::t_2c1a8352a6175e 34-35,39-42
+.gitignore
+  s_853e3a05582c7f::t_54dc849da16f61 22,25-26,28
+src/domain/sampling.ts
+  s_853e3a05582c7f::t_3309414bae475f 24-25,27-28
+src/features/errorBook/CaptureQuestions.tsx
+  s_853e3a05582c7f::t_5d45ce9c6f03b9 51-59,61-62
+  s_853e3a05582c7f::t_82a15076319093 80-81
+src/storage/webFolder.ts
+  s_853e3a05582c7f::t_42736c4f6cc3da 89
+  s_853e3a05582c7f::t_d4a7c3b01ed6f3 1
+  s_853e3a05582c7f::t_813434bfb92695 61-66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "ad787341dfa979c570e7957e4caa2087a1e19d73",
+  "prompts": {},
+  "sessions": {
+    "s_853e3a05582c7f": {
+      "agent_id": {
+        "tool": "kiro-desktop",
+        "id": "sess_9412c325-cac8-43f4-88c4-d85afc226aaf",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "yandali <yandali@trip.com>"
+    }
+  }
+}

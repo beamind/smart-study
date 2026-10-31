@@ -1,0 +1,92 @@
+src/domain/errorBook.ts
+  s_853e3a05582c7f::t_17fba74648bffe 103-107,111
+  s_853e3a05582c7f::t_9408e2535e8f77 125,128-129,133
+  s_853e3a05582c7f::t_c303fb6ee2fee3 101-102,108-110,112-114
+keystore.properties.example
+  s_853e3a05582c7f::t_8863704703abcc 1-9
+docs/decisions/001-web-stack-without-voice-commands.md
+  s_853e3a05582c7f::t_875b46d796fa5a 38
+AGENTS.md
+  s_853e3a05582c7f::t_ff42d024c84105 23
+README.md
+  s_853e3a05582c7f::t_cc524ece0c6c5c 5-7,15-16,20-22,33,37-38,65-67,71-73,81-85,89
+src/domain/errorBook.test.ts
+  s_853e3a05582c7f::t_77f3461402927f 64-77
+  s_853e3a05582c7f::t_9a375455cd49ee 4
+src/domain/dictation.ts
+  s_853e3a05582c7f::t_0bc1eeb7a77404 94-101,105
+  s_853e3a05582c7f::t_4ea30e875040a7 166,169-170,174
+src/features/dictation/DictationPage.tsx
+  s_853e3a05582c7f::t_5689b0315b8499 62
+  s_853e3a05582c7f::t_87481b1db12ec6 30,39-43
+  s_853e3a05582c7f::t_5f8d07536a271c 3
+  s_853e3a05582c7f::t_b88c10c6ca18d9 32
+  s_853e3a05582c7f::t_9ff95f2b388baf 140
+tools/screenshots.mjs
+  s_853e3a05582c7f::t_3e968873324409 3-4,10-11,13,28-33,35-50
+src/features/home/Home.tsx
+  s_853e3a05582c7f::t_d7a4e91fdfe4ea 9
+src/app/navigation.tsx
+  s_853e3a05582c7f::t_81251043425328 4
+  s_853e3a05582c7f::t_5ccf06ebf07caa 16,19,21-25
+src/features/records/RecordsPage.tsx
+  s_853e3a05582c7f::t_b2ec5c683409e6 49-51,62-67
+  s_853e3a05582c7f::t_5988ae97a7f956 238
+  s_853e3a05582c7f::t_d1f608c73f0bc7 1,3-9,11-13,15,20-21,23-48,52-60,68-79,81-83,85-139,142,148,150-160,162,170-171,177,180-181,184-185,190,197-202,204-237,239-285
+src/features/dictation/WordBook.tsx
+  s_853e3a05582c7f::t_527cd68d0193ab 112-113
+  s_853e3a05582c7f::t_91250fd44cfba9 127
+src/app/App.tsx
+  s_853e3a05582c7f::t_c67961adb2c381 5
+  s_853e3a05582c7f::t_7f5820167c71b4 28,31
+e2e/start.spec.ts
+  s_853e3a05582c7f::t_7f39f7166affce 3
+tools/build_android.ps1
+  s_853e3a05582c7f::t_d355d6ab4c7420 1-4,9
+  s_853e3a05582c7f::t_cf932db4cac7b7 61-62,69-76,78-84
+src/domain/dictation.test.ts
+  s_853e3a05582c7f::t_91bb0c8d257383 4
+  s_853e3a05582c7f::t_50877e5a38653d 68-78
+package.json
+  s_853e3a05582c7f::t_25b5cd06a9ba10 17-18
+docs/software-plan.md
+  s_853e3a05582c7f::t_a0bc2043380cc3 43
+  s_853e3a05582c7f::t_7f7040ed0c6b76 5
+  s_853e3a05582c7f::t_c2e82ca1c7f790 93-103,105-115
+  s_853e3a05582c7f::t_2aa165a80ffa66 104
+src/styles/app.css
+  s_853e3a05582c7f::t_0e3c71c11d2d70 104-105
+e2e/records.spec.ts
+  s_853e3a05582c7f::t_9b4ba5854d73a3 51-54,56-64,66-72,74
+src/domain/stats.test.ts
+  s_853e3a05582c7f::t_9a2061105ffab8 33-40
+  s_853e3a05582c7f::t_8bf1fe34fe2a87 3
+src/domain/stats.ts
+  s_853e3a05582c7f::t_14fdd23d91c14b 73-104
+android/app/build.gradle
+  s_853e3a05582c7f::t_ae39b07bb1ddd6 3-18
+  s_853e3a05582c7f::t_a33b102addf919 35-45,48,54
+tools/smoke_android.mjs
+  s_853e3a05582c7f::t_bddec038d13a71 165-167
+  s_853e3a05582c7f::t_276448c94e75fe 97-98,100-104,106-109
+docs/decisions/003-release-signing.md
+  s_853e3a05582c7f::t_69bd0c1da923f6 1,3,5,7,9,11,13-29
+.editorconfig
+  s_853e3a05582c7f::t_01778eafda7188 9-11,14-15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "01144247df1372ed29e0a1506306441ff27610dd",
+  "prompts": {},
+  "sessions": {
+    "s_853e3a05582c7f": {
+      "agent_id": {
+        "tool": "kiro-desktop",
+        "id": "sess_9412c325-cac8-43f4-88c4-d85afc226aaf",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "yandali <yandali@trip.com>"
+    }
+  }
+}
