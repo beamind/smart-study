@@ -123,6 +123,11 @@ async function authorise(page) {
   console.log(`  点了系统按钮：${await tapNative(/^(ALLOW|Allow|允许)$/i)}`);
 }
 
+/** Skip the API key step: "先免费试用" in builds with the trial proxy, "以后再填" without it. Spends nothing. */
+async function skipKey(page) {
+  await page.getByRole('button', { name: /^(先免费试用|以后再填)$/ }).click({ timeout: 20000 });
+}
+
 let browser;
 try {
   step('准备：安装 APK，把测试数据放进 Documents/smartstudy');
@@ -140,7 +145,7 @@ try {
   browser = first.browser;
   let page = first.page;
   await authorise(page);
-  await page.getByRole('button', { name: '以后再填' }).click({ timeout: 20000 });
+  await skipKey(page);
   await page.locator('.user-switch', { hasText: mainUser }).waitFor({ timeout: 20000 });
   check(true, `授权后读到了用户 ${mainUser}，没有重新创建数据`);
   await page.screenshot({ path: `${out}/01-home.png` });
@@ -191,7 +196,7 @@ try {
   await page.getByRole('button', { name: '选择文件夹' }).waitFor({ timeout: 20000 });
   check(true, '重装后要求重新授权（授权随卸载失效，符合预期）');
   await authorise(page);
-  await page.getByRole('button', { name: '以后再填' }).click({ timeout: 20000 });
+  await skipKey(page);
   await page.locator('.user-switch', { hasText: otherUser }).waitFor({ timeout: 20000 });
   check(true, `重装后读到了卸载前写入的数据（当前用户仍是${otherUser}）`);
   await page.locator('.user-switch', { hasText: otherUser }).click();

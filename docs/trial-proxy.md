@@ -2,7 +2,9 @@
 
 没有 API Key 的设备经这个服务试用千问。为什么这样做、额度怎么定，见[架构决定 004](decisions/004-trial-proxy.md)。代码在 `server/trial-proxy/`。
 
-整体是：阿里云函数计算（中国香港）上的一个 Web 函数，用一个只用于试用的千问 Key 调用北京的千问，计数存在同一地域的表格存储（Tablestore）里。
+整体是：阿里云函数计算（新加坡）上的一个 Web 函数，用一个只用于试用的千问 Key 调用北京的千问，计数存在同一地域的表格存储（Tablestore）里。
+
+现在用的是新加坡（`ap-southeast-1`）；中国香港（`cn-hongkong`）也可以，两者都不需要备案。函数和表格存储要建在同一个地域，第 3 步策略里的地域也要和表格存储一致，写错了每次读计数都会失败。下面以新加坡为例。
 
 控制台的菜单名称时常调整，下面写的是 2026-10 的名称，找不到时按意思找相近的选项。
 
@@ -17,14 +19,14 @@
 
 ## 2. 表格存储：计数表
 
-1. 打开[表格存储控制台](https://otsnext.console.aliyun.com/)，地域选“中国香港”。
+1. 打开[表格存储控制台](https://otsnext.console.aliyun.com/)，地域选“新加坡”。
 2. 创建实例：按量计费，实例名例如 `smartstudy-trial`。
 3. 在实例的“网络管理”里确认允许公网访问（函数不放进专有网络 VPC，走公网访问表格存储）。
 4. 在实例里创建数据表：
    - 表名 `trial_counters`；
    - 主键只有一个：`id`，类型“字符串”；
    - 数据生命周期 `-1`（永不过期：每台设备的试用次数要一直记着），最大版本数 `1`。
-5. 记下实例详情页的“公网访问地址”，形如 `https://smartstudy-trial.cn-hongkong.ots.aliyuncs.com`。
+5. 记下实例详情页的“公网访问地址”，形如 `https://smartstudy-trial.ap-southeast-1.ots.aliyuncs.com`。
 
 表里每行是一个计数：`device:<设备标识>:<photo|translate|generate>` 是这台设备用过的次数；`ip:<日期>:<哈希>:<basic|generate>` 是一个 IP 当天的次数；`cost:<日期>:<basic|generate>` 是当天的千问花费，单位是百万分之一元。
 
@@ -40,12 +42,23 @@
      "Statement": [{
        "Effect": "Allow",
        "Action": ["ots:GetRow", "ots:PutRow", "ots:UpdateRow"],
-       "Resource": "acs:ots:cn-hongkong:*:instance/smartstudy-trial/table/trial_counters"
+       "Resource": "acs:ots:ap-southeast-1:*:instance/smartstudy-trial/table/trial_counters"
      }]
    }
    ```
 
-2. 创建角色：可信实体选“阿里云服务”，服务选“函数计算”。给它加上这条策略。
+2. 创建角色：可信实体选“阿里云服务”，服务选“函数计算”。给它加上这条策略。创建后在角色的“信任策略”里核对，应该是下面这样；不是的话函数一调用就报 `Assume role … fail`：
+
+   ```json
+   {
+     "Version": "1",
+     "Statement": [{
+       "Effect": "Allow",
+       "Action": "sts:AssumeRole",
+       "Principal": { "Service": ["fc.aliyuncs.com"] }
+     }]
+   }
+   ```
 
 ## 4. 打包代码
 
@@ -59,7 +72,7 @@ Compress-Archive -Path server/trial-proxy/dist/index.cjs -DestinationPath server
 
 ## 5. 创建函数
 
-在[函数计算控制台](https://fcnext.console.aliyun.com/)，地域选“中国香港”，创建函数，类型选“Web 函数”：
+在[函数计算控制台](https://fcnext.console.aliyun.com/)，地域选和表格存储相同的“新加坡”，创建函数，类型选“Web 函数”：
 
 | 配置 | 值 |
 |---|---|
@@ -98,7 +111,7 @@ node -e "console.log(require('crypto').randomBytes(16).toString('hex'))"
 
 ## 6. HTTP 触发器
 
-给函数加 HTTP 触发器：认证方式“无需认证”，请求方法 `GET`、`POST`、`OPTIONS`。保存后，触发器页会显示公网访问地址，形如 `https://<一串字符>.cn-hongkong.fcapp.run`。
+给函数加 HTTP 触发器：认证方式“无需认证”，请求方法 `GET`、`POST`、`OPTIONS`。保存后，触发器页会显示公网访问地址，形如 `https://<一串字符>.ap-southeast-1.fcapp.run`。
 
 这个自带地址官方说明只用于测试。以后有了自己的域名，绑定到这个函数，再按第 8 步改地址、发新版本即可。
 

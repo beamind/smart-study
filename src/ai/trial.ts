@@ -2,10 +2,11 @@ import { AiError, withRetries } from './dashscope';
 import type { ModelCall, ModelTask } from './tasks';
 
 /**
- * The trial proxy's address in release builds (docs/trial-proxy.md, step 8). Empty until it is deployed.
+ * The trial proxy's address in release builds (docs/trial-proxy.md, step 8): the built-in Function Compute address
+ * in Singapore. Changing it needs a new app release.
  * Development (`npm run dev`), tests and Playwright never use it, so they spend nothing.
  */
-const RELEASE_TRIAL_URL = '';
+const RELEASE_TRIAL_URL = 'https://smartstdy-trial-bnzgnkpwgq.ap-southeast-1.fcapp.run/';
 
 /**
  * The trial proxy (docs/decisions/004): without the user's own API key, model calls go through it, a fixed number
