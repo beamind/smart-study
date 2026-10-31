@@ -88,8 +88,15 @@ try {
         if ($Release) {
             # Show the signing certificate, so a build signed with the wrong key is noticed before installing.
             $apksigner = Get-ChildItem "$SdkRoot\build-tools" -Directory | Sort-Object { [version]($_.Name -replace '[^\d.].*$', '') } | Select-Object -Last 1
-            & "$($apksigner.FullName)\apksigner.bat" verify --print-certs $output
+            $certs = & "$($apksigner.FullName)\apksigner.bat" verify --print-certs $output
             if ($LASTEXITCODE -ne 0) { throw 'The release APK is not signed correctly.' }
+            $certs | Write-Host
+            # Compare with the fingerprint recorded in ADR 003 (written there as AA:BB:..., printed here as aabb...).
+            $actual = ($certs | Select-String 'SHA-256 digest: ([0-9a-fA-F]{64})' | Select-Object -First 1).Matches.Groups[1].Value.ToLower()
+            $adr = Get-Content -Raw -Encoding UTF8 (Join-Path $projectRoot 'docs\decisions\003-release-signing.md')
+            $expected = if ($adr -match '((?:[0-9A-F]{2}:){31}[0-9A-F]{2})') { $Matches[1].Replace(':', '').ToLower() } else { '' }
+            if ($actual -and $actual -eq $expected) { Write-Host 'Signing certificate matches docs/decisions/003-release-signing.md.' }
+            else { Write-Warning "Signing certificate $actual is NOT the project key in docs/decisions/003-release-signing.md (expected only when you sign with your own key)." }
         }
         Get-Item -LiteralPath $output | Select-Object FullName, Length
         Get-FileHash -LiteralPath $output -Algorithm SHA256 | Select-Object Hash

@@ -27,7 +27,8 @@ def signingFile = (explicitSigning
 ).find { it.isFile() }
 def signing = new Properties()
 if (signingFile) {
-    signingFile.withInputStream { signing.load(it) }
+    // Read as UTF-8 (Notepad's default), so a path with Chinese characters in it is not garbled.
+    signingFile.withReader('UTF-8') { signing.load(it) }
     def missing = ['storeFile', 'storePassword', 'keyAlias', 'keyPassword'].findAll { !signing.getProperty(it) }
     if (missing) throw new GradleException("${signingFile} is missing ${missing.join(', ')}")
 }

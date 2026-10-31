@@ -146,13 +146,23 @@ export class WordReader {
   }
 }
 
-/** Silent engine for automated tests: `?speech=fake` "speaks" for 300 ms. */
+/** Silent engine for automated tests: `?speech=fake` "speaks" for 300 ms and counts what it was asked to say. */
 export const fakeSpeech: SpeechEngine = {
   prepare: async () => undefined,
-  speak: () => new Promise(resolve => setTimeout(resolve, 300)),
+  speak: () => {
+    window.__fakeSpeechCount = (window.__fakeSpeechCount ?? 0) + 1;
+    return new Promise(resolve => setTimeout(resolve, 300));
+  },
   stop: async () => undefined,
   check: async () => null,
 };
+
+declare global {
+  interface Window {
+    /** How many times the fake engine started speaking (read by the Playwright tests). */
+    __fakeSpeechCount?: number;
+  }
+}
 
 export const speechEngine = (): SpeechEngine =>
   new URLSearchParams(window.location.search).get('speech') === 'fake' ? fakeSpeech : deviceSpeech;

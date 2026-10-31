@@ -30,6 +30,8 @@ interface Navigation {
   push(route: Route): void;
   /** Change the current page's route without leaving it (the page stays mounted when its key does not change). */
   replace(route: Route): void;
+  /** Back to the home page alone, e.g. when the data folder is closed. */
+  reset(): void;
   /** Returns false when there was nothing to go back to. */
   back(): boolean;
   /** Close the current page, ignoring back handlers (after the page asked the user itself). */
@@ -62,6 +64,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
   const push = useCallback((route: Route) => setStack(current => [...current, route]), []);
   const replace = useCallback((route: Route) => setStack(current => [...current.slice(0, -1), route]), []);
+  const reset = useCallback(() => setStack([{ name: 'home' }]), []);
   const pop = useCallback(() => setStack(current => (current.length > 1 ? current.slice(0, -1) : current)), []);
   const onBack = useCallback((handler: () => void) => {
     handlers.current.push(handler);
@@ -84,6 +87,6 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [back]);
 
-  const value = useMemo<Navigation>(() => ({ route: stack.at(-1)!, depth: stack.length, push, replace, back, pop, onBack }), [stack, push, replace, back, pop, onBack]);
+  const value = useMemo<Navigation>(() => ({ route: stack.at(-1)!, depth: stack.length, push, replace, reset, back, pop, onBack }), [stack, push, replace, reset, back, pop, onBack]);
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }

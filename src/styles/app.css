@@ -18,7 +18,7 @@
 .app-frame { display: flex; flex-direction: column; height: 100%; }
 /* The notices take over the status-bar inset from the page header while they are shown. */
 .app-notices { display: flex; flex-direction: column; gap: 8px; padding: calc(8px + env(safe-area-inset-top)) var(--space) 0; }
-.app-frame:has(.app-notices) .page-header { padding-top: 6px; }
+.app-frame.has-notices .page-header { padding-top: 6px; } /* a class, not :has(), which needs Chrome 105 */
 .app-content { flex: 1; min-height: 0; }
 
 /* ---------- home ---------- */

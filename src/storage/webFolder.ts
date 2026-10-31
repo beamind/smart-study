@@ -34,7 +34,8 @@ export class WebFolder implements Folder {
       try { current = await current.getDirectoryHandle(part, { create }); } catch (error) {
         if ((error as DOMException).name !== 'NotFoundError') throw error;
         // Creating fails this way only when the chosen folder itself is gone (moved, renamed or deleted).
-        if (create) throw new Error(`数据文件夹 ${this.label} 不存在了，请重新选择`);
+        // Reading must not mistake that for a missing file either, or the data would look empty.
+        if (create || !await webFolderExists(this.root)) throw new Error(`数据文件夹 ${this.label} 不存在了，请重新选择`);
         return null;
       }
     }

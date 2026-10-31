@@ -49,7 +49,7 @@ export function Sheet({ title, onClose, keepOnOutsideTap = false, children }: { 
   // A sheet's buttons often sit where the button that opened it was; the second tap of a double tap must not press them.
   const settled = useSettled(null, SETTLE_MS);
   return (
-    <div className="backdrop" onClick={keepOnOutsideTap ? undefined : onClose}>
+    <div className="backdrop" onClick={keepOnOutsideTap || !settled ? undefined : onClose}>
       <div className={`sheet${settled ? '' : ' settling'}`} role="dialog" aria-modal="true" aria-label={typeof title === 'string' ? title : undefined} onClick={event => event.stopPropagation()}>
         <h2>{title}</h2>
         {children}

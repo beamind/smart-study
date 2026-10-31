@@ -249,3 +249,16 @@ describe('model replies, round 7', () => {
     expect(parseWords('apple\ntake care\nlook at', 'english')).toEqual(['apple', 'take care', 'look at']);
   });
 });
+
+describe('model replies, round 10', () => {
+  it('never returns part of a list that is cut off or has quotes that do not pair up', () => {
+    expect(parseQuestions('[{"question": "a b", "answer": "b"}, {"question": "c d", "answer": "d"}')).toEqual([]);
+    expect(parseQuestions('[{"question": "He said, "Hello.", "answer": "A"}, {"question": "Q2 text", "answer": "B"}, {"question": "Q3 text", "answer": "C"}]')).toEqual([]);
+    expect(() => parseUnderlineHits('[{"question":1,"word":"cake","underlined":"a"},{"question":2,"word":"say "hi","underlined":"hi"},{"question":3,"word":"map","underlined":"a"}]')).toThrow();
+  });
+
+  it('still finds the JSON after a stray bracket in the text before it', () => {
+    expect(parseGenerated('第[1]题：{"question":"Q","answer":"A"}')).toEqual({ text: 'Q', answer: 'A' });
+    expect(extractJson('注意[见下] 结果：["a","b"]')).toEqual(['a', 'b']);
+  });
+});

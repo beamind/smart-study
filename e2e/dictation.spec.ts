@@ -109,10 +109,14 @@ test.describe('dictation', () => {
     await page.getByRole('dialog').getByRole('textbox').fill('一\n二');
     await page.getByRole('button', { name: '下一步（2 个词）' }).click();
     await page.getByRole('button', { name: /开始语文听写/ }).click();
-    await expect(page.getByText('请写下来')).toBeVisible();
+    // Pause between the first and the second reading of the word (1 s gap): the second one must not come.
+    await expect(page.getByText(/正在朗读/)).toBeVisible();
     await page.getByRole('button', { name: '暂停' }).click();
+    const spoken = await page.evaluate(() => window.__fakeSpeechCount ?? 0);
+    expect(spoken).toBe(1);
     const left = await page.getByLabel(/剩余 \d+ 秒/).getAttribute('aria-label');
     await page.waitForTimeout(2200);
+    expect(await page.evaluate(() => window.__fakeSpeechCount ?? 0)).toBe(spoken);
     await expect(page.getByLabel(/剩余 \d+ 秒/)).toHaveAttribute('aria-label', left!);
     await expect(page.getByRole('button', { name: '下一个' })).toBeDisabled();
     await page.getByRole('button', { name: '继续' }).click();

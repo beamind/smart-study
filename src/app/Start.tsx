@@ -8,6 +8,7 @@ import { errorText } from '../ui/components';
 import {
   chooseFolder, findFolder, openFolder, platform, reopenWebFolder, type FolderState, type OpenResult,
 } from './startup';
+import { useNavigation } from './navigation';
 import { validateUserName, WorkspaceProvider } from './workspace';
 import { setApiKey } from '../services/secrets';
 
@@ -28,6 +29,7 @@ type Step =
 export function Start({ children }: { children: ReactNode }) {
   const [step, setStep] = useState<Step>({ kind: 'checking' });
   const [notices, setNotices] = useState<string[]>([]);
+  const { reset } = useNavigation();
 
   const proceed = useCallback(async (folder: Folder, pickedNow: boolean) => {
     const opened = await openFolder(folder);
@@ -80,7 +82,9 @@ export function Start({ children }: { children: ReactNode }) {
         else fail(message);
         return;
       }
-      // From here on the new folder is the configured one: close the old workspace before opening the new folder.
+      // From here on the new folder is the configured one: close the old workspace before opening the new folder,
+      // and forget its pages, so back on the next screen does not go to a page of the old folder.
+      reset();
       setStep({ kind: 'checking' });
       try { await proceed(folder, true); } catch (error) { fail(errorText(error)); }
     } finally {
@@ -117,7 +121,7 @@ export function Start({ children }: { children: ReactNode }) {
         // A new key per opened folder: after "更换文件夹" every state (users, settings, data cache) starts fresh.
         <WorkspaceProvider key={step.opened.id} files={step.opened.files} app={step.opened.app} settings={step.opened.settings}
           apiKey={step.apiKey} onChangeFolder={() => void pick()}>
-          <div className="app-frame">
+          <div className={`app-frame${notices.length > 0 ? ' has-notices' : ''}`}>
             {notices.length > 0 && (
               <div className="app-notices">
                 {notices.map(notice => <div key={notice} className="notice row"><span className="grow">{notice}</span><button className="button text" onClick={() => setNotices(current => current.filter(item => item !== notice))}>知道了</button></div>)}

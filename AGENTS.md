@@ -21,6 +21,6 @@ npm test
 npx playwright test
 ```
 
-改动 Android 或存储相关代码时，再运行 `npm run android:build` 和 `node tools/smoke_android.mjs emulator-5554`。改动签名或 Gradle 配置时，再运行 `npm run android:release`，核对打印的证书指纹与 `docs/decisions/003-release-signing.md` 一致。签名密钥和密码不得进入仓库。
+改动 Android 或存储相关代码时，再运行 `npm run android:build` 和 `node tools/smoke_android.mjs emulator-5554`。改动签名或 Gradle 配置时，再运行 `npm run android:release`，确认输出里有 `Signing certificate matches docs/decisions/003-release-signing.md.`（脚本会把证书指纹和那里记录的比对）。签名密钥和密码不得进入仓库。
 
 架构上的重要取舍记录在 `docs/decisions/NNN-标题.md`，格式参考已有文件。

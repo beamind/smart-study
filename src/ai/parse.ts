@@ -35,23 +35,29 @@ export function extractJson(text: string, accept: (value: unknown) => boolean = 
     // Each start is tried to its matching close bracket first, so a note after the JSON ("注：第[2]题…") is left out,
     // and then to the last close bracket of its kind.
     // A bracket pair that is broken JSON (a list with an unescaped quote) is not searched inside: taking one of its
-    // items would silently drop the others, while no result asks for a retry.
+    // items would silently drop the others, while no result asks for a retry. When the first bracket never closes
+    // (a reply cut off, or quotes that do not pair up), everything after it counts as that broken pair.
     const lastClose = { '[': trimmed.lastIndexOf(']'), '{': trimmed.lastIndexOf('}') };
     const broken: [number, number][] = [];
     let tries = 0;
+    let first = true;
     for (let start = 0; start < trimmed.length && tries < MAX_STARTS; start++) {
       const open = trimmed[start];
       if (open !== '[' && open !== '{') continue;
+      const isFirst = first;
+      first = false;
       if (broken.some(([from, to]) => start > from && start < to)) continue;
       const matching = matchingClose(trimmed, start);
       const ends = [...new Set([matching, lastClose[open]])].filter(end => end > start);
-      if (!ends.length) continue;
-      tries++;
+      let parsed = false;
+      if (ends.length) tries++;
       for (const end of ends) {
         const part = tryParse(trimmed.slice(start, end + 1));
         if (part && part !== 'rejected') return part.value;
-        if (!part && end === matching) broken.push([start, end]);
+        if (part) parsed = true;
+        else if (end === matching) broken.push([start, end]);
       }
+      if (!parsed && matching < 0 && isFirst) broken.push([start, trimmed.length]);
     }
   }
   return undefined;
