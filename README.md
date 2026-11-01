@@ -79,6 +79,12 @@
 - **华为设备上建不了 `smartstudy` 文件夹？** 先在文件管理里手动新建 `Documents/smartstudy`，再在 App 里选择这个文件夹。
 - **电脑上能用吗？** 可以在电脑的 Chrome 或 Edge 里运行，选一个本地文件夹作为数据文件夹，例如从平板拷出来的 `smartstudy` 副本，见[开发说明](docs/development.md)。
 
+## 支持作者
+
+智能学习是免费开源的。免费试用调用千问的费用由作者承担，如果它帮到了你家孩子，欢迎用微信扫码赞赏。
+
+<img src="docs/images/reward-code.png" alt="微信赞赏码" width="300">
+
 ## 参与开发
 
 技术栈是 React + TypeScript + Vite，用 Capacitor 打包成 Android App。开发环境、测试、构建和目录结构见[开发说明](docs/development.md)；功能规则和数据格式见[软件说明](docs/software-plan.md)和[数据约定](docs/data-contract.md)。
