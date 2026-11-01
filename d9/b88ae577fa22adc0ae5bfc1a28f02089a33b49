@@ -1,0 +1,48 @@
+src/features/errorBook/ErrorBookPage.tsx
+  s_853e3a05582c7f::t_3febb89f46fb2d 384-393
+e2e/errorBook.spec.ts
+  s_853e3a05582c7f::t_1c1e5dc14618be 165-191,205
+docs/decisions/004-trial-proxy.md
+  s_853e3a05582c7f::t_ac1c73d3cfb2d7 33
+docs/development.md
+  s_853e3a05582c7f::t_4d0bbc302feeb8 80
+src/features/dictation/DictationPage.tsx
+  s_853e3a05582c7f::t_26e04096a8eecc 182-191
+server/trial-proxy/src/proxy.ts
+  s_853e3a05582c7f::t_548690e451e26f 329-331
+  s_853e3a05582c7f::t_41d0f2d7d61985 208-209
+  s_853e3a05582c7f::t_808c12c809e056 274-275
+server/trial-proxy/proxy.test.ts
+  s_853e3a05582c7f::t_c1d0a49f7cc4e0 187-196
+src/storage/jsonFiles.ts
+  s_853e3a05582c7f::t_9b386ea0a3593e 220
+  s_853e3a05582c7f::t_219327398c4cc7 203
+  s_853e3a05582c7f::t_741744960b8d1e 212-218
+src/ai/trial.test.ts
+  s_853e3a05582c7f::t_9be9b99b290b3a 62,67,70-71
+src/storage/dataCache.ts
+  s_853e3a05582c7f::t_c681606ad73cd4 2
+  s_853e3a05582c7f::t_9eb72101833b2f 84-91
+docs/software-plan.md
+  s_853e3a05582c7f::t_4c443599d37b55 13
+src/storage/dataCache.test.ts
+  s_853e3a05582c7f::t_e3ae8043031d77 7
+src/storage/jsonFiles.test.ts
+  s_853e3a05582c7f::t_014427eae4a5c1 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "d9b88ae577fa22adc0ae5bfc1a28f02089a33b49",
+  "prompts": {},
+  "sessions": {
+    "s_853e3a05582c7f": {
+      "agent_id": {
+        "tool": "kiro-desktop",
+        "id": "sess_9412c325-cac8-43f4-88c4-d85afc226aaf",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "yandali <liyanda2017@163.com>"
+    }
+  }
+}
