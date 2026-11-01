@@ -125,7 +125,8 @@ export function WorkspaceProvider({ files, app: initialApp, settings: initialSet
     apiKey,
     trial,
     trialRemaining: () => (TRIAL_URL ? trialRemaining(TRIAL_URL, TRIAL_DEPS) : Promise.resolve(null)),
-    currentUser: app.users.find(user => user.id === app.currentUserId) ?? null,
+    // A file with children but no current one (only written by hand or another version) uses the first child.
+    currentUser: app.users.find(user => user.id === app.currentUserId) ?? app.users[0] ?? null,
 
     addUser(name) {
       return commitApp(current => {

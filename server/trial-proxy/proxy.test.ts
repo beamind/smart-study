@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { AiError, type Usage } from '../../src/ai/dashscope';
 import { parseGenerated, parseQuestions, parseWords } from '../../src/ai/parse';
-import { modelRequest, type ModelTask } from '../../src/ai/tasks';
+import { applyHits, modelRequest, parseUnderlineHits, type ModelTask } from '../../src/ai/tasks';
 import { defaultSettings } from '../../src/data/defaults';
 import { beijingDay, createProxy, DEFAULT_LIMITS, maxCost, MemoryCounters, RateLimiter, usableReply, type Limits } from './src/proxy';
 import { isConditionFailure } from './src/tablestore';
@@ -118,21 +118,26 @@ describe('trial proxy', () => {
 
   it('reserves before calling the model, so requests at the same time cannot pass a limit together', async () => {
     const one = maxCost({ task: 'generate', source: generate().source }, DEFAULT_LIMITS);
-    // A budget with room for two of the most expensive 举一反三, and one device with a single use left.
-    const { proxy, calls, hold, counters } = setup({ budgetGenerate: (2 * one + 1) / 1_000_000, ipGenerate: 100 });
+    const settledCost = 1500 * 12 + 200 * 36;
+    // Room for two of the most expensive 举一反三 at once, and for a third once those two have settled to their real cost.
+    const budget = 2 * settledCost + one + 100;
+    const { proxy, calls, hold, counters } = setup({ budgetGenerate: budget / 1_000_000, ipGenerate: 100 });
+    expect(3 * one).toBeGreaterThan(budget);
     const release = hold();
     const results = Promise.all(Array.from({ length: 10 }, (_, i) => proxy.call(generate(`device-${1000 + i}`), `9.9.9.${i}`)));
     await new Promise(resolve => setTimeout(resolve, 10));
     expect(calls).toHaveLength(2);
     release();
     const statuses = (await results).map(result => result.status);
-    expect(statuses.filter(status => status === 200)).toHaveLength(2);
-    // Refused only because the two running calls hold the budget: "busy", which the app retries, not "used up today".
-    expect(statuses.filter(status => status === 503)).toHaveLength(8);
-    // Settled to the real cost: 1,500 input and 200 output tokens of the max model.
-    expect(counters.values.get('cost:2026-11-01:generate')).toBe(2 * (1500 * 12 + 200 * 36));
+    // The refused ones waited for the two to settle and tried once more: one fitted, the rest are "busy" (the app
+    // retries), not "used up today", because what was really spent leaves room.
+    expect(statuses.filter(status => status === 200)).toHaveLength(3);
+    expect(statuses.filter(status => status === 503)).toHaveLength(7);
+    expect(calls).toHaveLength(3);
+    expect(counters.values.get('cost:2026-11-01:generate')).toBe(3 * settledCost);
+    expect(counters.values.get('cost:2026-11-01:generate')).toBeLessThanOrEqual(budget);
     // Nothing else stays reserved: the refused requests gave their device and IP uses back.
-    expect([...counters.values].filter(([key, value]) => key.startsWith('device:') && value > 0)).toHaveLength(2);
+    expect([...counters.values].filter(([key, value]) => key.startsWith('device:') && value > 0)).toHaveLength(3);
 
     const single = setup({ deviceGenerate: 1 });
     const releaseSingle = single.hold();
@@ -227,11 +232,32 @@ describe('trial proxy', () => {
     expect(reply).not.toContain('essay');
     expect(parseGenerated(reply)).toEqual({ text: 'It was ___ yesterday.', answer: 'rainy' });
 
-    // Underlines must be in the questions sent; an essay next to "[]" goes nowhere.
+    // Underlines must be found in the questions sent; one that is not counts as "not found" and carries nothing.
     answer('ESSAY about spring, anything at all.\n[{"question":"1","underlined":"foggy","word":"foggy"},{"question":"1","underlined":"secret","word":"secret"}]');
     const underlines = await proxy.call({ device, task: 'underlines', image, questions: [{ text: 'It was __foggy__ yesterday.', answer: 'a' }] }, '1.1.1.1');
-    const hits = JSON.parse((underlines.body as { reply: string }).reply);
-    expect(hits).toEqual([{ question: '1', underlined: 'foggy', word: 'foggy' }]);
+    const hits = (underlines.body as { reply: string }).reply;
+    expect(hits).not.toContain('secret');
+    expect(applyHits([{ text: 'It was __foggy__ yesterday.', answer: 'a' }], parseUnderlineHits(hits))).toEqual({ texts: ['It was __foggy__ yesterday.'], marks: 1, missed: 1 });
+  });
+
+  it('keeps the underlines the app would find: any spaces between words, existing marks, the whole word', () => {
+    const cases: Array<[string, string]> = [
+      ['I go to school by\u00A0bike.', '[{"question":"1","underlined":"by bike","word":"by bike"}]'],
+      ['I go to school by\u3000bike.', '[{"question":"1","underlined":"by bike","word":"by bike"}]'],
+      ['I go to school by  bike.', '[{"question":"1","underlined":"by bike","word":"by bike"}]'],
+      ['He goes to __school__ by bike.', '[{"question":"1","underlined":"to school","word":"to school"}]'],
+      ['Go by __s__hip.', '[{"question":"1","underlined":"sh","word":"ship"}]'],
+      ['I like cake.', '[{"question":"1","underlined":"pie","word":"pie"},{"question":"1","underlined":"cake","word":"cake"}]'],
+    ];
+    for (const [text, reply] of cases) {
+      const task = { task: 'underlines' as const, image, questions: [{ text, answer: '' }] };
+      expect(applyHits(task.questions, parseUnderlineHits(usableReply(task, reply)!))).toEqual(applyHits(task.questions, parseUnderlineHits(reply)));
+    }
+  });
+
+  it('keeps long English sentences, as the app does with its own key', () => {
+    const reply = '["apple","There are many beautiful flowers in the park","Would you like to go to the cinema with me"]';
+    expect(parseWords(usableReply({ task: 'words', image, language: 'english' }, reply)!, 'english')).toEqual(parseWords(reply, 'english'));
   });
 
   it('rebuilds replies that the app parses to the same result', () => {

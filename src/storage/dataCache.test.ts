@@ -12,6 +12,26 @@ const empty = () => emptyDictationFile('chinese');
 const add = (text: string) => (file: DictationFile) => submit(file, { kind: 'dictation', words: [{ text, correct: true }] }).file;
 
 describe('DataCache', () => {
+  it('marks a file unusable for this run when a save stopped half way, keeping the reason', async () => {
+    const folder = new MemoryFolder();
+    const cache = new DataCache(new JsonFiles(folder));
+    await cache.set(path, checkDictationFile, empty, add('一'));
+    const rename = folder.rename.bind(folder);
+    // A PC browser folder that created the target and stopped copying (disk full): an empty main file is left.
+    folder.rename = async (_from, to) => { folder.files.set(`data/users/u1/${to}`, ''); throw new Error('disk full'); };
+    await expect(cache.set(path, checkDictationFile, empty, add('二'))).rejects.toThrow(/保存中断.*disk full/);
+    folder.rename = rename;
+    expect(cache.peek(path)).toMatchObject({ status: 'unusable', error: expect.stringContaining('重新打开') });
+    await expect(cache.set(path, checkDictationFile, empty, add('三'))).rejects.toThrow();
+
+    // The folder cannot even be read any more after the rename failed: that reason is shown, not "copied half way".
+    const other = new MemoryFolder();
+    const cache2 = new DataCache(new JsonFiles(other));
+    await cache2.set(path, checkDictationFile, empty, add('一'));
+    other.rename = async () => { throw new Error('rename failed'); };
+    other.readText = async () => { throw new Error('数据文件夹不存在了，请重新选择'); };
+    await expect(cache2.set(path, checkDictationFile, empty, add('二'))).rejects.toThrow('数据文件夹不存在了');
+  });
   it('reports a restored file once, saying where it came from and that the damaged file was kept', async () => {
     const folder = new MemoryFolder();
     await new DataCache(new JsonFiles(folder)).set(path, checkDictationFile, empty, add('一'));

@@ -18,6 +18,9 @@ export function historyDir(path: string): string {
   return `data/history/${relative.replace(/\.json$/, '')}`;
 }
 
+/** A save stopped half way in a state only the next load can repair: the file is not written again in this run. */
+export class SaveStoppedError extends Error {}
+
 interface Read<T> {
   /** null when the file is missing or its bytes are not UTF-8. */
   text: string | null;
@@ -170,17 +173,19 @@ export class JsonFiles {
     } catch (error) {
       // What is there now decides what happened. A PC browser folder renames by copying then deleting, so the copy
       // may have finished (the save is in place) or stopped half way; SAF and memory folders leave no main file.
-      const now = await this.folder.readText(path).catch(() => undefined);
-      if (now === text) {
+      const now = await this.folder.readText(path).then(value => ({ value }), (failure: unknown) => ({ failure }));
+      if ('value' in now && now.value === text) {
         this.known.set(path, { text });
         await this.folder.remove(tempPath).catch(() => undefined);
         return;
       }
       // A missing main file: the temp file holds this save, as after a crash, and the next load restores it, so
-      // saving again in this run is fine. Anything else (a half-copied file) is left for the next load to repair.
-      if (now === null) { this.known.set(path, { text: null }); throw error; }
+      // saving again in this run is fine. Anything else (a half-copied file, or a folder that cannot be read any more)
+      // is left for the next load to repair, and this file is not written again in this run.
+      if ('value' in now && now.value === null) { this.known.set(path, { text: null }); throw error; }
       this.known.set(path, 'unusable');
-      throw new Error(`${path} 保存中断，没有保存。请重新打开 App，会用临时文件恢复`);
+      const cause = 'failure' in now ? now.failure : error;
+      throw new SaveStoppedError(`${path} 保存中断，没有保存（${(cause as Error)?.message ?? String(cause)}）。请重新打开 App，会用临时文件恢复`);
     }
     this.known.set(path, { text });
     // The new data is in place now; failing to delete old history versions must not report the save as failed.

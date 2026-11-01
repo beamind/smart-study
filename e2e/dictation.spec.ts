@@ -154,16 +154,18 @@ test('a draft in an unexpected shape shows the error page, which can discard it 
     // An older or broken shape: no words list.
     localStorage.setItem('CapacitorStorage.draft:dictation:u1:chinese', JSON.stringify({ phase: 'running', index: 0, startedAt: '2026-10-22T20:44:25+08:00' }));
     localStorage.setItem('CapacitorStorage.draft:dictation:u2:chinese', JSON.stringify({ kind: 'dictation', readMode: 'translation', words: [{ key: 'k', text: '春天', translation: '' }], index: 0, phase: 'answers', wrong: [], startedAt: '2026-10-22T20:44:25+08:00' }));
+    localStorage.setItem('CapacitorStorage.draft:dictation:u1:english', JSON.stringify({ kind: 'dictation', readMode: 'translation', words: [{ key: 'k', text: 'apple', translation: '苹果' }], index: 0, phase: 'answers', wrong: [], startedAt: '2026-10-22T20:44:25+08:00' }));
   });
   await open(page);
   page.on('pageerror', () => undefined);
   await page.getByRole('button', { name: /语文听写/ }).click();
   await expect(page.getByRole('heading', { name: '这个页面出错了' })).toBeVisible();
-  await page.getByRole('button', { name: '放弃没做完的听写和练习…' }).click();
-  await page.getByRole('button', { name: '放弃乐乐没做完的听写和练习' }).click();
+  await page.getByRole('button', { name: '放弃没做完的语文听写…' }).click();
+  await page.getByRole('button', { name: '放弃乐乐没做完的语文听写' }).click();
   await expect(page.locator('.user-switch', { hasText: '乐乐' })).toBeVisible();
   await page.getByRole('button', { name: /语文听写/ }).click();
   await expect(page.getByRole('heading', { name: '新的听写' })).toBeVisible();
-  // The other child's draft is still there.
+  // The other child's draft, and this child's draft of the other page, are still there.
   expect(await page.evaluate(() => localStorage.getItem('CapacitorStorage.draft:dictation:u2:chinese'))).not.toBeNull();
+  expect(await page.evaluate(() => localStorage.getItem('CapacitorStorage.draft:dictation:u1:english'))).not.toBeNull();
 });

@@ -1,5 +1,5 @@
 import type { Checked } from '../data/validate';
-import type { JsonFiles } from './jsonFiles';
+import { SaveStoppedError, type JsonFiles } from './jsonFiles';
 
 /**
  * In-memory copy of the data files, as described in docs/decisions/002: each file is read once,
@@ -71,7 +71,18 @@ export class DataCache {
       const checked = check(changed);
       if (!checked.ok) throw new Error(`修改后的数据没有通过校验，未保存：${checked.error}`);
       const next = checked.value;
-      await this.files.save(path, next);
+      try {
+        await this.files.save(path, next);
+      } catch (error) {
+        // The file cannot be written again in this run: say so where its pages look, so no new work is started on it.
+        if (error instanceof SaveStoppedError) {
+          const stopped: Entry<T> = { status: 'unusable', error: error.message };
+          this.entries.set(path, Promise.resolve(stopped));
+          this.latest.set(path, stopped);
+          this.listeners.get(path)?.forEach(listener => listener());
+        }
+        throw error;
+      }
       // The recovery notice, if any, stays in the app-wide notices (onRecovered) until the user dismisses it.
       const saved: Entry<T> = { status: 'ok', value: next };
       this.entries.set(path, Promise.resolve(saved));

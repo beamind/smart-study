@@ -81,8 +81,13 @@ export function parseUnderlineHits(reply: string): NumberedHit[] {
   });
 }
 
-const contains = (text: string, word: string) =>
+/** Whether a question contains a word as the app looks for it: marks ignored, any spaces between words. */
+export const containsWord = (text: string, word: string) =>
   new RegExp(`(?<![A-Za-z0-9])${wordPattern(word)}(?![A-Za-z0-9])`, 'i').test(stripUnderlines(text));
+
+/** The word a hit is looked for by: the whole word when it contains the underlined part, else the part. */
+export const hitWord = (hit: NumberedHit) =>
+  (hit.word.trim() && hit.word.toLowerCase().includes(hit.underlined.trim().toLowerCase()) ? hit.word : hit.underlined);
 
 export interface UnderlineResult {
   /** Per question: the text with marks (unchanged when the model saw no underline in it). */
@@ -110,9 +115,9 @@ export function applyHits(questions: QuestionAnswer[], hits: NumberedHit[]): Und
   const groups: UnderlineHit[][] = questions.map(() => []);
   let missed = 0;
   for (const hit of hits) {
-    const word = hit.word.trim() && hit.word.toLowerCase().includes(hit.underlined.trim().toLowerCase()) ? hit.word : hit.underlined;
-    const numbered = hit.question !== null && hit.question < questions.length && contains(questions[hit.question].text, word) ? hit.question : -1;
-    const target = numbered >= 0 ? numbered : questions.findIndex(question => contains(question.text, word));
+    const word = hitWord(hit);
+    const numbered = hit.question !== null && hit.question < questions.length && containsWord(questions[hit.question].text, word) ? hit.question : -1;
+    const target = numbered >= 0 ? numbered : questions.findIndex(question => containsWord(question.text, word));
     if (target < 0) missed++;
     else groups[target].push(hit);
   }

@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { cleanTranslation, parseGenerated, parseQuestions, parseWords } from '../../../src/ai/parse';
 import type { Usage } from '../../../src/ai/dashscope';
-import { MAX_REPLY_TOKENS, modelRequest, parseUnderlineHits, type ModelTask } from '../../../src/ai/tasks';
+import { containsWord, hitWord, MAX_REPLY_TOKENS, modelRequest, parseUnderlineHits, type ModelTask } from '../../../src/ai/tasks';
 import { defaultSettings } from '../../../src/data/defaults';
 import type { DictationLanguage } from '../../../src/data/schema';
 
@@ -127,34 +127,37 @@ export function parseTask(body: Record<string, unknown>): ModelTask {
   }
 }
 
-/** A dictation list from one photo is never this long, nor an English item this long ("look forward to doing sth"). */
+/** A dictation list from one photo is never this long. */
 const MAX_WORDS = 100;
-const MAX_ENGLISH_ITEM = 40;
+/** A character no question contains: an underline hit that cannot be found keeps counting as not found. */
+const NOT_FOUND = '\uE000';
 
 /**
  * The reply rebuilt from what the app's own parsers find in it, or null when they find nothing. The raw text is never
  * passed on: words, questions and hits are written back as JSON the app parses to the same result, so text around
- * them (for example an essay the material asked for) goes nowhere. Underlines must be words of the questions sent,
- * so they cannot carry anything new. Question text itself stays free text, limited like the requests' text.
+ * them (for example an essay the material asked for) goes nowhere. An underline hit goes back only when the app would
+ * find its word in a question sent, so hits carry nothing new. Question text itself stays free text, bounded by the
+ * reply length.
  */
 export function usableReply(task: ModelTask, reply: string): string | null {
-  const asJson = (item: { text: string; answer: string }) => ({ question: item.text.slice(0, MAX_TEXT), answer: item.answer.slice(0, MAX_ANSWER) });
+  const asJson = (item: { text: string; answer: string }) => ({ question: item.text, answer: item.answer });
   try {
     switch (task.task) {
       case 'words': {
-        const words = parseWords(reply, task.language).filter(word => task.language === 'chinese' || word.length <= MAX_ENGLISH_ITEM).slice(0, MAX_WORDS);
+        const words = parseWords(reply, task.language).slice(0, MAX_WORDS);
         return words.length ? JSON.stringify(words) : null;
       }
       case 'questions': {
-        const questions = parseQuestions(reply).slice(0, MAX_QUESTIONS);
+        const questions = parseQuestions(reply);
         return questions.length ? JSON.stringify(questions.map(asJson)) : null;
       }
       case 'underlines': {
-        const sent = task.questions.map(item => item.text.toLowerCase());
-        const hits = parseUnderlineHits(reply)
-          .filter(hit => sent.some(text => text.includes(hit.underlined.trim().toLowerCase())))
-          .slice(0, 200)
-          .map(hit => ({ question: hit.question === null ? '' : String(hit.question + 1), underlined: hit.underlined, word: hit.word.slice(0, MAX_WORD) }));
+        // Kept as the app would use them; a hit the app would not find in any question is replaced by a marker that
+        // matches nothing, so the app still counts it as "not found" and nothing else of it goes back.
+        const hits = parseUnderlineHits(reply).slice(0, 200).map(hit => (
+          task.questions.some(item => containsWord(item.text, hitWord(hit)))
+            ? { question: hit.question === null ? '' : String(hit.question + 1), underlined: hit.underlined, word: hit.word }
+            : { question: '', underlined: NOT_FOUND, word: NOT_FOUND }));
         return JSON.stringify(hits);
       }
       case 'translate': { const text = cleanTranslation(reply); return text && text.length <= MAX_WORD ? text : null; }
@@ -167,13 +170,15 @@ export function usableReply(task: ModelTask, reply: string): string | null {
 
 /**
  * Tokens of the text in a request, counted high: a common Chinese character or a few Latin letters are about one
- * token; a rare character (outside the common CJK block, e.g. extension A) may be split into one token per UTF-8 byte.
+ * token; any other character may be split into one token per UTF-8 byte (2–4).
  */
+const encoder = new TextEncoder();
 function textTokens(text: string): number {
   let tokens = 50;
   for (const char of text) {
     const code = char.codePointAt(0)!;
-    tokens += code < 0x3000 || (code >= 0x4E00 && code <= 0x9FFF) || (code >= 0xFF00 && code <= 0xFFEF) ? 1.2 : 4;
+    tokens += code < 0x80 || (code >= 0x4E00 && code <= 0x9FFF) || (code >= 0x3000 && code <= 0x303F) || (code >= 0xFF00 && code <= 0xFFEF)
+      ? 1.2 : encoder.encode(char).length;
   }
   return Math.ceil(tokens);
 }
@@ -198,14 +203,17 @@ export const beijingDay = (ms: number) => new Date(ms + 8 * 3_600_000).toISOStri
 const MAYBE_BILLED = new Set(['timeout', 'network']);
 /** Errors worth trying again; the others (the server's key, a refused request) fail the same way every time. */
 const RETRYABLE = new Set(['timeout', 'network', 'server', 'rate']);
+/** How long a request refused only by running calls waits for one to settle; within the app's 55 s with the 40 s call. */
+const BUSY_WAIT_MS = 8000;
 
 export function createProxy(deps: Dependencies) {
   const { counters, limits } = deps;
   const log = deps.log ?? (entry => console.error(JSON.stringify(entry)));
   const deviceKeys = (device: string) => (['photo', 'translate', 'generate'] as Kind[]).map(kind => `device:${device}:${kind}`);
   const deviceLimit: Record<Kind, number> = { photo: limits.devicePhoto, translate: limits.deviceTranslate, generate: limits.deviceGenerate };
-  /** Budget reserved by model calls still running on this instance, by group. */
+  /** Budget reserved by model calls still running on this instance, by group, and requests waiting for one to finish. */
   const held: Record<Group, number> = { basic: 0, generate: 0 };
+  const waiting: Record<Group, Array<() => void>> = { basic: [], generate: [] };
 
   const remaining = async (device: string): Promise<Remaining> => {
     const [photo, translate, generate] = await counters.get(deviceKeys(device));
@@ -256,38 +264,71 @@ export function createProxy(deps: Dependencies) {
     /** Over the budget by what is already spent ("today"), or only because of what calls on this instance still hold. */
     const budgetRefusal = (current: number) => (current - held[group] + reserved <= budget ? busy : today);
 
-    // A read first, so a request that cannot fit is refused without writing anything.
-    const [deviceNow, ipNow, costNow] = await counters.get([keys.device, keys.ip, keys.cost]);
-    if (deviceNow >= deviceLimit[kind]) return deviceUsed;
-    if (ipNow >= ipLimit) return today;
-    if (costNow + reserved > budget) return budgetRefusal(costNow);
-
-    // Then reserve, in this order, each on condition that it still fits (other requests may be doing the same),
-    // giving back what was taken when a later one does not fit or the table fails.
-    const taken: Array<[string, number]> = [];
-    const giveBack = async () => { for (const [key, amount] of taken) await quietly(key, () => counters.add(key, -amount)); };
-    try {
-      if (!await counters.addWithin(keys.device, 1, deviceLimit[kind])) return deviceUsed;
-      taken.push([keys.device, 1]);
-      if (!await counters.addWithin(keys.ip, 1, ipLimit)) { await giveBack(); return today; }
-      taken.push([keys.ip, 1]);
-      if (!await counters.addWithin(keys.cost, reserved, budget)) {
+    /**
+     * Reserve the device use, the IP use and the most this can cost, in this order. A read first refuses what cannot
+     * fit without writing anything; each reservation then holds on condition that it still fits, because other
+     * requests may be doing the same. What was taken is given back when a later one does not fit or the table fails.
+     */
+    const reserve = async (): Promise<Result | null> => {
+      const [deviceNow, ipNow, costNow] = await counters.get([keys.device, keys.ip, keys.cost]);
+      if (deviceNow >= deviceLimit[kind]) return deviceUsed;
+      if (ipNow >= ipLimit) return today;
+      if (costNow + reserved > budget) return budgetRefusal(costNow);
+      const taken: Array<[string, number]> = [];
+      const giveBack = async () => { for (const [key, amount] of taken) await quietly(key, () => counters.add(key, -amount)); };
+      // A write that failed without saying whether it happened: the uses count as taken, so they are given back (at
+      // worst the user gets one more); the money does not, so the budget is never lowered by mistake.
+      const take = async (key: string, amount: number, limit: number, giveBackIfUnsure: boolean) => {
+        try {
+          const ok = await counters.addWithin(key, amount, limit);
+          if (ok) taken.push([key, amount]);
+          return ok;
+        } catch (error) {
+          if (giveBackIfUnsure) taken.push([key, amount]);
+          throw error;
+        }
+      };
+      try {
+        if (!await take(keys.device, 1, deviceLimit[kind], true)) return deviceUsed;
+        if (!await take(keys.ip, 1, ipLimit, true)) { await giveBack(); return today; }
+        if (!await take(keys.cost, reserved, budget, false)) {
+          await giveBack();
+          const [current] = await counters.get([keys.cost]).catch(() => [Number.NaN]);
+          return Number.isNaN(current) ? busy : budgetRefusal(current);
+        }
+        return null;
+      } catch (error) {
         await giveBack();
-        const [current] = await counters.get([keys.cost]).catch(() => [budget]);
-        return budgetRefusal(current);
+        log({ task: task.task, counter: 'reserve', failed: (error as Error)?.message ?? String(error) });
+        return busy;
       }
-    } catch (error) {
-      await giveBack();
-      log({ task: task.task, counter: 'reserve', failed: (error as Error)?.message ?? String(error) });
-      return busy;
+    };
+
+    let refused = await reserve();
+    // Only calls on this instance that are still running hold the budget (often the other two of the same family's
+    // three 举一反三): wait a few seconds for one to settle and try once more, rather than send the app away.
+    if (refused === busy && held[group] > 0) {
+      await settled(group, BUSY_WAIT_MS);
+      refused = await reserve();
     }
+    if (refused) return refused;
 
     held[group] += reserved;
     try {
       return await callModel(task, kind, id, keys, reserved);
     } finally {
       held[group] -= reserved;
+      for (const wake of waiting[group].splice(0)) wake();
     }
+  }
+
+  /** Resolves when a call of this group on this instance finishes, or after `ms`. */
+  function settled(group: Group, ms: number): Promise<void> {
+    return new Promise(resolve => {
+      const timer = setTimeout(done, ms);
+      function done() { clearTimeout(timer); resolve(); }
+      waiting[group].push(done);
+    });
   }
 
   /** The model call after everything is reserved, and settling the reservation afterwards. */
