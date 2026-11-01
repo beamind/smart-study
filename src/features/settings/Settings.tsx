@@ -1,13 +1,17 @@
-import { ChevronRight, FolderOpen, Gift, KeyRound, RotateCcw } from 'lucide-react';
+import { ChevronRight, FolderOpen, Gift, KeyRound, MessageCircle, RotateCcw } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { DEFAULT_PROMPTS, PROMPT_LABELS } from '../../ai/prompts';
 import type { TrialRemaining } from '../../ai/trial';
 import { useWorkspace } from '../../app/workspace';
 import { defaultSettings } from '../../data/defaults';
 import { PROMPT_KEYS, type PromptKey, type Settings as SettingsData } from '../../data/schema';
+import { copyText } from '../../services/clipboard';
 import { maskApiKey } from '../../services/secrets';
 import { version } from '../../../package.json';
 import { errorText, Page, Sheet, useToast } from '../../ui/components';
+
+/** The QQ group for questions and feedback (also in README.md). */
+const FEEDBACK_QQ_GROUP = '747233425';
 
 export function Settings() {
   const workspace = useWorkspace();
@@ -109,6 +113,15 @@ export function Settings() {
           <button className="button" onClick={workspace.changeFolder}>更换</button>
         </div>
       </Section>
+
+      <Section title="问题反馈">
+        <div className="list-row">
+          <MessageCircle size={20} className="muted" />
+          <span className="grow"><span className="muted small">QQ 交流群</span><br />{FEEDBACK_QQ_GROUP}</span>
+          <button className="button" onClick={async () => toast.show(await copyText(FEEDBACK_QQ_GROUP) ? '已复制群号，可以在 QQ 里搜索加入' : '没能复制，请记下群号在 QQ 里搜索')}>复制群号</button>
+        </div>
+      </Section>
+      <p className="muted small">在 QQ 里搜索群号加入。反馈时请写上手机或平板的型号、在哪一步出的问题，最好附上截图；截图前可以先切换到示例孩子小华。</p>
       <p className="muted small" style={{ textAlign: 'center' }}>版本 {version}</p>
 
       {editing === 'key' && <KeySheet onClose={() => setEditing(null)} />}
