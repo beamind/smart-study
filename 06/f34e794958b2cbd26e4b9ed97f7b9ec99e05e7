@@ -1,0 +1,60 @@
+src/domain/errorBook.ts
+  s_853e3a05582c7f::t_2a45c68aa74a34 71-73
+src/features/errorBook/types.ts
+  s_853e3a05582c7f::t_b0451480e53f66 25-30
+src/features/dictation/types.ts
+  s_853e3a05582c7f::t_c4f5a25c2f8cb9 26-31
+src/features/dictation/DictationPage.tsx
+  s_853e3a05582c7f::t_d9f92e04cc0595 90
+  s_853e3a05582c7f::t_089ff998db8f50 121-124,126,129,133
+  s_853e3a05582c7f::t_cf6b6edf0c21dd 9
+server/trial-proxy/src/proxy.ts
+  s_853e3a05582c7f::t_96861d13b826f4 339
+  s_853e3a05582c7f::t_62965b1e3f8841 288-290
+  s_853e3a05582c7f::t_8613a0f8f31899 200-201
+  s_853e3a05582c7f::t_ada9435a2d61e1 58-59
+  s_853e3a05582c7f::t_4f80d9fca50aec 330,336
+  s_853e3a05582c7f::t_f2aca428995b6c 337-338,340-346,352,356
+  s_853e3a05582c7f::t_c763f531fae1de 76-82,86
+  s_853e3a05582c7f::t_c793b82d98b8ee 60-61
+  s_853e3a05582c7f::t_bcab7b0551ed70 129-130
+  s_853e3a05582c7f::t_60e71303cfdbcc 142-149
+docs/decisions/004-trial-proxy.md
+  s_853e3a05582c7f::t_5739e5f7d58895 32
+  s_853e3a05582c7f::t_a5d68a44fe26ab 51
+  s_853e3a05582c7f::t_0c1a9bf9fcada6 33
+src/domain/dictation.ts
+  s_853e3a05582c7f::t_7b223aa60bbb13 39-40
+  s_853e3a05582c7f::t_cfed1e1798ea9e 25-26,29-30
+server/trial-proxy/src/index.ts
+  s_853e3a05582c7f::t_76a4a46554c84d 135-139
+  s_853e3a05582c7f::t_fdada3e8760580 62-66,68
+src/features/errorBook/ErrorBookPage.tsx
+  s_853e3a05582c7f::t_6a454ffe9be009 112
+  s_853e3a05582c7f::t_ab174f14480135 9
+  s_853e3a05582c7f::t_00584b2b793386 51-58
+  s_853e3a05582c7f::t_92f66e7a85e471 126-127,131,135-136,142,145,152,157,160
+e2e/dictation.spec.ts
+  s_853e3a05582c7f::t_1b6cf3a4472d82 172-178,180-193
+server/trial-proxy/proxy.test.ts
+  s_853e3a05582c7f::t_f93029a46e44d2 279-280,286-296
+  s_853e3a05582c7f::t_723ac08aa3fc0e 80
+  s_853e3a05582c7f::t_500d3c54b132a2 32
+  s_853e3a05582c7f::t_c013b7cc3eed1c 151-178
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "06f34e794958b2cbd26e4b9ed97f7b9ec99e05e7",
+  "prompts": {},
+  "sessions": {
+    "s_853e3a05582c7f": {
+      "agent_id": {
+        "tool": "kiro-desktop",
+        "id": "sess_9412c325-cac8-43f4-88c4-d85afc226aaf",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "yandali <liyanda2017@163.com>"
+    }
+  }
+}
