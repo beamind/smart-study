@@ -22,6 +22,12 @@ export interface PracticeRun {
   /** Keys of the items answered wrong. */
   wrong: string[];
   startedAt: string;
+  /**
+   * The id the submission will be saved under, chosen when the run starts. If a save was interrupted and later
+   * restored from the temp file, the session is already in the file: the draft is then recognised as saved.
+   * Missing in drafts from before 2.0.0's trial release.
+   */
+  sessionId?: string;
 }
 
 /** A recognised or typed question before it is saved. */

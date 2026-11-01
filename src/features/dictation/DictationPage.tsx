@@ -6,7 +6,7 @@ import { AiError } from '../../ai/dashscope';
 import { nowIso } from '../../core/time';
 import { wordKey } from '../../data/normalize';
 import type { DictationFile, DictationLanguage } from '../../data/schema';
-import { submit, undoSession, wordRows } from '../../domain/dictation';
+import { newSessionId, submit, undoSession, wordRows } from '../../domain/dictation';
 import { sample, shuffle } from '../../domain/sampling';
 import { drafts } from '../../services/device';
 import { pickPhoto, type PhotoSource } from '../../services/photo';
@@ -51,6 +51,14 @@ export function DictationPage({ language, replay }: { language: DictationLanguag
   const abort = useRef<AbortController | null>(null);
 
   useEffect(() => { void drafts.read<Run>(key).then(value => setSavedDraft(value)); }, [key]);
+  // A draft whose submission is in the file already (saved, then reported as failed, and restored from the temp
+  // file on the next start) is done: drop it instead of offering to submit it a second time.
+  useEffect(() => {
+    if (!savedDraft?.sessionId || !file?.sessions.some(session => session.id === savedDraft.sessionId)) return;
+    void drafts.clear(key);
+    setSavedDraft(null);
+    toast.show('上次没能确认保存的那次听写已经恢复到记录里了');
+  }, [savedDraft, file, key, toast]);
 
   /** Every change to a run is saved as a draft, so closing the app loses nothing. */
   const changeRun = useCallback((next: Run | null) => {
@@ -79,7 +87,7 @@ export function DictationPage({ language, replay }: { language: DictationLanguag
       seen.add(wordId);
       return true;
     });
-    changeRun({ ...confirmed, words: shuffle(unique), index: 0, phase: 'running', wrong: [], startedAt: nowIso() });
+    changeRun({ ...confirmed, words: shuffle(unique), index: 0, phase: 'running', wrong: [], startedAt: nowIso(), sessionId: newSessionId() });
     setSavedDraft(null);
     setStep({ kind: 'run' });
   };
@@ -110,15 +118,19 @@ export function DictationPage({ language, replay }: { language: DictationLanguag
 
   const finishSubmit = async (current: Run) => {
     const wrong = new Set(current.wrong);
-    const sessionId = await update(value => {
+    const sessionId = current.sessionId ?? newSessionId();
+    const saved = await update(value => {
+      // Saved already: an interrupted save that was restored from the temp file when the app was opened again.
+      if (value.sessions.some(session => session.id === sessionId)) return { value, result: false };
       const result = submit(value, {
-        kind: current.kind, readMode: current.readMode,
+        kind: current.kind, readMode: current.readMode, sessionId,
         words: current.words.map(word => ({ text: word.text, translation: word.translation, correct: !wrong.has(word.key) })),
       });
-      return { value: result.file, result: result.sessionId };
+      return { value: result.file, result: true };
     });
     changeRun(null);
     setStep({ kind: 'home' });
+    if (!saved) { toast.show('这次听写已经保存过了，没有再记一次'); return; }
     const right = current.words.length - wrong.size;
     toast.show(wrong.size ? `已保存：写对 ${right} / ${current.words.length} 个` : `全对！${current.words.length} 个词都写对了`, {
       label: '撤销',

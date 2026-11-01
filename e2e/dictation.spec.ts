@@ -169,3 +169,25 @@ test('a draft in an unexpected shape shows the error page, which can discard it 
   expect(await page.evaluate(() => localStorage.getItem('CapacitorStorage.draft:dictation:u2:chinese'))).not.toBeNull();
   expect(await page.evaluate(() => localStorage.getItem('CapacitorStorage.draft:dictation:u1:english'))).not.toBeNull();
 });
+
+test('a draft whose submission is already in the file (an interrupted save restored on start) is not offered again', async ({ page }) => {
+  const draft = { kind: 'dictation', readMode: 'translation', words: [{ key: 'k1', text: '春天', translation: '' }], index: 0, phase: 'answers', wrong: [], startedAt: at, sessionId: 's_restored' };
+  await seed(page, {
+    'data/app.json': appFile([{ id: 'u1', name: '乐乐' }]),
+    'data/users/u1/dictation-chinese.json': {
+      schema: 'smart-study.dictation/1', language: 'chinese',
+      sessions: [{ id: 's_restored', kind: 'dictation', at, wordIds: ['w1'] }],
+      words: [{ id: 'w1', text: '春天', createdAt: at, attempts: [{ sessionId: 's_restored', correct: true }] }],
+    },
+  });
+  await page.addInitScript(value => {
+    if (sessionStorage.getItem('seeded-draft')) return;
+    sessionStorage.setItem('seeded-draft', '1');
+    localStorage.setItem('CapacitorStorage.draft:dictation:u1:chinese', value);
+  }, JSON.stringify(draft));
+  await open(page);
+  await page.getByRole('button', { name: /语文听写/ }).click();
+  await expect(page.getByText('已经恢复到记录里了')).toBeVisible();
+  await expect(page.getByText(/上次的听写还没提交/)).toHaveCount(0);
+  expect(await page.evaluate(() => localStorage.getItem('CapacitorStorage.draft:dictation:u1:chinese'))).toBeNull();
+});

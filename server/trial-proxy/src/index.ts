@@ -59,8 +59,13 @@ const settings = defaultSettings();
 // each retry is a new, counted request. A server-side retry would keep spending after the app has given up.
 // Function Compute's own limit for the function is 60 s (docs/trial-proxy.md, step 5).
 const MODEL_TIMEOUT_MS = 40_000;
+/**
+ * Model calls running on this instance at once (requests waiting for budget do not count); more get a 503 the app
+ * retries. Function Compute's "单实例并发度" is set to the same number (docs/trial-proxy.md, step 5).
+ */
+const MAX_IN_FLIGHT = 8;
 const proxy = createProxy({
-  counters, limits, now: Date.now, ipSalt,
+  counters, limits, now: Date.now, ipSalt, maxInFlight: MAX_IN_FLIGHT,
   model: task => chatWithUsage({
     ...modelRequest(settings, task), apiKey, maxTokens: MAX_REPLY_TOKENS[task.task],
     timeoutMs: MODEL_TIMEOUT_MS, maxAttempts: 1,
@@ -70,13 +75,7 @@ const proxy = createProxy({
 const MAX_BODY = 2_500_000;
 /** Requests one IP may make per minute on this instance, of any kind. The app needs far fewer, even translating a list. */
 const PER_IP_PER_MINUTE = 60;
-/**
- * Model calls in progress on this instance at once; more get a 503 the app retries. Function Compute's "单实例并发度"
- * is set to the same number (docs/trial-proxy.md, step 5), so the platform starts a second instance instead.
- */
-const MAX_IN_FLIGHT = 8;
 const limiter = new RateLimiter(PER_IP_PER_MINUTE, 60_000);
-let inFlight = 0;
 
 function send(response: ServerResponse, status: number, body: unknown, close = false) {
   response.writeHead(status, {
@@ -133,14 +132,11 @@ createServer(async (request, response) => {
     if (text === null) { send(response, 413, { error: 'too-large', message: '请求太大' }, true); return; }
     let body: unknown;
     try { body = JSON.parse(text); } catch { send(response, 400, { error: 'bad-request', message: '请求不是 JSON' }); return; }
-    if (inFlight >= MAX_IN_FLIGHT) { send(response, 503, { error: 'busy', message: '试用的人太多，请稍后再试' }); return; }
-    inFlight++;
-    try {
-      const result = await proxy.call(body, clientIp(request));
-      send(response, result.status, result.body);
-    } finally {
-      inFlight--;
-    }
+    // The app may give up (cancel, leave the page) while this waits for budget: then nothing is reserved for it.
+    const gone = new AbortController();
+    response.on('close', () => { if (!response.writableFinished) gone.abort(); });
+    const result = await proxy.call(body, clientIp(request), gone.signal);
+    send(response, result.status, result.body);
   } catch (error) {
     console.error(error);
     send(response, 500, { error: 'server', message: '试用服务出错了' });

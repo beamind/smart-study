@@ -185,7 +185,7 @@ export class JsonFiles {
       if ('value' in now && now.value === null) { this.known.set(path, { text: null }); throw error; }
       this.known.set(path, 'unusable');
       const cause = 'failure' in now ? now.failure : error;
-      throw new SaveStoppedError(`${path} 保存中断，没有保存（${(cause as Error)?.message ?? String(cause)}）。请重新打开 App，会用临时文件恢复`);
+      throw new SaveStoppedError(`${path} 保存没有完成（${(cause as Error)?.message ?? String(cause)}）。请重新打开 App：这次的内容会从临时文件恢复，恢复后不用再提交一次`);
     }
     this.known.set(path, { text });
     // The new data is in place now; failing to delete old history versions must not report the save as failed.

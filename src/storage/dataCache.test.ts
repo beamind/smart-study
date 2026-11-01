@@ -19,7 +19,7 @@ describe('DataCache', () => {
     const rename = folder.rename.bind(folder);
     // A PC browser folder that created the target and stopped copying (disk full): an empty main file is left.
     folder.rename = async (_from, to) => { folder.files.set(`data/users/u1/${to}`, ''); throw new Error('disk full'); };
-    await expect(cache.set(path, checkDictationFile, empty, add('二'))).rejects.toThrow(/保存中断.*disk full/);
+    await expect(cache.set(path, checkDictationFile, empty, add('二'))).rejects.toThrow(/保存没有完成.*disk full/);
     folder.rename = rename;
     expect(cache.peek(path)).toMatchObject({ status: 'unusable', error: expect.stringContaining('重新打开') });
     await expect(cache.set(path, checkDictationFile, empty, add('三'))).rejects.toThrow();

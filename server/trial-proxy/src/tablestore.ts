@@ -16,10 +16,14 @@ export class TablestoreCounters implements Counters {
       stsToken: options.securityToken,
       endpoint: options.endpoint,
       instancename: options.instance,
-      // The SDK retries reads on timeouts and server errors, and writes only on throttling (the write was refused,
-      // not done), so its retries never add twice (lib/retry/retry_util.js). A write whose answer was lost is not
-      // retried; change() reports it and the proxy gives the uses back.
+      // SDK 5.6.6 retries reads (GetRow is on its list of repeatable APIs) on HTTP 500/502/503 and network errors.
+      // It never retries writes: PutRow and UpdateRow are not on that list, and its retry-by-error-code rules do not
+      // apply because it parses error codes into HTTP status numbers (see isConditionFailure). So its retries never
+      // add twice. A write whose answer was lost is reported by change(); the proxy gives the uses back. Recheck
+      // lib/retry/retry_util.js after an SDK upgrade: the codes retried for every API all mean "refused, not done".
       maxRetries: 2,
+      // An answer that never comes would otherwise hold the request (and its reservation) forever.
+      httpOptions: { timeout: 5000 },
     });
   }
 

@@ -22,7 +22,12 @@ export interface Submission {
   words: DictatedWord[];
   readMode?: ReadMode;
   at?: string;
+  /** Chosen when the dictation started (kept in its draft), so a submission that was saved already is recognised. */
+  sessionId?: string;
 }
+
+/** A new session id, e.g. for a draft that will be submitted later. */
+export const newSessionId = () => newId('s');
 
 /** Index of words by their comparison key. */
 export const wordIndex = (file: DictationFile) => new Map(file.words.map(word => [wordKey(word.text, file.language), word]));
@@ -31,7 +36,8 @@ export const wordIndex = (file: DictationFile) => new Map(file.words.map(word =>
 export function submit(file: DictationFile, submission: Submission): { file: DictationFile; sessionId: string } {
   if (!submission.words.length) throw new Error('没有词语，不能保存');
   const at = submission.at ?? nowIso();
-  const sessionId = newId('s');
+  const sessionId = submission.sessionId ?? newId('s');
+  if (file.sessions.some(session => session.id === sessionId)) throw new Error('这次听写已经保存过了');
   const byKey = wordIndex(file);
   const words = file.words.map(word => ({ ...word, attempts: [...word.attempts] }));
   const byId = new Map(words.map(word => [word.id, word]));

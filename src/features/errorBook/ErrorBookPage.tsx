@@ -6,7 +6,7 @@ import { AiError } from '../../ai/dashscope';
 import { nowIso } from '../../core/time';
 import { questionKey } from '../../data/normalize';
 import type { ErrorBookFile, Question } from '../../data/schema';
-import { addQuestions, deleteQuestions, editQuestion, questionRows, recordPractice, sortForBook, undoSession } from '../../domain/errorBook';
+import { addQuestions, deleteQuestions, editQuestion, newSessionId, questionRows, recordPractice, sortForBook, undoSession } from '../../domain/errorBook';
 import { sample } from '../../domain/sampling';
 import { drafts } from '../../services/device';
 import { pickPhoto, type PhotoSource } from '../../services/photo';
@@ -48,6 +48,14 @@ export function ErrorBookPage() {
   const abort = useRef<AbortController | null>(null);
 
   useEffect(() => { void drafts.read<PracticeRun>(key).then(value => setSavedDraft(value)); }, [key]);
+  // A draft whose submission is in the file already (saved, then reported as failed, and restored from the temp
+  // file on the next start) is done: drop it instead of offering to submit it a second time.
+  useEffect(() => {
+    if (!savedDraft?.sessionId || !file?.sessions.some(session => session.id === savedDraft.sessionId)) return;
+    void drafts.clear(key);
+    setSavedDraft(null);
+    toast.show(`上次没能确认保存的那次${runTitle(savedDraft.kind)}已经恢复到错题本里了`);
+  }, [savedDraft, file, key, toast]);
 
   /** Every change to a run is saved as a draft, so closing the app loses nothing. */
   const changeRun = useCallback((next: PracticeRun | null) => {
@@ -101,7 +109,7 @@ export function ErrorBookPage() {
 
   // ---------- practice and 举一反三 ----------
   const startRun = (kind: RunKind, items: PracticeItem[]) => {
-    changeRun({ kind, items, index: 0, phase: 'running', wrong: [], startedAt: nowIso() });
+    changeRun({ kind, items, index: 0, phase: 'running', wrong: [], startedAt: nowIso(), sessionId: newSessionId() });
     setSavedDraft(null);
     setStep({ kind: 'run' });
   };
@@ -115,36 +123,41 @@ export function ErrorBookPage() {
 
   const finishSubmit = async (current: PracticeRun) => {
     const wrong = new Set(current.wrong);
+    const sessionId = current.sessionId ?? newSessionId();
+    const done = (text: string) => { changeRun(null); setStep({ kind: 'book' }); toast.show(text); };
     if (current.kind === 'variation') {
       const missed = current.items.filter(item => wrong.has(item.key));
       if (!missed.length) {
-        changeRun(null);
-        setStep({ kind: 'book' });
-        toast.show(`全对！${current.items.length} 道新题都做对了，不需要保存`);
+        done(`全对！${current.items.length} 道新题都做对了，不需要保存`);
         return;
       }
       const outcome = await update(value => {
+        // Saved already: an interrupted save that was restored from the temp file when the app was opened again.
+        if (value.sessions.some(session => session.id === sessionId)) return { value, result: null };
         // The original may have been deleted in the meantime; then the new question simply has no source.
         const known = new Set(value.questions.map(question => question.id));
         const result = addQuestions(value, 'variation', missed.map(item => ({
           text: item.text, answer: item.answer, origin: 'generated',
           ...(item.sourceQuestionId && known.has(item.sourceQuestionId) ? { sourceQuestionId: item.sourceQuestionId } : {}),
-        })));
+        })), undefined, sessionId);
         return { value: result.file, result };
       });
+      if (!outcome) { done('这次举一反三已经保存过了，没有再记一次'); return; }
       changeRun(null);
       setStep({ kind: 'book' });
       undoToast(`已把做错的 ${outcome.created + outcome.existing} 道新题保存到错题本（共 ${current.items.length} 题）`, outcome.sessionId);
       return;
     }
     const outcome = await update(value => {
+      if (value.sessions.some(session => session.id === sessionId)) return { value, result: null };
       // Questions deleted while the practice was paused are left out instead of failing the whole save.
       const known = new Set(value.questions.map(question => question.id));
       const kept = current.items.filter(item => item.questionId && known.has(item.questionId));
       if (!kept.length) throw new Error('这些题已经从错题本里删除了，没有可以保存的记录');
-      const result = recordPractice(value, kept.map(item => ({ questionId: item.questionId!, correct: !wrong.has(item.key) })));
+      const result = recordPractice(value, kept.map(item => ({ questionId: item.questionId!, correct: !wrong.has(item.key) })), undefined, sessionId);
       return { value: result.file, result: { sessionId: result.sessionId, kept: kept.length, wrong: kept.filter(item => wrong.has(item.key)).length } };
     });
+    if (!outcome) { done('这次练习已经保存过了，没有再记一次'); return; }
     changeRun(null);
     setStep({ kind: 'book' });
     const skipped = current.items.length - outcome.kept;

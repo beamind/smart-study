@@ -55,6 +55,10 @@ export interface Dependencies {
   ipSalt: string;
   /** For counter failures after the model call, which must not fail the request. */
   log?(entry: Record<string, unknown>): void;
+  /** Model calls running at once on this instance; more get a retryable 503 before anything is reserved. */
+  maxInFlight?: number;
+  /** How long a request refused only by running calls waits for them (BUSY_WAIT_MS; shorter in tests). */
+  busyWaitMs?: number;
 }
 
 export interface Remaining { photo: number; translate: number; generate: number }
@@ -69,12 +73,17 @@ const kindOf = (task: ModelTask['task']): Kind => (task === 'translate' ? 'trans
 
 /** Photo recognition limits: a 1280px JPEG is about 0.3 MB; 2 MB of base64 leaves room and stops abuse. */
 const MAX_IMAGE_CHARS = 2_000_000;
-const MAX_TEXT = 2000;
-const MAX_ANSWER = 500;
+/**
+ * A source question for 举一反三, and its answer. A recognised question keeps its options in the text, and the model
+ * writes full answers (a model essay for a writing task), so these allow what recognition can return; the cost of
+ * a long one is reserved like any other (maxCost).
+ */
+const MAX_TEXT = 6000;
+const MAX_ANSWER = 2000;
 const MAX_WORD = 100;
 /** Underline recognition sends every question found on the page. */
 const MAX_QUESTIONS = 50;
-/** All question text of one underline request together: plenty for one photographed page. */
+/** All question text of one underline request together: plenty for one photographed page. Answers are not used. */
 const MAX_UNDERLINE_TEXT = 8000;
 
 /**
@@ -117,7 +126,8 @@ export function parseTask(body: Record<string, unknown>): ModelTask {
     case 'underlines': {
       const list = Array.isArray(body.questions) && body.questions.length ? body.questions : bad('缺少题目');
       if (list.length > MAX_QUESTIONS) bad(`试用时一次最多识别 ${MAX_QUESTIONS} 道题的划线，可以先删掉几道`);
-      const questions = list.map(question);
+      // Only the text is used (underlinePrompt); the answers are neither checked nor kept.
+      const questions = list.map(item => ({ text: string((item && typeof item === 'object' ? item : {} as Record<string, unknown>).text, '题目', MAX_UNDERLINE_TEXT), answer: '' }));
       if (questions.reduce((sum, item) => sum + item.text.length, 0) > MAX_UNDERLINE_TEXT) bad(`题目文字太多（最多 ${MAX_UNDERLINE_TEXT} 个字），可以先删掉几道`);
       return { task: 'underlines', image: image(body.image), questions };
     }
@@ -129,8 +139,14 @@ export function parseTask(body: Record<string, unknown>): ModelTask {
 
 /** A dictation list from one photo is never this long. */
 const MAX_WORDS = 100;
-/** A character no question contains: an underline hit that cannot be found keeps counting as not found. */
-const NOT_FOUND = '\uE000';
+/** A private-use character none of the questions contains: an underline hit that cannot be found stays not found. */
+function notFoundMarker(texts: string[]): string {
+  for (let code = 0xE000; code <= 0xF8FF; code++) {
+    const char = String.fromCharCode(code);
+    if (!texts.some(text => text.includes(char))) return char;
+  }
+  return '\uE000';
+}
 
 /**
  * The reply rebuilt from what the app's own parsers find in it, or null when they find nothing. The raw text is never
@@ -153,11 +169,15 @@ export function usableReply(task: ModelTask, reply: string): string | null {
       }
       case 'underlines': {
         // Kept as the app would use them; a hit the app would not find in any question is replaced by a marker that
-        // matches nothing, so the app still counts it as "not found" and nothing else of it goes back.
-        const hits = parseUnderlineHits(reply).slice(0, 200).map(hit => (
-          task.questions.some(item => containsWord(item.text, hitWord(hit)))
-            ? { question: hit.question === null ? '' : String(hit.question + 1), underlined: hit.underlined, word: hit.word }
-            : { question: '', underlined: NOT_FOUND, word: NOT_FOUND }));
+        // matches nothing, so the app still counts it as "not found" and nothing else of it goes back. A hit's word is
+        // passed on only when the app looks for it (it contains the underlined part); otherwise the part itself.
+        const marker = notFoundMarker(task.questions.map(item => item.text));
+        const hits = parseUnderlineHits(reply).slice(0, 200).map(hit => {
+          const word = hitWord(hit);
+          return task.questions.some(item => containsWord(item.text, word))
+            ? { question: hit.question === null ? '' : String(hit.question + 1), underlined: hit.underlined, word: word === hit.word ? hit.word : hit.underlined }
+            : { question: '', underlined: marker, word: marker };
+        });
         return JSON.stringify(hits);
       }
       case 'translate': { const text = cleanTranslation(reply); return text && text.length <= MAX_WORD ? text : null; }
@@ -177,7 +197,8 @@ function textTokens(text: string): number {
   let tokens = 50;
   for (const char of text) {
     const code = char.codePointAt(0)!;
-    tokens += code < 0x80 || (code >= 0x4E00 && code <= 0x9FFF) || (code >= 0x3000 && code <= 0x303F) || (code >= 0xFF00 && code <= 0xFFEF)
+    tokens += code < 0x80 || (code >= 0x4E00 && code <= 0x9FFF) || (code >= 0x3000 && code <= 0x303F)
+      || (code >= 0xFF01 && code <= 0xFF5E) || (code >= 0xFFE0 && code <= 0xFFE6)
       ? 1.2 : encoder.encode(char).length;
   }
   return Math.ceil(tokens);
@@ -214,6 +235,9 @@ export function createProxy(deps: Dependencies) {
   /** Budget reserved by model calls still running on this instance, by group, and requests waiting for one to finish. */
   const held: Record<Group, number> = { basic: 0, generate: 0 };
   const waiting: Record<Group, Array<() => void>> = { basic: [], generate: [] };
+  /** Model calls running on this instance; requests waiting for budget do not count. */
+  let running = 0;
+  const maxInFlight = deps.maxInFlight ?? Number.POSITIVE_INFINITY;
 
   const remaining = async (device: string): Promise<Remaining> => {
     const [photo, translate, generate] = await counters.get(deviceKeys(device));
@@ -235,8 +259,8 @@ export function createProxy(deps: Dependencies) {
     return { status: 200, body: { remaining: await remaining(device) } };
   }
 
-  /** POST: one model call. */
-  async function call(body: unknown, ip: string): Promise<Result> {
+  /** POST: one model call. `signal` aborts when the app has gone away (the connection closed). */
+  async function call(body: unknown, ip: string, signal?: AbortSignal): Promise<Result> {
     let task: ModelTask;
     const record = (body && typeof body === 'object' ? body : {}) as Record<string, unknown>;
     const device = record.device;
@@ -261,6 +285,9 @@ export function createProxy(deps: Dependencies) {
     const today: Result = { status: 429, body: { error: 'quota', message: `今天的${what}试用名额用完了，明天再试，或在设置里填写自己的千问 API Key` } };
     // Requests still running hold their reservations, and settle to much less within seconds: try again soon.
     const busy: Result = { status: 503, body: { error: 'busy', message: '试用的人有点多，请过一会儿再试' } };
+    // The table failed: also worth trying again, but not worth waiting here for.
+    const tableFailed: Result = { status: 503, body: { error: 'busy', message: '试用服务暂时有点忙，请过一会儿再试' } };
+    if (running >= maxInFlight) return busy;
     /** Over the budget by what is already spent ("today"), or only because of what calls on this instance still hold. */
     const budgetRefusal = (current: number) => (current - held[group] + reserved <= budget ? busy : today);
 
@@ -294,29 +321,39 @@ export function createProxy(deps: Dependencies) {
         if (!await take(keys.cost, reserved, budget, false)) {
           await giveBack();
           const [current] = await counters.get([keys.cost]).catch(() => [Number.NaN]);
-          return Number.isNaN(current) ? busy : budgetRefusal(current);
+          return Number.isNaN(current) ? tableFailed : budgetRefusal(current);
         }
         return null;
       } catch (error) {
         await giveBack();
         log({ task: task.task, counter: 'reserve', failed: (error as Error)?.message ?? String(error) });
-        return busy;
+        return tableFailed;
       }
     };
 
     let refused = await reserve();
     // Only calls on this instance that are still running hold the budget (often the other two of the same family's
-    // three 举一反三): wait a few seconds for one to settle and try once more, rather than send the app away.
-    if (refused === busy && held[group] > 0) {
-      await settled(group, BUSY_WAIT_MS);
+    // three 举一反三): wait for them to settle and try again, for a few seconds at most, rather than send the app away.
+    // Each time one finishes it is tried again; when none is running any more (it finished while this was reserving),
+    // once more straight away.
+    const deadline = Date.now() + (deps.busyWaitMs ?? BUSY_WAIT_MS);
+    let idleTry = false;
+    while (refused === busy && Date.now() < deadline) {
+      if (held[group] > 0) await settled(group, deadline - Date.now());
+      else if (idleTry) break;
+      else idleTry = true;
+      // The app gave up (cancelled, left the page) while this waited: take nothing for an answer nobody reads.
+      if (signal?.aborted) return busy;
       refused = await reserve();
     }
     if (refused) return refused;
 
     held[group] += reserved;
+    running++;
     try {
       return await callModel(task, kind, id, keys, reserved);
     } finally {
+      running--;
       held[group] -= reserved;
       for (const wake of waiting[group].splice(0)) wake();
     }

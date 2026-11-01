@@ -23,13 +23,22 @@ export interface NewQuestion {
   sourceQuestionId?: string;
 }
 
+/** A new session id, e.g. for a practice draft that will be submitted later. */
+export const newSessionId = () => newId('s');
+
+const unused = (file: ErrorBookFile, sessionId: string) => {
+  if (file.sessions.some(session => session.id === sessionId)) throw new Error('这次已经保存过了');
+  return sessionId;
+};
+
 /**
  * Record wrong questions in one session: "capture" (录入) or "variation" (举一反三 questions answered wrong).
  * A question equal to one already in the book (same questionKey) gets the attempt instead of a copy.
+ * `sessionId` is given when it was chosen in advance (a draft), so a submission saved already is recognised.
  */
-export function addQuestions(file: ErrorBookFile, kind: Extract<ErrorBookSource, 'capture' | 'variation'>, items: NewQuestion[], at = nowIso()):
+export function addQuestions(file: ErrorBookFile, kind: Extract<ErrorBookSource, 'capture' | 'variation'>, items: NewQuestion[], at = nowIso(), id?: string):
   { file: ErrorBookFile; sessionId: string; created: number; existing: number } {
-  const sessionId = newId('s');
+  const sessionId = unused(file, id ?? newId('s'));
   const questions = file.questions.map(question => ({ ...question, attempts: [...question.attempts] }));
   const byKey = new Map(questions.map(question => [questionKey(question.text), question]));
   const order: string[] = [];
@@ -59,9 +68,9 @@ export function addQuestions(file: ErrorBookFile, kind: Extract<ErrorBookSource,
   return { sessionId, created, existing, file: { ...file, questions, sessions: [...file.sessions, { id: sessionId, kind, at, questionIds: order }] } };
 }
 
-/** Record one practice: one attempt per question, in the order shown. */
-export function recordPractice(file: ErrorBookFile, results: { questionId: string; correct: boolean }[], at = nowIso()): { file: ErrorBookFile; sessionId: string } {
-  const sessionId = newId('s');
+/** Record one practice: one attempt per question, in the order shown. `id` as in addQuestions. */
+export function recordPractice(file: ErrorBookFile, results: { questionId: string; correct: boolean }[], at = nowIso(), id?: string): { file: ErrorBookFile; sessionId: string } {
+  const sessionId = unused(file, id ?? newId('s'));
   const outcome = new Map<string, boolean>();
   for (const result of results) if (!outcome.has(result.questionId)) outcome.set(result.questionId, result.correct);
   const known = new Set(file.questions.map(question => question.id));

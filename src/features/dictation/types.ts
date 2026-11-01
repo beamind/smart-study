@@ -23,6 +23,12 @@ export interface Run extends Plan {
   phase: 'running' | 'answers';
   wrong: string[];
   startedAt: string;
+  /**
+   * The id the submission will be saved under, chosen when the run starts. If a save was interrupted and later
+   * restored from the temp file, the session is already in the file: the draft is then recognised as saved.
+   * Missing in older drafts.
+   */
+  sessionId?: string;
 }
 
 let counter = 0;

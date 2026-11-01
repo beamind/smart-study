@@ -20,7 +20,7 @@ const REPLIES: Record<ModelTask['task'], string> = {
   generate: '{"question":"It was ___ yesterday.","answer":"rainy"}',
 };
 
-function setup(limits: Partial<Limits> = {}, usage: Usage | null = { input: 1500, output: 200 }) {
+function setup(limits: Partial<Limits> = {}, usage: Usage | null = { input: 1500, output: 200 }, options: { busyWaitMs?: number; maxInFlight?: number } = {}) {
   const counters = new MemoryCounters();
   const calls: ModelTask[] = [];
   const logged: Record<string, unknown>[] = [];
@@ -29,7 +29,7 @@ function setup(limits: Partial<Limits> = {}, usage: Usage | null = { input: 1500
   let wait: Promise<void> | null = null;
   const proxy = createProxy({
     counters, ipSalt: 'salt', now: () => Date.parse('2026-11-01T23:30:00+08:00'),
-    limits: { ...DEFAULT_LIMITS, ...limits },
+    limits: { ...DEFAULT_LIMITS, ...limits }, ...options,
     log: entry => logged.push(entry),
     model: async task => {
       calls.push(task);
@@ -77,7 +77,7 @@ describe('trial proxy', () => {
       { device, task: 'underlines', image, questions: [] },
       { device, task: 'underlines', image, questions: many(51) },
       { device, task: 'underlines', image, questions: many(5, 'x'.repeat(1700)) }, // 8,500 characters together
-      { device, task: 'generate', source: { text: 'Q', answer: 'x'.repeat(501) } },
+      { device, task: 'generate', source: { text: 'Q', answer: 'x'.repeat(2001) } },
       { device, task: 'words', image, language: 'french' },
     ]) expect(await proxy.call(body, '1.2.3.4')).toMatchObject({ status: 400 });
     expect(calls).toEqual([]);
@@ -129,10 +129,10 @@ describe('trial proxy', () => {
     expect(calls).toHaveLength(2);
     release();
     const statuses = (await results).map(result => result.status);
-    // The refused ones waited for the two to settle and tried once more: one fitted, the rest are "busy" (the app
-    // retries), not "used up today", because what was really spent leaves room.
+    // The refused ones waited for the running calls to settle and tried again: one more fitted. After that, what was
+    // really spent leaves no room, so the rest are told the day is used up.
     expect(statuses.filter(status => status === 200)).toHaveLength(3);
-    expect(statuses.filter(status => status === 503)).toHaveLength(7);
+    expect(statuses.filter(status => status === 429)).toHaveLength(7);
     expect(calls).toHaveLength(3);
     expect(counters.values.get('cost:2026-11-01:generate')).toBe(3 * settledCost);
     expect(counters.values.get('cost:2026-11-01:generate')).toBeLessThanOrEqual(budget);
@@ -146,6 +146,34 @@ describe('trial proxy', () => {
     releaseSingle();
     expect((await same).map(result => result.status).sort()).toEqual([200, 429, 429]);
     expect(single.calls).toHaveLength(1);
+  });
+
+  it('says "busy" (the app retries) when running calls still hold the budget after the wait, and stops waiting when the app has gone', async () => {
+    const one = maxCost({ task: 'generate', source: generate().source }, DEFAULT_LIMITS);
+    const { proxy, calls, hold, counters } = setup({ budgetGenerate: (one + 100) / 1_000_000, ipGenerate: 100 }, undefined, { busyWaitMs: 50 });
+    const release = hold();
+    const first = proxy.call(generate('device-1000'), '9.9.9.1');
+    await new Promise(resolve => setTimeout(resolve, 10));
+    expect(await proxy.call(generate('device-1001'), '9.9.9.2')).toMatchObject({ status: 503, body: { error: 'busy' } });
+    const gone = new AbortController();
+    const waiting = proxy.call(generate('device-1002'), '9.9.9.3', gone.signal);
+    gone.abort();
+    release();
+    expect(await waiting).toMatchObject({ status: 503 });
+    expect(await first).toMatchObject({ status: 200 });
+    expect(calls).toHaveLength(1);
+    expect(counters.values.get('device:device-1002:generate') ?? 0).toBe(0);
+  });
+
+  it('counts only running model calls toward the in-flight limit', async () => {
+    const { proxy, hold } = setup({}, undefined, { maxInFlight: 1 });
+    const release = hold();
+    const first = proxy.call({ device, task: 'translate', text: 'apple' }, '1.1.1.1');
+    await new Promise(resolve => setTimeout(resolve, 10));
+    expect(await proxy.call({ device: 'device-0002', task: 'translate', text: 'pear' }, '1.1.1.2')).toMatchObject({ status: 503 });
+    release();
+    expect(await first).toMatchObject({ status: 200 });
+    expect(await proxy.call({ device: 'device-0002', task: 'translate', text: 'pear' }, '1.1.1.2')).toMatchObject({ status: 200 });
   });
 
   it('refuses a request that cannot fit without writing anything', async () => {
@@ -248,11 +276,24 @@ describe('trial proxy', () => {
       ['He goes to __school__ by bike.', '[{"question":"1","underlined":"to school","word":"to school"}]'],
       ['Go by __s__hip.', '[{"question":"1","underlined":"sh","word":"ship"}]'],
       ['I like cake.', '[{"question":"1","underlined":"pie","word":"pie"},{"question":"1","underlined":"cake","word":"cake"}]'],
+      // A question that contains U+E000 itself: the "not found" marker must still match nothing.
+      ['Choose \uE000 the right word.', '[{"question":"1","underlined":"secret","word":"secret"}]'],
     ];
     for (const [text, reply] of cases) {
       const task = { task: 'underlines' as const, image, questions: [{ text, answer: '' }] };
       expect(applyHits(task.questions, parseUnderlineHits(usableReply(task, reply)!))).toEqual(applyHits(task.questions, parseUnderlineHits(reply)));
     }
+    // A word that does not contain the underlined part is not what the app looks for; it does not go back.
+    const leaked = usableReply({ task: 'underlines', image, questions: [{ text: '春天来了，小草绿了。', answer: '' }] },
+      '[{"question":"1","underlined":"春","word":"这里可以是任意一段很长的内容"}]')!;
+    expect(leaked).not.toContain('任意');
+  });
+
+  it('accepts underline requests whatever the answers are: they are not used', async () => {
+    const { proxy, calls } = setup();
+    const long = { text: 'Write about your weekend.', answer: 'x'.repeat(5000) };
+    expect(await proxy.call({ device, task: 'underlines', image, questions: [long] }, '1.1.1.1')).toMatchObject({ status: 200 });
+    expect(calls).toEqual([{ task: 'underlines', image, questions: [{ text: long.text, answer: '' }] }]);
   });
 
   it('keeps long English sentences, as the app does with its own key', () => {
