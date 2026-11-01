@@ -1,0 +1,52 @@
+docs/decisions/002-public-documents-storage-via-saf.md
+  s_853e3a05582c7f::t_ef9898485e4cd1 27
+e2e/errorBook.spec.ts
+  s_853e3a05582c7f::t_66aa494a3293e5 142-188
+src/features/errorBook/MarkPractice.tsx
+  s_853e3a05582c7f::t_e1a8b88f961a16 36,54
+docs/decisions/004-trial-proxy.md
+  s_853e3a05582c7f::t_005a6a745944a5 33
+src/features/dictation/types.ts
+  s_853e3a05582c7f::t_f5eb0689acf2c5 32-33
+server/trial-proxy/src/proxy.ts
+  s_853e3a05582c7f::t_9db38b61c61d01 332-333
+  s_853e3a05582c7f::t_02c6c4b78e2d28 76-78
+  s_853e3a05582c7f::t_49db338fbe9c8a 272-273
+  s_853e3a05582c7f::t_de5e36b87cc59a 203-223,231
+src/storage/jsonFiles.ts
+  s_853e3a05582c7f::t_6bf6793ec7f764 194-197
+docs/development.md
+  s_853e3a05582c7f::t_755b3c3053ff9c 80
+src/features/errorBook/ErrorBookPage.tsx
+  s_853e3a05582c7f::t_28d01b182a6dab 129-135,142
+  s_853e3a05582c7f::t_ce1ea45156cc25 167
+  s_853e3a05582c7f::t_b2a107e0263642 13
+src/ai/trial.ts
+  s_853e3a05582c7f::t_b9f8aa91311e05 85-86
+server/trial-proxy/proxy.test.ts
+  s_853e3a05582c7f::t_e85ed78f9afa3e 198
+src/features/dictation/MarkAnswers.tsx
+  s_853e3a05582c7f::t_b7aad436ab872b 18-20,22,32
+  s_853e3a05582c7f::t_e1a8b88f961a16 40,52
+src/ai/dashscope.ts
+  s_853e3a05582c7f::t_8c40a06a8308c7 35-36
+src/features/dictation/DictationPage.tsx
+  s_853e3a05582c7f::t_6ca88c54a54d1a 9
+  s_853e3a05582c7f::t_849ae904a0e1a6 276,278
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "e9695984930c998619f19a8a0ccc44dceb811b6f",
+  "prompts": {},
+  "sessions": {
+    "s_853e3a05582c7f": {
+      "agent_id": {
+        "tool": "kiro-desktop",
+        "id": "sess_9412c325-cac8-43f4-88c4-d85afc226aaf",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "yandali <liyanda2017@163.com>"
+    }
+  }
+}
