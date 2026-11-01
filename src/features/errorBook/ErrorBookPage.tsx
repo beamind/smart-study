@@ -10,6 +10,7 @@ import { addQuestions, deleteQuestions, editQuestion, newSessionId, questionRows
 import { sample } from '../../domain/sampling';
 import { drafts } from '../../services/device';
 import { pickPhoto, type PhotoSource } from '../../services/photo';
+import { mayBeRestored } from '../../storage/jsonFiles';
 import { ArithmeticConfirm, errorText, Page, Sheet, useSettled, useToast } from '../../ui/components';
 import { formatRelative, formatTime } from '../../ui/format';
 import { CropPhoto } from '../dictation/CropPhoto';
@@ -125,13 +126,20 @@ export function ErrorBookPage() {
     const wrong = new Set(current.wrong);
     const sessionId = current.sessionId ?? newSessionId();
     const done = (text: string) => { changeRun(null); setStep({ kind: 'book' }); toast.show(text); };
+    // The temp file may hold this submission after such a failure: keep its marks as they are, also after leaving.
+    const saving = async <R,>(work: () => Promise<R>) => {
+      try { return await work(); } catch (error) {
+        if (mayBeRestored(error)) changeRun({ ...current, sessionId, saveFailed: true });
+        throw error;
+      }
+    };
     if (current.kind === 'variation') {
       const missed = current.items.filter(item => wrong.has(item.key));
       if (!missed.length) {
         done(`全对！${current.items.length} 道新题都做对了，不需要保存`);
         return;
       }
-      const outcome = await update(value => {
+      const outcome = await saving(() => update(value => {
         // Saved already: an interrupted save that was restored from the temp file when the app was opened again.
         if (value.sessions.some(session => session.id === sessionId)) return { value, result: null };
         // The original may have been deleted in the meantime; then the new question simply has no source.
@@ -141,14 +149,14 @@ export function ErrorBookPage() {
           ...(item.sourceQuestionId && known.has(item.sourceQuestionId) ? { sourceQuestionId: item.sourceQuestionId } : {}),
         })), undefined, sessionId);
         return { value: result.file, result };
-      });
+      }));
       if (!outcome) { done('这次举一反三已经保存过了，没有再记一次'); return; }
       changeRun(null);
       setStep({ kind: 'book' });
       undoToast(`已把做错的 ${outcome.created + outcome.existing} 道新题保存到错题本（共 ${current.items.length} 题）`, outcome.sessionId);
       return;
     }
-    const outcome = await update(value => {
+    const outcome = await saving(() => update(value => {
       if (value.sessions.some(session => session.id === sessionId)) return { value, result: null };
       // Questions deleted while the practice was paused are left out instead of failing the whole save.
       const known = new Set(value.questions.map(question => question.id));
@@ -156,7 +164,7 @@ export function ErrorBookPage() {
       if (!kept.length) throw new Error('这些题已经从错题本里删除了，没有可以保存的记录');
       const result = recordPractice(value, kept.map(item => ({ questionId: item.questionId!, correct: !wrong.has(item.key) })), undefined, sessionId);
       return { value: result.file, result: { sessionId: result.sessionId, kept: kept.length, wrong: kept.filter(item => wrong.has(item.key)).length } };
-    });
+    }));
     if (!outcome) { done('这次练习已经保存过了，没有再记一次'); return; }
     changeRun(null);
     setStep({ kind: 'book' });
@@ -302,9 +310,9 @@ function QuestionBook({ file, problem, loading, draft, onResume, onDiscardDraft,
         <div className="card resume">
           <div className="grow">
             <b>{draft.phase === 'running' ? `上次的${runTitle(draft.kind)}还没做完（第 ${draft.index + 1} / ${draft.items.length} 题）` : `上次的${runTitle(draft.kind)}还没提交（${draft.items.length} 题）`}</b>
-            <div className="muted small">{formatRelative(draft.startedAt)} 开始</div>
+            <div className="muted small">{draft.saveFailed ? '上次提交时保存没有完成，结果暂存在临时文件里，重新打开 App 后会自动恢复' : `${formatRelative(draft.startedAt)} 开始`}</div>
           </div>
-          <button className={`button${settled ? '' : ' settling'}`} onClick={() => setDiscarding(true)}>放弃</button>
+          {!draft.saveFailed && <button className={`button${settled ? '' : ' settling'}`} onClick={() => setDiscarding(true)}>放弃</button>}
           <button className={`button primary${settled ? '' : ' settling'}`} disabled={!file && !loading} onClick={() => onResume(draft)}>{draft.phase === 'running' ? '继续做' : '继续对答案'}</button>
         </div>
       )}

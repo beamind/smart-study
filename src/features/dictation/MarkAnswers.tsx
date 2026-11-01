@@ -15,10 +15,11 @@ export function MarkAnswers({ language, run, onToggle, onSubmit, onLeave, onDisc
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   /**
-   * A save failed. It may still come back: an interrupted save is restored from its temp file when the app is opened
-   * again, with the marks as they were then. So the marks stay as they are, and the texts do not claim "not saved".
+   * A save failed in a way that may still be restored from the temp file when the app is opened again, with the marks
+   * as they were then (kept in the draft, so also after leaving and coming back). The marks stay as they are, and the
+   * texts do not claim "not saved". Other failures (nothing was written) leave everything as before.
    */
-  const [failed, setFailed] = useState(false);
+  const failed = !!run.saveFailed;
   const [leaving, setLeaving] = useState(false);
   const wrong = new Set(run.wrong);
   const settled = useSettled();
@@ -28,7 +29,7 @@ export function MarkAnswers({ language, run, onToggle, onSubmit, onLeave, onDisc
   const submit = async () => {
     setBusy(true);
     setError('');
-    try { await onSubmit(); } catch (problem) { setError(`保存出错：${errorText(problem)}`); setFailed(true); setBusy(false); }
+    try { await onSubmit(); } catch (problem) { setError(`保存出错：${errorText(problem)}`); setBusy(false); }
   };
 
   return (
@@ -36,7 +37,7 @@ export function MarkAnswers({ language, run, onToggle, onSubmit, onLeave, onDisc
       footer={<button className={`button primary big grow${settled ? '' : ' settling'}`} disabled={busy} onClick={() => void submit()}>
         {busy ? '正在保存…' : failed ? '再试一次提交' : wrong.size ? `提交（写错 ${wrong.size} 个）` : '提交（全对）'}
       </button>}>
-      <p className="muted small">{failed ? '保存出错后不能再改对错，以免和可能已经暂存的结果不一致。' : '点一下写错的词，再点一次取消。'}</p>
+      <p className="muted small">{failed ? '这次的结果可能已经暂存在临时文件里，所以不能再改对错。' : '点一下写错的词，再点一次取消。'}</p>
       {error && <div className="notice error">{error}</div>}
       <div className="answer-grid">
         {run.words.map(word => (
@@ -48,7 +49,7 @@ export function MarkAnswers({ language, run, onToggle, onSubmit, onLeave, onDisc
       {leaving && (
         <Sheet title="还没有提交" onClose={() => setLeaving(false)}>
           <p className="muted">{failed
-            ? '保存出错了。如果提示说会用临时文件恢复，重新打开 App 后这次的结果会自动恢复；否则下次回来可以再提交。'
+            ? '保存没有完成，这次的结果暂存在临时文件里：重新打开 App 后会自动恢复，也可以下次回来再提交一次。'
             : '这次听写的结果还没有保存。'}</p>
           <button className="button primary" onClick={() => setLeaving(false)}>继续对答案</button>
           <button className="button" onClick={() => { setLeaving(false); onLeave(); }}>先离开，下次接着对答案</button>

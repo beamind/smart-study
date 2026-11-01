@@ -21,6 +21,15 @@ export function historyDir(path: string): string {
 /** A save stopped half way in a state only the next load can repair: the file is not written again in this run. */
 export class SaveStoppedError extends Error {}
 
+/**
+ * A save stopped after its temp file was written and the main file removed: the next load restores this save from
+ * the temp file, unless a save in this run replaces it first. Either way, what the user submitted is not lost.
+ */
+export class SaveInterruptedError extends Error {}
+
+/** Whether a failed save may still come back from its temp file (so the submission should be left as it is). */
+export const mayBeRestored = (error: unknown) => error instanceof SaveStoppedError || error instanceof SaveInterruptedError;
+
 interface Read<T> {
   /** null when the file is missing or its bytes are not UTF-8. */
   text: string | null;
@@ -182,10 +191,21 @@ export class JsonFiles {
       // A missing main file: the temp file holds this save, as after a crash, and the next load restores it, so
       // saving again in this run is fine. Anything else (a half-copied file, or a folder that cannot be read any more)
       // is left for the next load to repair, and this file is not written again in this run.
-      if ('value' in now && now.value === null) { this.known.set(path, { text: null }); throw error; }
+      if ('value' in now && now.value === null) {
+        this.known.set(path, { text: null });
+        throw new SaveInterruptedError(`${path} 保存没有完成（${(error as Error)?.message ?? String(error)}）。可以再试一次提交；如果不再提交，重新打开 App 时这次的内容会从临时文件恢复`);
+      }
       this.known.set(path, 'unusable');
       const cause = 'failure' in now ? now.failure : error;
       throw new SaveStoppedError(`${path} 保存没有完成（${(cause as Error)?.message ?? String(cause)}）。请重新打开 App：这次的内容会从临时文件恢复，恢复后不用再提交一次`);
+    }
+    // Another copy of the app writing the same file at the same moment (the debug and the release package, or two
+    // browsers on one folder: no lock covers those) may have swapped its own temp file in. Then the file does not
+    // hold this save, which must not be reported as saved.
+    const placed = await this.folder.readText(path).catch(() => undefined);
+    if (placed !== text) {
+      this.known.set(path, 'unusable');
+      throw new SaveStoppedError(`${path} 同时被另一个 App 或浏览器写入，这次没有确认保存。请只留一个 App 使用这个数据文件夹，然后重新打开 App`);
     }
     this.known.set(path, { text });
     // The new data is in place now; failing to delete old history versions must not report the save as failed.

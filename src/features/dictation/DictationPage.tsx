@@ -6,6 +6,7 @@ import { AiError } from '../../ai/dashscope';
 import { nowIso } from '../../core/time';
 import { wordKey } from '../../data/normalize';
 import type { DictationFile, DictationLanguage } from '../../data/schema';
+import { mayBeRestored } from '../../storage/jsonFiles';
 import { newSessionId, submit, undoSession, wordRows } from '../../domain/dictation';
 import { sample, shuffle } from '../../domain/sampling';
 import { drafts } from '../../services/device';
@@ -119,15 +120,22 @@ export function DictationPage({ language, replay }: { language: DictationLanguag
   const finishSubmit = async (current: Run) => {
     const wrong = new Set(current.wrong);
     const sessionId = current.sessionId ?? newSessionId();
-    const saved = await update(value => {
-      // Saved already: an interrupted save that was restored from the temp file when the app was opened again.
-      if (value.sessions.some(session => session.id === sessionId)) return { value, result: false };
-      const result = submit(value, {
-        kind: current.kind, readMode: current.readMode, sessionId,
-        words: current.words.map(word => ({ text: word.text, translation: word.translation, correct: !wrong.has(word.key) })),
+    let saved: boolean;
+    try {
+      saved = await update(value => {
+        // Saved already: an interrupted save that was restored from the temp file when the app was opened again.
+        if (value.sessions.some(session => session.id === sessionId)) return { value, result: false };
+        const result = submit(value, {
+          kind: current.kind, readMode: current.readMode, sessionId,
+          words: current.words.map(word => ({ text: word.text, translation: word.translation, correct: !wrong.has(word.key) })),
+        });
+        return { value: result.file, result: true };
       });
-      return { value: result.file, result: true };
-    });
+    } catch (error) {
+      // The temp file may hold this submission: keep its marks as they are, also after leaving and coming back.
+      if (mayBeRestored(error)) changeRun({ ...current, sessionId, saveFailed: true });
+      throw error;
+    }
     changeRun(null);
     setStep({ kind: 'home' });
     if (!saved) { toast.show('这次听写已经保存过了，没有再记一次'); return; }
@@ -265,9 +273,9 @@ function DictationHome({ language, file, problem, loading, draft, onResume, onDi
         <div className="card resume">
           <div className="grow">
             <b>{draft.phase === 'running' ? `上次的听写还没完成（第 ${draft.index + 1} / ${draft.words.length} 个）` : `上次的听写还没提交（${draft.words.length} 个词）`}</b>
-            <div className="muted small">{formatRelative(draft.startedAt)} 开始</div>
+            <div className="muted small">{draft.saveFailed ? '上次提交时保存没有完成，结果暂存在临时文件里，重新打开 App 后会自动恢复' : `${formatRelative(draft.startedAt)} 开始`}</div>
           </div>
-          <button className={`button${settled ? '' : ' settling'}`} onClick={() => setDiscarding(true)}>放弃</button>
+          {!draft.saveFailed && <button className={`button${settled ? '' : ' settling'}`} onClick={() => setDiscarding(true)}>放弃</button>}
           <button className={`button primary${settled ? '' : ' settling'}`} disabled={unusable} onClick={() => onResume(draft)}>{draft.phase === 'running' ? '继续听写' : '继续对答案'}</button>
         </div>
       )}

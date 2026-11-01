@@ -146,7 +146,10 @@ export type ModelTask =
 /** Sends one task and returns the model's reply text. */
 export type ModelCall = (task: ModelTask, signal?: AbortSignal) => Promise<string>;
 
-/** Longest reply each task may need; the trial proxy caps replies at this, so one request cannot cost much. */
+/**
+ * Longest reply each task may need; the trial proxy caps replies at this, so one request cannot cost much. For
+ * 举一反三 it is the lower end: the proxy allows more for a long source (replyTokens in server/trial-proxy).
+ */
 export const MAX_REPLY_TOKENS: Record<ModelTask['task'], number> = { words: 1500, questions: 4000, underlines: 1500, translate: 200, generate: 1000 };
 
 /** Model, messages and options for a task. Deep thinking is off: these tasks do not need it and are 5–20× slower with it. */

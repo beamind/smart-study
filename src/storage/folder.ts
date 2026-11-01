@@ -29,7 +29,8 @@ export interface Folder {
   rename(path: string, newName: string): Promise<void>;
   /**
    * Runs one load or save so that no other copy of the app (another browser tab on the same folder) runs one at the
-   * same time. Optional: where only one copy of the app can use the folder, tasks run directly.
+   * same time. Optional: where no lock is available (Android, where the debug and the release package may share the
+   * folder), tasks run directly, and JsonFiles checks after each save that the file holds what it wrote.
    */
   exclusive?<T>(task: () => Promise<T>): Promise<T>;
 }

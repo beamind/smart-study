@@ -175,6 +175,18 @@ describe('JsonFiles', () => {
     expect(new Set(await files.history(path)).size).toBe(3);
   });
 
+  it('does not report a save as done when another copy of the app swapped its own temp file in meanwhile', async () => {
+    const { folder, files, tick } = setup();
+    await files.save(path, app('小明'));
+    const rename = folder.rename.bind(folder);
+    // The other copy writes the same temp file just before this one renames it.
+    folder.rename = async (from, to) => { folder.files.set(from, JSON.stringify(app('别的 App'))); return rename(from, to); };
+    tick();
+    await expect(files.save(path, app('小红'))).rejects.toThrow('同时被另一个 App 或浏览器写入');
+    folder.rename = rename;
+    await expect(files.save(path, app('小刚'))).rejects.toThrow('无法使用');
+  });
+
   it('after a rename that copied the file but could not delete the temp file (PC browser), counts the save as done', async () => {
     const { folder, files, tick } = setup();
     await files.save(path, app('小明'));

@@ -77,7 +77,7 @@ node tools/smoke_android.mjs emulator-5554   # 模拟器上验证：授权文件
 ```
 
 - 正式包的签名密钥不在仓库里，放法见[架构决定 003](decisions/003-release-signing.md)和 `keystore.properties.example`。自己构建时用自己的密钥即可；构建脚本会把证书指纹和架构决定 003 里记录的比对，用别的密钥时只会提示不一致。
-- debug 包和正式包可以同时安装，共用 `Documents/smartstudy` 的数据，但各自要授权文件夹、填写 API Key。
+- debug 包和正式包可以同时安装，共用 `Documents/smartstudy` 的数据，但各自要授权文件夹、填写 API Key。不要同时打开两个包操作：两个包之间没有写入互斥，同时保存同一个文件时，后一次会报"同时被另一个 App 或浏览器写入"。
 - `smoke_android.mjs` 只接受模拟器序列号，因为它会卸载 App 并替换模拟器上的 `Documents/smartstudy`。它默认自己生成测试数据（两个孩子，约 1,900 个词、500 道题）。也可以在第三个参数给一个数据文件夹（至少两个孩子，当前孩子的英语错题本里至少一道题），这时第二个参数写 APK 路径：`node tools/smoke_android.mjs emulator-5554 artifacts/smart-study-<版本>-debug.apk <数据文件夹>`。
 
 ## 目录

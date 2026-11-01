@@ -179,16 +179,24 @@ describe('trial proxy', () => {
 
   it('refuses a 举一反三 whose source is too long for the day, saying so', async () => {
     const { proxy, calls } = setup({ budgetGenerate: 0.05 });
-    const long = { device, task: 'generate', source: { text: 'x'.repeat(5000), answer: 'y' } };
+    const long = { device, task: 'generate', source: { text: 'x'.repeat(3500), answer: 'y' } };
     expect(await proxy.call(long, '1.1.1.1')).toMatchObject({ status: 400, body: { message: expect.stringContaining('这道题太长') } });
     expect(calls).toEqual([]);
   });
 
-  it('lets a long source have a reply long enough for a question like it', () => {
+  it('says "比较长" rather than "used up today" when a short question would still fit', async () => {
+    const { proxy, counters } = setup();
+    counters.values.set('cost:2026-11-01:generate', 300_000 - 60_000);
+    const long = { device, task: 'generate', source: { text: 'x'.repeat(3000), answer: 'y' } };
+    expect(await proxy.call(long, '1.1.1.1')).toMatchObject({ status: 429, body: { message: expect.stringContaining('这道题比较长') } });
+    expect(await proxy.call(generate(), '1.1.1.1')).toMatchObject({ status: 200 });
+  });
+
+  it('lets a long source have a reply long enough for a question like it, within what 40 s allows', () => {
     expect(replyTokens({ task: 'generate', source: { text: 'Q ___', answer: 'a' } })).toBe(1000);
-    // Counted high (one token per Latin letter, about four times the real number), so a long source gets ample room.
-    expect(replyTokens({ task: 'generate', source: { text: 'x'.repeat(1000), answer: 'y' } })).toBeGreaterThan(1000 * 1.3);
-    expect(replyTokens({ task: 'generate', source: { text: 'x'.repeat(6000), answer: 'y'.repeat(2000) } })).toBe(4000);
+    // About 4 Latin characters per token: 3,000 characters give a limit well above the ~750 tokens of a copy.
+    expect(replyTokens({ task: 'generate', source: { text: 'x'.repeat(3000), answer: 'y' } })).toBe(1502);
+    expect(replyTokens({ task: 'generate', source: { text: 'x'.repeat(4000), answer: 'y'.repeat(1500) } })).toBe(2000);
     expect(replyTokens({ task: 'translate', text: 'apple' })).toBe(200);
   });
 

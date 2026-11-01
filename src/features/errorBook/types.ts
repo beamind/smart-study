@@ -28,6 +28,8 @@ export interface PracticeRun {
    * Missing in drafts from before 2.0.0's trial release.
    */
   sessionId?: string;
+  /** A submission failed in a way that may still be restored from the temp file: the marks stay as they were. */
+  saveFailed?: true;
 }
 
 /** A recognised or typed question before it is saved. */

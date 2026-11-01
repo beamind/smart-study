@@ -13,8 +13,8 @@ export function MarkPractice({ run, onToggle, onSubmit, onLeave, onDiscard }: {
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  /** A save failed; as in MarkAnswers, the marks then stay as they are and the texts do not claim "not saved". */
-  const [failed, setFailed] = useState(false);
+  /** As in MarkAnswers: a save that may still be restored keeps the marks as they are (kept in the draft). */
+  const failed = !!run.saveFailed;
   const [leaving, setLeaving] = useState(false);
   const wrong = new Set(run.wrong);
   const settled = useSettled();
@@ -25,7 +25,7 @@ export function MarkPractice({ run, onToggle, onSubmit, onLeave, onDiscard }: {
   const submit = async () => {
     setBusy(true);
     setError('');
-    try { await onSubmit(); } catch (problem) { setError(`保存出错：${errorText(problem)}`); setFailed(true); setBusy(false); }
+    try { await onSubmit(); } catch (problem) { setError(`保存出错：${errorText(problem)}`); setBusy(false); }
   };
 
   return (
@@ -33,7 +33,7 @@ export function MarkPractice({ run, onToggle, onSubmit, onLeave, onDiscard }: {
       footer={<button className={`button primary big grow${settled ? '' : ' settling'}`} disabled={busy} onClick={() => void submit()}>
         {busy ? '正在保存…' : failed ? '再试一次提交' : wrong.size ? `提交（做错 ${wrong.size} 题）` : '提交（全对）'}
       </button>}>
-      <p className="muted small">{failed ? '保存出错后不能再改对错，以免和可能已经暂存的结果不一致。'
+      <p className="muted small">{failed ? '这次的结果可能已经暂存在临时文件里，所以不能再改对错。'
         : variation ? '点一下做错的题，再点一次取消。只有做错的新题会保存到错题本。' : '点一下仍然做错的题，再点一次取消。'}</p>
       {error && <div className="notice error">{error}</div>}
       <div className="list">
@@ -51,7 +51,7 @@ export function MarkPractice({ run, onToggle, onSubmit, onLeave, onDiscard }: {
       {leaving && (
         <Sheet title="还没有提交" onClose={() => setLeaving(false)}>
           <p className="muted">{failed
-            ? '保存出错了。如果提示说会用临时文件恢复，重新打开 App 后这次的结果会自动恢复；否则下次回来可以再提交。'
+            ? '保存没有完成，这次的结果暂存在临时文件里：重新打开 App 后会自动恢复，也可以下次回来再提交一次。'
             : `这次${runTitle(run.kind)}的结果还没有保存。`}</p>
           <button className="button primary" onClick={() => setLeaving(false)}>继续对答案</button>
           <button className="button" onClick={() => { setLeaving(false); onLeave(); }}>先离开，下次接着对答案</button>

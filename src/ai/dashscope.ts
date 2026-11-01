@@ -32,6 +32,8 @@ export type AiErrorKind = 'no-key' | 'auth' | 'model' | 'rate' | 'timeout' | 'ne
 export class AiError extends Error {
   /** Tokens DashScope reported for a reply that came back but could not be used (the trial proxy still counts them). */
   usage?: Usage | null;
+  /** How long to wait before trying again, when the other side said (the trial proxy when it is busy). */
+  retryAfterMs?: number;
   constructor(readonly kind: AiErrorKind, message: string) {
     super(message);
   }
@@ -150,7 +152,7 @@ export async function withRetries<T>(attempt: () => Promise<T>, maxAttempts: num
     } catch (error) {
       const failure = error instanceof AiError ? error : new AiError('network', String(error));
       if (!failure.retryable || tries >= maxAttempts || signal?.aborted) throw failure;
-      await waitOrCancel(sleep(delay, signal), signal);
+      await waitOrCancel(sleep(failure.retryAfterMs ?? delay, signal), signal);
       if (signal?.aborted) throw new AiError('cancelled', '已取消');
       delay = Math.min(delay * 2, 5000);
     }

@@ -139,3 +139,50 @@ test('举一反三 with everything right saves nothing', async ({ page }) => {
   await expect(page.getByText('全对！1 道新题都做对了，不需要保存')).toBeVisible();
   await expect(page.getByText('1 道', { exact: true })).toBeVisible();
 });
+
+test('a practice draft whose submission is already in the file is not offered again', async ({ page }) => {
+  const draft = { kind: 'practice', items: [{ key: 'k1', text: 'Q', answer: 'A', questionId: 'q1' }], index: 0, phase: 'answers', wrong: [], startedAt: at, sessionId: 's_restored' };
+  await seed(page, {
+    'data/app.json': appFile([{ id: 'u1', name: '乐乐' }]),
+    'data/users/u1/error-book.json': {
+      schema: 'smart-study.error-book/1',
+      sessions: [{ id: 's_cap', kind: 'capture', at, questionIds: ['q1'] }, { id: 's_restored', kind: 'practice', at, questionIds: ['q1'] }],
+      questions: [{ id: 'q1', text: 'Q', answer: 'A', origin: 'manual', createdAt: at, attempts: [{ sessionId: 's_cap', correct: false }, { sessionId: 's_restored', correct: true }] }],
+    },
+  });
+  await page.addInitScript(value => {
+    if (sessionStorage.getItem('seeded-draft')) return;
+    sessionStorage.setItem('seeded-draft', '1');
+    localStorage.setItem('CapacitorStorage.draft:error-book:u1', value);
+  }, JSON.stringify(draft));
+  await open(page);
+  await page.getByRole('button', { name: /英语错题本/ }).click();
+  await expect(page.getByText('已经恢复到错题本里了')).toBeVisible();
+  await expect(page.getByText(/上次的错题练习还没提交/)).toHaveCount(0);
+});
+
+test('a draft whose save may come back from the temp file keeps its marks and cannot be discarded', async ({ page }) => {
+  const draft = { kind: 'practice', items: [{ key: 'k1', text: 'Q', answer: 'A', questionId: 'q1' }], index: 0, phase: 'answers', wrong: ['k1'], startedAt: at, sessionId: 's_pending', saveFailed: true };
+  await seed(page, {
+    'data/app.json': appFile([{ id: 'u1', name: '乐乐' }]),
+    'data/users/u1/error-book.json': {
+      schema: 'smart-study.error-book/1',
+      sessions: [{ id: 's_cap', kind: 'capture', at, questionIds: ['q1'] }],
+      questions: [{ id: 'q1', text: 'Q', answer: 'A', origin: 'manual', createdAt: at, attempts: [{ sessionId: 's_cap', correct: false }] }],
+    },
+  });
+  await page.addInitScript(value => {
+    if (sessionStorage.getItem('seeded-draft')) return;
+    sessionStorage.setItem('seeded-draft', '1');
+    localStorage.setItem('CapacitorStorage.draft:error-book:u1', value);
+  }, JSON.stringify(draft));
+  await open(page);
+  await page.getByRole('button', { name: /英语错题本/ }).click();
+  await expect(page.getByText(/重新打开 App 后会自动恢复/)).toBeVisible();
+  await expect(page.getByRole('button', { name: '放弃', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: '继续对答案' }).click();
+  await expect(page.getByRole('button', { name: /^1/ })).toBeDisabled();
+  await expect(page.getByRole('button', { name: '再试一次提交' })).toBeVisible();
+  await page.getByRole('button', { name: '再试一次提交' }).click();
+  await expect(page.getByText(/已保存：1 题，做错 1 题/)).toBeVisible();
+});

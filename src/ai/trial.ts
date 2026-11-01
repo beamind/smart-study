@@ -59,7 +59,12 @@ async function post(url: string, deps: TrialDependencies, task: ModelTask, timeo
     const message = body?.message ?? '';
     // Only the proxy's own 429 means the allowance is used up; one from the platform (too many at once) passes.
     if (response.status === 429 && body?.error === 'quota') throw new AiError('quota', message || '试用额度用完了。在设置里填写自己的千问 API Key，就可以继续使用');
-    if (response.status === 429 || response.status === 503) throw new AiError('rate', message || '试用的人太多，请稍后再试');
+    if (response.status === 429 || response.status === 503) {
+      const busy = new AiError('rate', message || '试用的人太多，请稍后再试');
+      // The proxy already waited for running calls to settle; give the others a few seconds more before trying again.
+      if (body?.error === 'busy') busy.retryAfterMs = BUSY_RETRY_MS;
+      throw busy;
+    }
     if (response.status === 400 || response.status === 413) throw new AiError('bad-request', `请求被拒绝：${message || response.status}`);
     if (body?.error === 'upstream-fatal') throw new AiError('bad-response', message || '试用服务暂时不能处理这个请求');
     if (response.ok) throw new AiError('bad-response', '千问没有返回内容');
@@ -77,6 +82,8 @@ async function post(url: string, deps: TrialDependencies, task: ModelTask, timeo
  */
 export const TRIAL_TIMEOUT_MS = 55_000;
 export const TRIAL_ATTEMPTS = 2;
+/** Wait before trying again after the proxy said it is busy (it has waited up to 8 s itself). */
+const BUSY_RETRY_MS = 6000;
 
 /** Model calls through the trial proxy instead of the user's own key. */
 export function trialCall(url: string, deps: TrialDependencies, timeoutMs = TRIAL_TIMEOUT_MS, maxAttempts = TRIAL_ATTEMPTS): ModelCall {

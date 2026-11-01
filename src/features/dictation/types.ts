@@ -29,6 +29,8 @@ export interface Run extends Plan {
    * Missing in older drafts.
    */
   sessionId?: string;
+  /** A submission failed in a way that may still be restored from the temp file: the marks stay as they were. */
+  saveFailed?: true;
 }
 
 let counter = 0;

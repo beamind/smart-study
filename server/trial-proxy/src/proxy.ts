@@ -73,13 +73,9 @@ const kindOf = (task: ModelTask['task']): Kind => (task === 'translate' ? 'trans
 
 /** Photo recognition limits: a 1280px JPEG is about 0.3 MB; 2 MB of base64 leaves room and stops abuse. */
 const MAX_IMAGE_CHARS = 2_000_000;
-/**
- * A source question for 举一反三, and its answer. A recognised question keeps its options in the text, and the model
- * writes full answers (a model essay for a writing task), so these allow what recognition can return; the cost of
- * a long one is reserved like any other (maxCost).
- */
-const MAX_TEXT = 6000;
-const MAX_ANSWER = 2000;
+/** A source question for 举一反三, and its answer: room for a recognised reading or cloze passage with its options. */
+const MAX_TEXT = 4000;
+const MAX_ANSWER = 1500;
 const MAX_WORD = 100;
 /** Underline recognition sends every question found on the page. */
 const MAX_QUESTIONS = 50;
@@ -204,8 +200,27 @@ function textTokens(text: string): number {
   return Math.ceil(tokens);
 }
 
-/** Longest reply generation may need: a new question as long as the source (it keeps its form and options). */
-const MAX_GENERATE_REPLY = 4000;
+/**
+ * Longest reply 举一反三 may get. The model call has 40 s, and a max-size model writes roughly 35–55 tokens a
+ * second, so a longer reply would time out instead of arriving.
+ */
+const MAX_GENERATE_REPLY = 2000;
+
+/**
+ * Tokens a text will really take, for sizing a reply like it: about 4 Latin characters per token (counted as 3, to
+ * leave room), about one per Chinese character, the UTF-8 bytes of anything else. Unlike textTokens this is no upper
+ * bound: a longer reply is cut at max_tokens, which only matters if this is far too low.
+ */
+function likelyTokens(text: string): number {
+  let latin = 0;
+  let other = 0;
+  for (const char of text) {
+    const code = char.codePointAt(0)!;
+    if (code < 0x80) latin++;
+    else other += (code >= 0x4E00 && code <= 0x9FFF) || (code >= 0x3000 && code <= 0x303F) || (code >= 0xFF01 && code <= 0xFF5E) ? 1 : encoder.encode(char).length;
+  }
+  return Math.ceil(latin / 3 + other);
+}
 
 /**
  * The reply length allowed for a task. A new question (举一反三) is about as long as its source, so its limit grows
@@ -213,7 +228,7 @@ const MAX_GENERATE_REPLY = 4000;
  */
 export function replyTokens(task: ModelTask): number {
   if (task.task !== 'generate') return MAX_REPLY_TOKENS[task.task];
-  const source = textTokens(task.source.text) + textTokens(task.source.answer);
+  const source = likelyTokens(task.source.text) + likelyTokens(task.source.answer);
   return Math.min(MAX_GENERATE_REPLY, Math.max(MAX_REPLY_TOKENS.generate, Math.ceil(source * 1.3) + 200));
 }
 
@@ -254,6 +269,8 @@ export function createProxy(deps: Dependencies) {
   /** Model calls running on this instance; requests waiting for budget do not count. */
   let running = 0;
   const maxInFlight = deps.maxInFlight ?? Number.POSITIVE_INFINITY;
+  /** What the shortest 举一反三 reserves: whether a short question would still fit when a long one does not. */
+  const SHORTEST_GENERATE = maxCost({ task: 'generate', source: { text: 'Q ___', answer: '' } }, limits);
 
   const remaining = async (device: string): Promise<Remaining> => {
     const [photo, translate, generate] = await counters.get(deviceKeys(device));
@@ -312,8 +329,8 @@ export function createProxy(deps: Dependencies) {
     }
     /** Over the budget by what is already spent ("today"), or only because of what calls on this instance still hold. */
     const budgetRefusal = (current: number) => (current - held[group] + reserved <= budget ? busy
-      // A long source reserves much of the day on its own: say that a shorter one may still fit.
-      : reserved > budget / 2 ? { status: 429 as const, body: { error: 'quota', message: `这道题比较长，今天剩下的${what}试用名额不够了。可以换一道短一些的题，明天再试，或在设置里填写自己的千问 API Key` } }
+      // A long source reserves much of the day on its own: when a short one would still fit, say that.
+      : kind === 'generate' && current - held[group] + SHORTEST_GENERATE <= budget ? { status: 429 as const, body: { error: 'quota', message: `这道题比较长，今天剩下的${what}试用名额不够了。可以换一道短一些的题，明天再试，或在设置里填写自己的千问 API Key` } }
       : today);
 
     /**
