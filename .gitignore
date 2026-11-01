@@ -41,3 +41,6 @@ Thumbs.db
 
 # Trial proxy bundle (npm run trial:build)
 server/trial-proxy/dist/
+
+# Promotional pictures and copy, kept out of the repository (output goes to artifacts/promo)
+tools/promo/
