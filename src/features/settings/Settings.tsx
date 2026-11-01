@@ -1,4 +1,4 @@
-import { ChevronRight, FolderOpen, Gift, KeyRound, MessageCircle, RotateCcw } from 'lucide-react';
+import { ChevronRight, Coffee, FolderOpen, Gift, KeyRound, MessageCircle, RotateCcw } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { DEFAULT_PROMPTS, PROMPT_LABELS } from '../../ai/prompts';
 import type { TrialRemaining } from '../../ai/trial';
@@ -9,6 +9,8 @@ import { copyText } from '../../services/clipboard';
 import { maskApiKey } from '../../services/secrets';
 import { version } from '../../../package.json';
 import { errorText, Page, Sheet, useToast } from '../../ui/components';
+// The same picture as in README.md.
+import rewardCode from '../../../docs/images/reward-code.png';
 
 /** The QQ group for questions and feedback (also in README.md). */
 const FEEDBACK_QQ_GROUP = '747233425';
@@ -17,7 +19,7 @@ export function Settings() {
   const workspace = useWorkspace();
   const toast = useToast();
   const [draft, setDraft] = useState(workspace.settings);
-  const [editing, setEditing] = useState<'key' | PromptKey | null>(null);
+  const [editing, setEditing] = useState<'key' | 'reward' | PromptKey | null>(null);
   const saved = useRef(JSON.stringify(workspace.settings));
   /** The settings being written right now, so the same change is never written twice. */
   const saving = useRef<string | null>(null);
@@ -114,18 +116,31 @@ export function Settings() {
         </div>
       </Section>
 
-      <Section title="问题反馈">
+      <Section title="反馈和支持">
         <div className="list-row">
           <MessageCircle size={20} className="muted" />
           <span className="grow"><span className="muted small">QQ 交流群</span><br />{FEEDBACK_QQ_GROUP}</span>
           <button className="button" onClick={async () => toast.show(await copyText(FEEDBACK_QQ_GROUP) ? '已复制群号，可以在 QQ 里搜索加入' : '没能复制，请记下群号在 QQ 里搜索')}>复制群号</button>
         </div>
+        <button className="list-row" onClick={() => setEditing('reward')}>
+          <Coffee size={20} className="muted" />
+          <span className="grow">支持作者</span>
+          <span className="muted small">微信赞赏</span>
+          <ChevronRight size={18} className="muted" />
+        </button>
       </Section>
       <p className="muted small">在 QQ 里搜索群号加入。反馈时请写上手机或平板的型号、在哪一步出的问题，最好附上截图；截图前可以先切换到示例孩子小华。</p>
       <p className="muted small" style={{ textAlign: 'center' }}>版本 {version}</p>
 
       {editing === 'key' && <KeySheet onClose={() => setEditing(null)} />}
-      {editing && editing !== 'key' && (
+      {editing === 'reward' && (
+        <Sheet title="支持作者" onClose={() => setEditing(null)}>
+          <p className="muted small">智能学习是免费开源的，免费试用调用千问的费用由作者承担。如果它帮到了你家孩子，欢迎用微信扫码赞赏。在这台设备上扫不了时，可以用另一台手机扫，或者截屏后在微信“扫一扫”里从相册选择。</p>
+          <img className="reward-code" src={rewardCode} alt="微信赞赏码" />
+          <button className="button" onClick={() => setEditing(null)}>关闭</button>
+        </Sheet>
+      )}
+      {editing && editing !== 'key' && editing !== 'reward' && (
         <PromptSheet promptKey={editing} value={draft.prompts[editing]} onClose={() => setEditing(null)}
           onSave={value => set(settings => {
             if (value === undefined || value === DEFAULT_PROMPTS[editing]) delete settings.prompts[editing];
