@@ -1,5 +1,5 @@
 import type { Checked } from '../data/validate';
-import { SaveStoppedError, type JsonFiles } from './jsonFiles';
+import { SaveInterruptedError, SaveStoppedError, type JsonFiles } from './jsonFiles';
 
 /**
  * In-memory copy of the data files, as described in docs/decisions/002: each file is read once,
@@ -79,6 +79,14 @@ export class DataCache {
           const stopped: Entry<T> = { status: 'unusable', error: error.message };
           this.entries.set(path, Promise.resolve(stopped));
           this.latest.set(path, stopped);
+          this.listeners.get(path)?.forEach(listener => listener());
+        }
+        // The new value waits in the temp file and comes back on the next start: show it and build on it, so the
+        // next change does not write the file without it (and that save also finishes this one).
+        if (error instanceof SaveInterruptedError) {
+          const pending: Entry<T> = { status: 'ok', value: next };
+          this.entries.set(path, Promise.resolve(pending));
+          this.latest.set(path, pending);
           this.listeners.get(path)?.forEach(listener => listener());
         }
         throw error;

@@ -59,12 +59,16 @@ describe('trialCall', () => {
   });
 
   it('retries a platform 429 or a busy proxy, but not a used-up allowance or a request the proxy cannot do', async () => {
+    const waits: number[] = [];
     const { deps, requests } = fake([
       new Response('{"ErrorCode":"ResourceThrottled"}', { status: 429 }), reply(503, { error: 'busy', message: '试用的人太多，请稍后再试' }), reply(200, { reply: '苹果' }),
       reply(502, { error: 'upstream-fatal', message: '试用服务暂时不能处理这个请求' }),
     ]);
+    deps.sleep = async ms => { waits.push(ms); };
     await expect(trialCall(URL, deps, 1000, 3)({ task: 'translate', text: 'apple' })).resolves.toBe('苹果');
     expect(requests).toHaveLength(3);
+    // The platform's 429 is retried after the usual second; the proxy's "busy" after 6 s, as it has waited itself.
+    expect(waits).toEqual([1000, 6000]);
     await expect(trialCall(URL, deps, 1000, 3)({ task: 'translate', text: 'apple' })).rejects.toMatchObject({ kind: 'bad-response', message: '试用服务暂时不能处理这个请求' });
     expect(requests).toHaveLength(4);
   });

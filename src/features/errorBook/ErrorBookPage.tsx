@@ -10,7 +10,7 @@ import { addQuestions, deleteQuestions, editQuestion, newSessionId, questionRows
 import { sample } from '../../domain/sampling';
 import { drafts } from '../../services/device';
 import { pickPhoto, type PhotoSource } from '../../services/photo';
-import { mayBeRestored } from '../../storage/jsonFiles';
+import { mayBeRestored, SaveStoppedError } from '../../storage/jsonFiles';
 import { ArithmeticConfirm, errorText, Page, Sheet, useSettled, useToast } from '../../ui/components';
 import { formatRelative, formatTime } from '../../ui/format';
 import { CropPhoto } from '../dictation/CropPhoto';
@@ -129,7 +129,7 @@ export function ErrorBookPage() {
     // The temp file may hold this submission after such a failure: keep its marks as they are, also after leaving.
     const saving = async <R,>(work: () => Promise<R>) => {
       try { return await work(); } catch (error) {
-        if (mayBeRestored(error)) changeRun({ ...current, sessionId, saveFailed: true });
+        if (mayBeRestored(error)) changeRun({ ...current, sessionId, saveFailed: error instanceof SaveStoppedError ? 'stopped' : 'interrupted' });
         throw error;
       }
     };
@@ -310,7 +310,9 @@ function QuestionBook({ file, problem, loading, draft, onResume, onDiscardDraft,
         <div className="card resume">
           <div className="grow">
             <b>{draft.phase === 'running' ? `上次的${runTitle(draft.kind)}还没做完（第 ${draft.index + 1} / ${draft.items.length} 题）` : `上次的${runTitle(draft.kind)}还没提交（${draft.items.length} 题）`}</b>
-            <div className="muted small">{draft.saveFailed ? '上次提交时保存没有完成，结果暂存在临时文件里，重新打开 App 后会自动恢复' : `${formatRelative(draft.startedAt)} 开始`}</div>
+            <div className="muted small">{draft.saveFailed === 'stopped' ? '上次提交时保存没有完成，结果暂存在临时文件里，重新打开 App 后会自动恢复'
+              : draft.saveFailed ? '上次提交时保存没有完成，结果暂存在临时文件里，点"继续对答案"再提交一次就会记好'
+              : `${formatRelative(draft.startedAt)} 开始`}</div>
           </div>
           {!draft.saveFailed && <button className={`button${settled ? '' : ' settling'}`} onClick={() => setDiscarding(true)}>放弃</button>}
           <button className={`button primary${settled ? '' : ' settling'}`} disabled={!file && !loading} onClick={() => onResume(draft)}>{draft.phase === 'running' ? '继续做' : '继续对答案'}</button>
@@ -379,12 +381,16 @@ function QuestionBook({ file, problem, loading, draft, onResume, onDiscardDraft,
         // An unfinished practice, possibly with answers already marked, is never replaced silently.
         if (draft) setReplacing({ kind: choosing, count }); else onChoose(choosing, count);
       }} />}
-      {replacing && draft && (
-        <Sheet title={draft.phase === 'running' ? `上次的${runTitle(draft.kind)}还没做完` : `上次的${runTitle(draft.kind)}还没提交`} onClose={() => setReplacing(null)}>
-          <p className="muted">开始新的{runTitle(replacing.kind)}，会放弃上次{draft.phase === 'running' ? `没做完的 ${draft.items.length} 道题` : '已经对过的答案'}。</p>
-          <button className="button primary" onClick={() => setReplacing(null)}>先不开始</button>
-          <button className="button danger" onClick={() => { const next = replacing; setReplacing(null); onChoose(next.kind, next.count); }}>放弃上次的，开始新的</button>
-        </Sheet>
+      {replacing && draft && (draft.saveFailed
+        ? <Sheet title={`上次的${runTitle(draft.kind)}还没确认保存`} onClose={() => setReplacing(null)}>
+            <p className="muted">上次提交时保存没有完成，结果暂存在临时文件里。{draft.saveFailed === 'stopped' ? '请先重新打开 App，它会自动恢复，然后再开始新的。' : '请先把它再提交一次，再开始新的。'}</p>
+            <button className="button primary" onClick={() => setReplacing(null)}>先不开始</button>
+          </Sheet>
+        : <Sheet title={draft.phase === 'running' ? `上次的${runTitle(draft.kind)}还没做完` : `上次的${runTitle(draft.kind)}还没提交`} onClose={() => setReplacing(null)}>
+            <p className="muted">开始新的{runTitle(replacing.kind)}，会放弃上次{draft.phase === 'running' ? `没做完的 ${draft.items.length} 道题` : '已经对过的答案'}。</p>
+            <button className="button primary" onClick={() => setReplacing(null)}>先不开始</button>
+            <button className="button danger" onClick={() => { const next = replacing; setReplacing(null); onChoose(next.kind, next.count); }}>放弃上次的，开始新的</button>
+          </Sheet>
       )}
       {editing && (
         <QuestionEditor title="修改错题" text={editing.text} answer={editing.answer} onClose={() => setEditing(null)}

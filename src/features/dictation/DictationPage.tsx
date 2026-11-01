@@ -6,7 +6,7 @@ import { AiError } from '../../ai/dashscope';
 import { nowIso } from '../../core/time';
 import { wordKey } from '../../data/normalize';
 import type { DictationFile, DictationLanguage } from '../../data/schema';
-import { mayBeRestored } from '../../storage/jsonFiles';
+import { mayBeRestored, SaveStoppedError } from '../../storage/jsonFiles';
 import { newSessionId, submit, undoSession, wordRows } from '../../domain/dictation';
 import { sample, shuffle } from '../../domain/sampling';
 import { drafts } from '../../services/device';
@@ -133,7 +133,7 @@ export function DictationPage({ language, replay }: { language: DictationLanguag
       });
     } catch (error) {
       // The temp file may hold this submission: keep its marks as they are, also after leaving and coming back.
-      if (mayBeRestored(error)) changeRun({ ...current, sessionId, saveFailed: true });
+      if (mayBeRestored(error)) changeRun({ ...current, sessionId, saveFailed: error instanceof SaveStoppedError ? 'stopped' : 'interrupted' });
       throw error;
     }
     changeRun(null);
@@ -179,12 +179,16 @@ export function DictationPage({ language, replay }: { language: DictationLanguag
     return (
       <>
         <ConfirmStep language={language} plan={plan} file={file} onChange={setPlan} onStart={startRun} onDiscard={replaying.current ? pop : goHome} />
-        {replacing && savedDraft && (
-          <Sheet title={savedDraft.phase === 'running' ? '上次的听写还没完成' : '上次的听写还没提交'} onClose={() => setReplacing(null)}>
-            <p className="muted">开始新的听写，会放弃上次{savedDraft.phase === 'running' ? `没做完的 ${savedDraft.words.length} 个词` : '已经对过的答案'}。</p>
-            <button className="button primary" onClick={() => setReplacing(null)}>先不开始</button>
-            <button className="button danger" onClick={() => replaceRun(replacing)}>放弃上次的，开始新的</button>
-          </Sheet>
+        {replacing && savedDraft && (savedDraft.saveFailed
+          ? <Sheet title="上次的听写还没确认保存" onClose={() => setReplacing(null)}>
+              <p className="muted">上次提交时保存没有完成，结果暂存在临时文件里。{savedDraft.saveFailed === 'stopped' ? '请先重新打开 App，它会自动恢复，然后再开始新的听写。' : '请先把它再提交一次，再开始新的听写。'}</p>
+              <button className="button primary" onClick={() => setReplacing(null)}>先不开始</button>
+            </Sheet>
+          : <Sheet title={savedDraft.phase === 'running' ? '上次的听写还没完成' : '上次的听写还没提交'} onClose={() => setReplacing(null)}>
+              <p className="muted">开始新的听写，会放弃上次{savedDraft.phase === 'running' ? `没做完的 ${savedDraft.words.length} 个词` : '已经对过的答案'}。</p>
+              <button className="button primary" onClick={() => setReplacing(null)}>先不开始</button>
+              <button className="button danger" onClick={() => replaceRun(replacing)}>放弃上次的，开始新的</button>
+            </Sheet>
         )}
       </>
     );
@@ -273,7 +277,9 @@ function DictationHome({ language, file, problem, loading, draft, onResume, onDi
         <div className="card resume">
           <div className="grow">
             <b>{draft.phase === 'running' ? `上次的听写还没完成（第 ${draft.index + 1} / ${draft.words.length} 个）` : `上次的听写还没提交（${draft.words.length} 个词）`}</b>
-            <div className="muted small">{draft.saveFailed ? '上次提交时保存没有完成，结果暂存在临时文件里，重新打开 App 后会自动恢复' : `${formatRelative(draft.startedAt)} 开始`}</div>
+            <div className="muted small">{draft.saveFailed === 'stopped' ? '上次提交时保存没有完成，结果暂存在临时文件里，重新打开 App 后会自动恢复'
+              : draft.saveFailed ? '上次提交时保存没有完成，结果暂存在临时文件里，点"继续对答案"再提交一次就会记好'
+              : `${formatRelative(draft.startedAt)} 开始`}</div>
           </div>
           {!draft.saveFailed && <button className={`button${settled ? '' : ' settling'}`} onClick={() => setDiscarding(true)}>放弃</button>}
           <button className={`button primary${settled ? '' : ' settling'}`} disabled={unusable} onClick={() => onResume(draft)}>{draft.phase === 'running' ? '继续听写' : '继续对答案'}</button>

@@ -162,7 +162,33 @@ test('a practice draft whose submission is already in the file is not offered ag
 });
 
 test('a draft whose save may come back from the temp file keeps its marks and cannot be discarded', async ({ page }) => {
-  const draft = { kind: 'practice', items: [{ key: 'k1', text: 'Q', answer: 'A', questionId: 'q1' }], index: 0, phase: 'answers', wrong: ['k1'], startedAt: at, sessionId: 's_pending', saveFailed: true };
+  const draft = { kind: 'practice', items: [{ key: 'k1', text: 'Q', answer: 'A', questionId: 'q1' }], index: 0, phase: 'answers', wrong: ['k1'], startedAt: at, sessionId: 's_pending', saveFailed: 'interrupted' };
+  await seedPending(page, draft);
+  await open(page);
+  await page.getByRole('button', { name: /英语错题本/ }).click();
+  await expect(page.getByText(/再提交一次就会记好/)).toBeVisible();
+  await expect(page.getByRole('button', { name: '放弃', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: '继续对答案' }).click();
+  await expect(page.getByRole('button', { name: /^1/ })).toBeDisabled();
+  await expect(page.getByRole('button', { name: '再提交一次' })).toBeVisible();
+  await page.getByRole('button', { name: '再提交一次' }).click();
+  await expect(page.getByText(/已保存：1 题，做错 1 题/)).toBeVisible();
+});
+
+test('a draft whose file cannot be written again in this run only offers to leave', async ({ page }) => {
+  const draft = { kind: 'practice', items: [{ key: 'k1', text: 'Q', answer: 'A', questionId: 'q1' }], index: 0, phase: 'answers', wrong: ['k1'], startedAt: at, sessionId: 's_pending', saveFailed: 'stopped' };
+  await seedPending(page, draft);
+  await open(page);
+  await page.getByRole('button', { name: /英语错题本/ }).click();
+  await expect(page.getByText(/重新打开 App 后会自动恢复/)).toBeVisible();
+  await expect(page.getByRole('button', { name: '放弃', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: '继续对答案' }).click();
+  await expect(page.getByRole('button', { name: /^1/ })).toBeDisabled();
+  await expect(page.getByRole('button', { name: '再提交一次' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '先离开，重新打开 App 后会自动恢复' })).toBeVisible();
+});
+
+async function seedPending(page: Page, draft: object) {
   await seed(page, {
     'data/app.json': appFile([{ id: 'u1', name: '乐乐' }]),
     'data/users/u1/error-book.json': {
@@ -176,13 +202,4 @@ test('a draft whose save may come back from the temp file keeps its marks and ca
     sessionStorage.setItem('seeded-draft', '1');
     localStorage.setItem('CapacitorStorage.draft:error-book:u1', value);
   }, JSON.stringify(draft));
-  await open(page);
-  await page.getByRole('button', { name: /英语错题本/ }).click();
-  await expect(page.getByText(/重新打开 App 后会自动恢复/)).toBeVisible();
-  await expect(page.getByRole('button', { name: '放弃', exact: true })).toHaveCount(0);
-  await page.getByRole('button', { name: '继续对答案' }).click();
-  await expect(page.getByRole('button', { name: /^1/ })).toBeDisabled();
-  await expect(page.getByRole('button', { name: '再试一次提交' })).toBeVisible();
-  await page.getByRole('button', { name: '再试一次提交' }).click();
-  await expect(page.getByText(/已保存：1 题，做错 1 题/)).toBeVisible();
-});
+}

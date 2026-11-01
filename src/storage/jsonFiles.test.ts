@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { checkAppFile } from '../data/validate';
 import { SCHEMAS, type AppFile } from '../data/schema';
 import { MemoryFolder } from './memoryFolder';
-import { HISTORY_KEEP_LATEST, historyDir, JsonFiles } from './jsonFiles';
+import { HISTORY_KEEP_LATEST, historyDir, JsonFiles, mayBeRestored } from './jsonFiles';
 
 const path = 'data/app.json';
 const app = (name: string): AppFile => ({
@@ -185,6 +185,21 @@ describe('JsonFiles', () => {
     await expect(files.save(path, app('小红'))).rejects.toThrow('同时被另一个 App 或浏览器写入');
     folder.rename = rename;
     await expect(files.save(path, app('小刚'))).rejects.toThrow('无法使用');
+  });
+
+  it('says why when the file cannot be read back after saving', async () => {
+    const { folder, files, tick } = setup();
+    await files.save(path, app('小明'));
+    const read = folder.readText.bind(folder);
+    let renamed = false;
+    const rename = folder.rename.bind(folder);
+    folder.rename = async (from, to) => { await rename(from, to); renamed = true; };
+    folder.readText = async name => { if (renamed && name === path) throw new Error('数据文件夹不存在了'); return read(name); };
+    tick();
+    const failure = await files.save(path, app('小红')).then(() => new Error('saved'), (error: unknown) => error as Error);
+    expect(failure.message).toContain('数据文件夹不存在了');
+    expect(failure.message).not.toContain('另一个 App');
+    expect(mayBeRestored(failure)).toBe(true);
   });
 
   it('after a rename that copied the file but could not delete the temp file (PC browser), counts the save as done', async () => {

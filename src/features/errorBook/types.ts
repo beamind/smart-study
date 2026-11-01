@@ -28,8 +28,11 @@ export interface PracticeRun {
    * Missing in drafts from before 2.0.0's trial release.
    */
   sessionId?: string;
-  /** A submission failed in a way that may still be restored from the temp file: the marks stay as they were. */
-  saveFailed?: true;
+  /**
+   * A submission failed in a way that may still be restored from the temp file, so the marks stay as they were:
+   * "interrupted" (the file can still be saved in this run: submit again), "stopped" (it cannot: open the app again).
+   */
+  saveFailed?: 'interrupted' | 'stopped';
 }
 
 /** A recognised or typed question before it is saved. */

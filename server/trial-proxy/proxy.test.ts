@@ -184,6 +184,16 @@ describe('trial proxy', () => {
     expect(calls).toEqual([]);
   });
 
+  it('refuses a 举一反三 whose new question would not fit in the reply, before spending anything', async () => {
+    const { proxy, calls, counters } = setup();
+    const chinese = { device, task: 'generate', source: { text: '中'.repeat(1600), answer: 'B' } };
+    expect(await proxy.call(chinese, '1.1.1.1')).toMatchObject({ status: 400, body: { message: expect.stringContaining('这道题太长') } });
+    const english = { device, task: 'generate', source: { text: 'x'.repeat(4000), answer: 'B' } };
+    expect(await proxy.call(english, '1.1.1.1')).toMatchObject({ status: 200 });
+    expect(calls).toHaveLength(1);
+    expect(counters.values.get(`device:${device}:generate`)).toBe(1);
+  });
+
   it('says "比较长" rather than "used up today" when a short question would still fit', async () => {
     const { proxy, counters } = setup();
     counters.values.set('cost:2026-11-01:generate', 300_000 - 60_000);

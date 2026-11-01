@@ -4,7 +4,7 @@ import type { DictationFile } from '../data/schema';
 import { checkDictationFile } from '../data/validate';
 import { submit, undoSession } from '../domain/dictation';
 import { DataCache } from './dataCache';
-import { JsonFiles } from './jsonFiles';
+import { JsonFiles, SaveInterruptedError } from './jsonFiles';
 import { MemoryFolder } from './memoryFolder';
 
 const path = 'data/users/u1/dictation-chinese.json';
@@ -12,6 +12,21 @@ const empty = () => emptyDictationFile('chinese');
 const add = (text: string) => (file: DictationFile) => submit(file, { kind: 'dictation', words: [{ text, correct: true }] }).file;
 
 describe('DataCache', () => {
+  it('a save whose rename failed is the value later changes build on, and they finish it', async () => {
+    const folder = new MemoryFolder();
+    const cache = new DataCache(new JsonFiles(folder));
+    await cache.set(path, checkDictationFile, empty, add('一'));
+    const rename = folder.rename.bind(folder);
+    folder.rename = async () => { throw new Error('io'); };
+    await expect(cache.set(path, checkDictationFile, empty, add('二'))).rejects.toBeInstanceOf(SaveInterruptedError);
+    folder.rename = rename;
+    const shown = cache.peek<DictationFile>(path);
+    expect(shown?.status === 'ok' && shown.value.words.map(word => word.text)).toEqual(['一', '二']);
+    await cache.set(path, checkDictationFile, empty, add('三'));
+    const fresh = await new DataCache(new JsonFiles(folder)).get(path, checkDictationFile, empty);
+    expect(fresh.status === 'ok' && fresh.value.words.map(word => word.text)).toEqual(['一', '二', '三']);
+  });
+
   it('marks a file unusable for this run when a save stopped half way, keeping the reason', async () => {
     const folder = new MemoryFolder();
     const cache = new DataCache(new JsonFiles(folder));

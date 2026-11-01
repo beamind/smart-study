@@ -10,7 +10,7 @@
 
 - 已测试的设备：华为 MatePad 11（HarmonyOS 4.2，Android API 31），以及 Android 16 模拟器。欢迎反馈其他设备上的情况。
 - 数据保存在 `Documents/smartstudy`，卸载 App 不会丢失；重装后重新授权这个文件夹即可继续使用。
-- 正式包的应用 ID 是 `com.smartstudy`。开发用的 debug 包是 `com.smartstudy.dev`，桌面名称同样是"智能学习"，可以和正式包同时安装。两者共用 `Documents/smartstudy` 的数据，但各自要授权文件夹、填写 API Key。
+- 正式包的应用 ID 是 `com.smartstudy`。开发用的 debug 包是 `com.smartstudy.dev`，桌面名称同样是"智能学习"，可以和正式包同时安装。两者共用 `Documents/smartstudy` 的数据，但各自要授权文件夹、填写 API Key。不要同时打开两个包操作同一个孩子的数据。
 
 ## 功能
 

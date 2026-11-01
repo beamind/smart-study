@@ -205,6 +205,8 @@ function textTokens(text: string): number {
  * second, so a longer reply would time out instead of arriving.
  */
 const MAX_GENERATE_REPLY = 2000;
+/** Longest source (with its answer) whose new question still fits in MAX_GENERATE_REPLY, in likely tokens. */
+const MAX_GENERATE_SOURCE = 1500;
 
 /**
  * Tokens a text will really take, for sizing a reply like it: about 4 Latin characters per token (counted as 3, to
@@ -269,8 +271,8 @@ export function createProxy(deps: Dependencies) {
   /** Model calls running on this instance; requests waiting for budget do not count. */
   let running = 0;
   const maxInFlight = deps.maxInFlight ?? Number.POSITIVE_INFINITY;
-  /** What the shortest 举一反三 reserves: whether a short question would still fit when a long one does not. */
-  const SHORTEST_GENERATE = maxCost({ task: 'generate', source: { text: 'Q ___', answer: '' } }, limits);
+  /** What a short real 举一反三 reserves: whether a short question would still fit when a long one does not. */
+  const SHORTEST_GENERATE = maxCost({ task: 'generate', source: { text: 'Tom ______ (go) to school by bike every day. What do you do after school?', answer: 'goes' } }, limits);
 
   const remaining = async (device: string): Promise<Remaining> => {
     const [photo, translate, generate] = await counters.get(deviceKeys(device));
@@ -323,6 +325,12 @@ export function createProxy(deps: Dependencies) {
     const busy: Result = { status: 503, body: { error: 'busy', message: '试用的人有点多，请过一会儿再试' } };
     // The table failed: also worth trying again, but not worth waiting here for.
     const tableFailed: Result = { status: 503, body: { error: 'busy', message: '试用服务暂时有点忙，请过一会儿再试' } };
+    // A new question about as long as this source would not fit in the longest reply (MAX_GENERATE_REPLY): refuse it
+    // now, instead of spending the use and the money on a reply cut off half way. About 4,500 Latin letters, or 1,500
+    // Chinese characters, source and answer together.
+    if (task.task === 'generate' && likelyTokens(task.source.text) + likelyTokens(task.source.answer) > MAX_GENERATE_SOURCE) {
+      return { status: 400, body: { error: 'bad-request', message: '这道题太长，试用时不能举一反三。填写自己的千问 API Key 后可以' } };
+    }
     // A request that could not fit even into an untouched day: say what is wrong, instead of "used up today" every day.
     if (reserved > budget) {
       return { status: 400, body: { error: 'bad-request', message: kind === 'generate' ? '这道题太长，试用时不能举一反三。填写自己的千问 API Key 后可以' : '内容太多，试用时不能处理' } };
