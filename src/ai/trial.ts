@@ -65,7 +65,8 @@ async function post(url: string, deps: TrialDependencies, task: ModelTask, timeo
       if (body?.error === 'busy') busy.retryAfterMs = BUSY_RETRY_MS;
       throw busy;
     }
-    if (response.status === 400 || response.status === 413) throw new AiError('bad-request', `请求被拒绝：${message || response.status}`);
+    // The proxy's own refusals say what is wrong in words meant for the user.
+    if (response.status === 400 || response.status === 413) throw new AiError('bad-request', message || `请求被拒绝（${response.status}）`);
     if (body?.error === 'upstream-fatal') throw new AiError('bad-response', message || '试用服务暂时不能处理这个请求');
     if (response.ok) throw new AiError('bad-response', '千问没有返回内容');
     throw new AiError('server', message || `试用服务暂时出错（${response.status}）`);

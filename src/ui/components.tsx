@@ -1,6 +1,7 @@
 import { ArrowLeft } from 'lucide-react';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useBackHandler, useNavigation } from '../app/navigation';
+import { SaveInterruptedError } from '../storage/jsonFiles';
 
 /** How long a new page footer or sheet ignores taps: longer than a double tap, too short to notice. */
 const SETTLE_MS = 400;
@@ -132,3 +133,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 }
 
 export const errorText = (error: unknown) => (error instanceof Error ? error.message : String(error));
+
+/**
+ * The toast for a change whose save failed. An interrupted save is kept (DataCache builds on it, and the next save
+ * or start writes it), so its own message ("已记下，但…") is shown without "没有保存".
+ */
+export const notSavedText = (error: unknown) => (error instanceof SaveInterruptedError ? errorText(error) : `没有保存：${errorText(error)}`);

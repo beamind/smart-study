@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { checkAppFile } from '../data/validate';
 import { SCHEMAS, type AppFile } from '../data/schema';
 import { MemoryFolder } from './memoryFolder';
-import { HISTORY_KEEP_LATEST, historyDir, JsonFiles, mayBeRestored } from './jsonFiles';
+import { HISTORY_KEEP_LATEST, historyDir, JsonFiles, mayBeRestored, SaveConflictError, SaveInterruptedError } from './jsonFiles';
 
 const path = 'data/app.json';
 const app = (name: string): AppFile => ({
@@ -182,9 +182,26 @@ describe('JsonFiles', () => {
     // The other copy writes the same temp file just before this one renames it.
     folder.rename = async (from, to) => { folder.files.set(from, JSON.stringify(app('别的 App'))); return rename(from, to); };
     tick();
-    await expect(files.save(path, app('小红'))).rejects.toThrow('同时被另一个 App 或浏览器写入');
+    const conflict = await files.save(path, app('小红')).then(() => new Error('saved'), (error: unknown) => error);
+    expect(conflict).toBeInstanceOf(SaveConflictError);
+    expect((conflict as Error).message).toContain('同时被另一个 App 或浏览器写入');
+    // Not left in a temp file: a submission stays as it is in the draft, can be changed and discarded.
+    expect(mayBeRestored(conflict)).toBe(false);
     folder.rename = rename;
     await expect(files.save(path, app('小刚'))).rejects.toThrow('无法使用');
+  });
+
+  it('gives the value of an interrupted save, which the next load restores', async () => {
+    const { folder, files, tick } = setup();
+    await files.save(path, app('小明'));
+    const rename = folder.rename.bind(folder);
+    folder.rename = async () => { throw new Error('io'); };
+    tick();
+    const failure = await files.save(path, app('小红')).then(() => new Error('saved'), (error: unknown) => error);
+    expect(failure).toBeInstanceOf(SaveInterruptedError);
+    expect(failure).toMatchObject({ path, value: app('小红'), message: expect.stringMatching(/^已记下/) });
+    folder.rename = rename;
+    expect(await new JsonFiles(folder).load(path, checkAppFile)).toMatchObject({ status: 'ok', value: { users: [{ name: '小红' }] } });
   });
 
   it('says why when the file cannot be read back after saving', async () => {

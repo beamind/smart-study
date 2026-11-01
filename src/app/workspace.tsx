@@ -8,7 +8,7 @@ import { trialCall, trialRemaining, TRIAL_URL, type TrialDependencies, type Tria
 import { trialDeviceId } from '../services/trialDevice';
 import { setApiKey as storeApiKey } from '../services/secrets';
 import { DataCache } from '../storage/dataCache';
-import type { JsonFiles } from '../storage/jsonFiles';
+import { SaveInterruptedError, type JsonFiles } from '../storage/jsonFiles';
 
 /**
  * Everything that is loaded once the data folder is open: users, settings, the API key,
@@ -98,7 +98,7 @@ export function WorkspaceProvider({ files, app: initialApp, settings: initialSet
   /**
    * Changes to app.json and settings.json run one after another, each built from the latest saved value,
    * checked like a file read from disk, and written once. Persist first, then show: if the write fails,
-   * the screen keeps showing what is on disk.
+   * the screen keeps showing what is on disk (except after an interrupted save, which is built on).
    */
   const enqueue = useCallback(<R,>(task: () => Promise<R>) => {
     const run = queue.current.catch(() => undefined).then(task);
@@ -109,7 +109,11 @@ export function WorkspaceProvider({ files, app: initialApp, settings: initialSet
     const { value, result } = change(appRef.current);
     const checked = checkAppFile(value);
     if (!checked.ok) throw new Error(`用户数据没有通过校验，未保存：${checked.error}`);
-    await files.save(paths.app, checked.value);
+    await files.save(paths.app, checked.value).catch((error: unknown) => {
+      // The value waits in the temp file: build the next change on it, so that save does not drop this one.
+      if (error instanceof SaveInterruptedError) { appRef.current = checked.value; setApp(checked.value); }
+      throw error;
+    });
     appRef.current = checked.value;
     setApp(checked.value);
     return result;
@@ -137,7 +141,15 @@ export function WorkspaceProvider({ files, app: initialApp, settings: initialSet
     addDemoUser() {
       // Through the same queue as other app.json changes, built from the latest saved value.
       return enqueue(async () => {
-        const { app: next, user } = await addDemoUser(files, appRef.current);
+        const { app: next, user } = await addDemoUser(files, appRef.current).catch((error: unknown) => {
+          // As in commitApp: an interrupted app.json save is built on (the example child's files are written by then).
+          if (error instanceof SaveInterruptedError && error.path === paths.app) {
+            const pending = error.value as AppFile;
+            appRef.current = pending;
+            setApp(pending);
+          }
+          throw error;
+        });
         appRef.current = next;
         setApp(next);
         return user;

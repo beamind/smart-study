@@ -6,7 +6,7 @@ import { AiError } from '../../ai/dashscope';
 import { nowIso } from '../../core/time';
 import { wordKey } from '../../data/normalize';
 import type { DictationFile, DictationLanguage } from '../../data/schema';
-import { mayBeRestored, SaveStoppedError } from '../../storage/jsonFiles';
+import { mayBeRestored, SaveInterruptedError } from '../../storage/jsonFiles';
 import { newSessionId, submit, undoSession, wordRows } from '../../domain/dictation';
 import { sample, shuffle } from '../../domain/sampling';
 import { drafts } from '../../services/device';
@@ -52,13 +52,13 @@ export function DictationPage({ language, replay }: { language: DictationLanguag
   const abort = useRef<AbortController | null>(null);
 
   useEffect(() => { void drafts.read<Run>(key).then(value => setSavedDraft(value)); }, [key]);
-  // A draft whose submission is in the file already (saved, then reported as failed, and restored from the temp
-  // file on the next start) is done: drop it instead of offering to submit it a second time.
+  // A draft whose submission is in the file already (saved, then reported as failed, and found when the app was
+  // opened again) is done: drop it instead of offering to submit it a second time.
   useEffect(() => {
     if (!savedDraft?.sessionId || !file?.sessions.some(session => session.id === savedDraft.sessionId)) return;
     void drafts.clear(key);
     setSavedDraft(null);
-    toast.show('上次没能确认保存的那次听写已经恢复到记录里了');
+    toast.show('上次没能确认保存的那次听写已经在记录里了');
   }, [savedDraft, file, key, toast]);
 
   /** Every change to a run is saved as a draft, so closing the app loses nothing. */
@@ -120,10 +120,17 @@ export function DictationPage({ language, replay }: { language: DictationLanguag
   const finishSubmit = async (current: Run) => {
     const wrong = new Set(current.wrong);
     const sessionId = current.sessionId ?? newSessionId();
+    const undo = {
+      label: '撤销',
+      run: () => {
+        void update(value => ({ value: undoSession(value, sessionId), result: undefined }))
+          .then(() => toast.show('已撤销这次听写'), error => toast.show(error instanceof SaveInterruptedError ? errorText(error) : `撤销失败：${errorText(error)}`));
+      },
+    };
     let saved: boolean;
     try {
       saved = await update(value => {
-        // Saved already: an interrupted save that was restored from the temp file when the app was opened again.
+        // Saved already: an earlier submission reported as failed that was found in the file when the app was opened again.
         if (value.sessions.some(session => session.id === sessionId)) return { value, result: false };
         const result = submit(value, {
           kind: current.kind, readMode: current.readMode, sessionId,
@@ -132,18 +139,22 @@ export function DictationPage({ language, replay }: { language: DictationLanguag
         return { value: result.file, result: true };
       });
     } catch (error) {
-      // The temp file may hold this submission: keep its marks as they are, also after leaving and coming back.
-      if (mayBeRestored(error)) changeRun({ ...current, sessionId, saveFailed: error instanceof SaveStoppedError ? 'stopped' : 'interrupted' });
+      // Kept: DataCache builds on the new value and the next save or start writes it, so the dictation is done.
+      if (error instanceof SaveInterruptedError) {
+        changeRun(null);
+        setStep({ kind: 'home' });
+        toast.show(errorText(error), undo);
+        return;
+      }
+      // Cannot be checked in this run: keep the draft as it is until opening the app again shows whether it is in the file.
+      if (mayBeRestored(error)) changeRun({ ...current, sessionId, saveFailed: true });
       throw error;
     }
     changeRun(null);
     setStep({ kind: 'home' });
     if (!saved) { toast.show('这次听写已经保存过了，没有再记一次'); return; }
     const right = current.words.length - wrong.size;
-    toast.show(wrong.size ? `已保存：写对 ${right} / ${current.words.length} 个` : `全对！${current.words.length} 个词都写对了`, {
-      label: '撤销',
-      run: () => { void update(value => ({ value: undoSession(value, sessionId), result: undefined })).then(() => toast.show('已撤销这次听写'), error => toast.show(`撤销失败：${errorText(error)}`)); },
-    });
+    toast.show(wrong.size ? `已保存：写对 ${right} / ${current.words.length} 个` : `全对！${current.words.length} 个词都写对了`, undo);
   };
 
   // Back from steps without their own handler.
@@ -179,9 +190,9 @@ export function DictationPage({ language, replay }: { language: DictationLanguag
     return (
       <>
         <ConfirmStep language={language} plan={plan} file={file} onChange={setPlan} onStart={startRun} onDiscard={replaying.current ? pop : goHome} />
-        {replacing && savedDraft && (savedDraft.saveFailed
+        {replacing && savedDraft && (savedDraft.saveFailed && entry?.status === 'unusable'
           ? <Sheet title="上次的听写还没确认保存" onClose={() => setReplacing(null)}>
-              <p className="muted">上次提交时保存没有完成，结果暂存在临时文件里。{savedDraft.saveFailed === 'stopped' ? '请先重新打开 App，它会自动恢复，然后再开始新的听写。' : '请先把它再提交一次，再开始新的听写。'}</p>
+              <p className="muted">上次提交时保存没有完成。请先重新打开 App，它会检查这次记好了没有，然后再开始新的听写。</p>
               <button className="button primary" onClick={() => setReplacing(null)}>先不开始</button>
             </Sheet>
           : <Sheet title={savedDraft.phase === 'running' ? '上次的听写还没完成' : '上次的听写还没提交'} onClose={() => setReplacing(null)}>
@@ -203,7 +214,7 @@ export function DictationPage({ language, replay }: { language: DictationLanguag
       );
     }
     return (
-      <MarkAnswers language={language} run={run}
+      <MarkAnswers language={language} run={run} locked={!!run.saveFailed && entry?.status === 'unusable'}
         onToggle={wordKey => changeRun({ ...run, wrong: run.wrong.includes(wordKey) ? run.wrong.filter(item => item !== wordKey) : [...run.wrong, wordKey] })}
         onSubmit={() => finishSubmit(run)}
         onLeave={() => { setSavedDraft(run); setStep({ kind: 'home' }); }}
@@ -218,7 +229,15 @@ export function DictationPage({ language, replay }: { language: DictationLanguag
       onDiscardDraft={() => { void drafts.clear(key); setSavedDraft(null); }}
       onPhoto={source => void takePhoto(source)}
       onWords={next => startPlan(next)}
-      onUndo={async sessionId => { await update(value => ({ value: undoSession(value, sessionId), result: undefined })); toast.show('已撤销这次听写'); }}
+      onUndo={async sessionId => {
+        try { await update(value => ({ value: undoSession(value, sessionId), result: undefined })); } catch (error) {
+          // Kept, and written by the next save or start: the undo is done.
+          if (!(error instanceof SaveInterruptedError)) throw error;
+          toast.show(errorText(error));
+          return;
+        }
+        toast.show('已撤销这次听写');
+      }}
       />
   );
 }
@@ -257,6 +276,9 @@ function DictationHome({ language, file, problem, loading, draft, onResume, onDi
   const settled = useSettled();
   // A file that could not be read cannot take a new dictation: do not let the child do one that cannot be saved.
   const unusable = !file && !loading;
+  // A submission that could not be checked, while its file cannot be written: only opening the app again tells
+  // whether it is in the file, so the draft is kept as it is until then.
+  const locked = !!draft?.saveFailed && unusable;
   const rows = useMemo(() => (file ? wordRows(file) : []), [file]);
   const wrongEver = rows.filter(row => row.stats.wrong > 0).length;
   const recent = useMemo(() => {
@@ -277,11 +299,11 @@ function DictationHome({ language, file, problem, loading, draft, onResume, onDi
         <div className="card resume">
           <div className="grow">
             <b>{draft.phase === 'running' ? `上次的听写还没完成（第 ${draft.index + 1} / ${draft.words.length} 个）` : `上次的听写还没提交（${draft.words.length} 个词）`}</b>
-            <div className="muted small">{draft.saveFailed === 'stopped' ? '上次提交时保存没有完成，结果暂存在临时文件里，重新打开 App 后会自动恢复'
-              : draft.saveFailed ? '上次提交时保存没有完成，结果暂存在临时文件里，点"继续对答案"再提交一次就会记好'
+            <div className="muted small">{locked ? '上次提交时保存没有完成，重新打开 App 后会检查这次记好了没有'
+              : draft.saveFailed ? '上次提交时没能确认保存，结果不在记录里，可以再提交一次'
               : `${formatRelative(draft.startedAt)} 开始`}</div>
           </div>
-          {!draft.saveFailed && <button className={`button${settled ? '' : ' settling'}`} onClick={() => setDiscarding(true)}>放弃</button>}
+          {!locked && <button className={`button${settled ? '' : ' settling'}`} onClick={() => setDiscarding(true)}>放弃</button>}
           <button className={`button primary${settled ? '' : ' settling'}`} disabled={unusable} onClick={() => onResume(draft)}>{draft.phase === 'running' ? '继续听写' : '继续对答案'}</button>
         </div>
       )}

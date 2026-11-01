@@ -187,7 +187,7 @@ test('a draft whose submission is already in the file (an interrupted save resto
   }, JSON.stringify(draft));
   await open(page);
   await page.getByRole('button', { name: /语文听写/ }).click();
-  await expect(page.getByText('已经恢复到记录里了')).toBeVisible();
+  await expect(page.getByText('已经在记录里了')).toBeVisible();
   await expect(page.getByText(/上次的听写还没提交/)).toHaveCount(0);
   expect(await page.evaluate(() => localStorage.getItem('CapacitorStorage.draft:dictation:u1:chinese'))).toBeNull();
 });

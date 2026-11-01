@@ -4,7 +4,8 @@ import { useBackHandler } from '../../app/navigation';
 import { wordKey } from '../../data/normalize';
 import type { DictationLanguage, DictationWord } from '../../data/schema';
 import { addWords, deleteWords, editWord, sortForBook, wordRows } from '../../domain/dictation';
-import { ArithmeticConfirm, errorText, Page, Sheet, useToast } from '../../ui/components';
+import { SaveInterruptedError } from '../../storage/jsonFiles';
+import { ArithmeticConfirm, errorText, notSavedText, Page, Sheet, useToast } from '../../ui/components';
 import { formatRelative } from '../../ui/format';
 import { useDictationFile } from '../useUserData';
 
@@ -38,8 +39,9 @@ export function WordBook({ language }: { language: DictationLanguage }) {
       : sortForBook(filtered, Date.now());
   }, [file, query, filter, language]);
 
+  // An interrupted save is kept and written by the next save or start: it counts as done, with its own message.
   const save = async (change: Parameters<typeof update>[0], done: string) => {
-    try { await update(change); toast.show(done); } catch (error) { toast.show(`没有保存：${errorText(error)}`); throw error; }
+    try { await update(change); toast.show(done); } catch (error) { toast.show(notSavedText(error)); if (!(error instanceof SaveInterruptedError)) throw error; }
   };
   const toggle = (id: string) => setSelected(current => { const next = new Set(current); if (next.has(id)) next.delete(id); else next.add(id); return next; });
 
@@ -95,8 +97,13 @@ export function WordBook({ language }: { language: DictationLanguage }) {
       )}
       {adding && (
         <AddWords english={english} onClose={() => setAdding(false)} onAdd={async entries => {
-          const outcome = await update(value => { const result = addWords(value, entries); return { value: result.file, result }; });
-          toast.show(outcome.skipped.length ? `添加了 ${outcome.added} 个，${outcome.skipped.length} 个已在错词本里` : `添加了 ${outcome.added} 个`);
+          try {
+            const outcome = await update(value => { const result = addWords(value, entries); return { value: result.file, result }; });
+            toast.show(outcome.skipped.length ? `添加了 ${outcome.added} 个，${outcome.skipped.length} 个已在错词本里` : `添加了 ${outcome.added} 个`);
+          } catch (error) {
+            if (!(error instanceof SaveInterruptedError)) throw error;
+            toast.show(errorText(error));
+          }
         }} />
       )}
       {deleting && (

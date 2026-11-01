@@ -4,7 +4,7 @@ import type { DictationFile } from '../data/schema';
 import { checkDictationFile } from '../data/validate';
 import { submit, undoSession } from '../domain/dictation';
 import { DataCache } from './dataCache';
-import { JsonFiles, SaveInterruptedError } from './jsonFiles';
+import { JsonFiles, SaveConflictError, SaveInterruptedError } from './jsonFiles';
 import { MemoryFolder } from './memoryFolder';
 
 const path = 'data/users/u1/dictation-chinese.json';
@@ -46,6 +46,18 @@ describe('DataCache', () => {
     other.rename = async () => { throw new Error('rename failed'); };
     other.readText = async () => { throw new Error('数据文件夹不存在了，请重新选择'); };
     await expect(cache2.set(path, checkDictationFile, empty, add('二'))).rejects.toThrow('数据文件夹不存在了');
+  });
+
+  it('marks a file unusable for this run when another copy of the app wrote it at the same moment', async () => {
+    const folder = new MemoryFolder();
+    const cache = new DataCache(new JsonFiles(folder));
+    await cache.set(path, checkDictationFile, empty, add('一'));
+    const rename = folder.rename.bind(folder);
+    const other = folder.files.get(path)!;
+    folder.rename = async (from, to) => { folder.files.set(from, other); return rename(from, to); };
+    await expect(cache.set(path, checkDictationFile, empty, add('二'))).rejects.toBeInstanceOf(SaveConflictError);
+    folder.rename = rename;
+    expect(cache.peek(path)).toMatchObject({ status: 'unusable', error: expect.stringContaining('另一个 App') });
   });
   it('reports a restored file once, saying where it came from and that the damaged file was kept', async () => {
     const folder = new MemoryFolder();

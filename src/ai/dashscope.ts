@@ -141,7 +141,7 @@ export async function chatWithUsage(request: ChatRequest, deps: Dependencies = d
 }
 
 /**
- * Run ttempt until it succeeds, a non-retryable error comes, or maxAttempts is reached; waits 1 s, 2 s, ... up to 5 s
+ * Run `attempt` until it succeeds, a non-retryable error comes, or maxAttempts is reached; waits 1 s, 2 s, ... up to 5 s
  * between attempts and stops at once when signal aborts.
  */
 export async function withRetries<T>(attempt: () => Promise<T>, maxAttempts: number, signal: AbortSignal | undefined, sleep: Dependencies['sleep'] = defaults.sleep): Promise<T> {

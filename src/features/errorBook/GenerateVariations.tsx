@@ -14,7 +14,8 @@ const PARALLEL = 3;
 type Slot =
   | { status: 'waiting' | 'running' }
   | { status: 'done'; item: PracticeItem }
-  | { status: 'failed'; error: string };
+  /** retryable false: the request itself was refused (e.g. the question is too long for the trial), so trying again fails again. */
+  | { status: 'failed'; error: string; retryable: boolean };
 
 /**
  * 举一反三: one new question per original, three requests at a time. Failures are
@@ -48,7 +49,9 @@ export function GenerateVariations({ sources, onStart, onCancel }: { sources: Qu
       const source = sources[index];
       ai.generateQuestion({ text: source.text, answer: source.answer }, signal)
         .then(generated => ({ status: 'done', item: { key: newKey(), text: generated.text, answer: generated.answer, sourceQuestionId: source.id } }) as Slot)
-        .catch(error => (signal.aborted || (error instanceof AiError && error.kind === 'cancelled') ? { status: 'waiting' } : { status: 'failed', error: errorText(error) }) as Slot)
+        .catch(error => (signal.aborted || (error instanceof AiError && error.kind === 'cancelled')
+          ? { status: 'waiting' }
+          : { status: 'failed', error: errorText(error), retryable: !(error instanceof AiError && error.kind === 'bad-request') }) as Slot)
         .then(result => {
           started.current.delete(index);
           setSlots(current => current.map((slot, i) => (i === index ? result : slot)));
@@ -59,6 +62,7 @@ export function GenerateVariations({ sources, onStart, onCancel }: { sources: Qu
   const retry = (indexes: number[]) => setSlots(current => current.map((slot, index) => (indexes.includes(index) ? { status: 'waiting' } : slot)));
   const done = slots.flatMap(slot => (slot.status === 'done' ? [slot.item] : []));
   const failed = slots.map((slot, index) => (slot.status === 'failed' ? index : -1)).filter(index => index >= 0);
+  const retryable = failed.filter(index => { const slot = slots[index]; return slot.status === 'failed' && slot.retryable; });
   const busy = slots.some(slot => slot.status === 'waiting' || slot.status === 'running');
   const cancel = () => { abort.current.abort(); onCancel(); };
   // Questions already generated (or being generated) cost waiting time and model calls: ask before dropping them.
@@ -74,8 +78,8 @@ export function GenerateVariations({ sources, onStart, onCancel }: { sources: Qu
       <p className="muted small">千问为每道原题出一道考同样知识点的新题。做完后只把做错的新题保存到错题本。</p>
       {failed.length > 0 && (
         <div className="notice error row">
-          <span className="grow">{failed.length} 道题没有出成功。{!busy && done.length > 0 && '可以重试，也可以先做已经出好的题。'}</span>
-          <button className="button" onClick={() => retry(failed)}><RefreshCw size={18} />全部重试</button>
+          <span className="grow">{failed.length} 道题没有出成功。{!busy && done.length > 0 && (retryable.length ? '可以重试，也可以先做已经出好的题。' : '可以先做已经出好的题。')}</span>
+          {retryable.length > 0 && <button className="button" onClick={() => retry(retryable)}><RefreshCw size={18} />全部重试</button>}
         </div>
       )}
       <div className="list">
@@ -90,7 +94,7 @@ export function GenerateVariations({ sources, onStart, onCancel }: { sources: Qu
                 {(slot.status === 'waiting' || slot.status === 'running') && <span className="muted">{slot.status === 'running' ? '正在出题…' : '等待中'}</span>}
                 {slot.status === 'failed' && <span className="bad small">出题失败：{slot.error}</span>}
               </div>
-              {slot.status === 'failed' && <button className="button" onClick={() => retry([index])}><RefreshCw size={18} />重试</button>}
+              {slot.status === 'failed' && slot.retryable && <button className="button" onClick={() => retry([index])}><RefreshCw size={18} />重试</button>}
             </div>
           );
         })}

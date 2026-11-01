@@ -23,15 +23,19 @@ export class SaveStoppedError extends Error {}
 
 /**
  * Another copy of the app wrote the same file at the same moment: the file holds that copy's save, this one is in
- * history only. Nothing is left in a temp file, so nothing comes back on the next start; the user submits again.
+ * history only. Nothing is left in a temp file; history may still bring it back if the other copy's file is lost
+ * later, so pages that save sessions recognise them by id. Otherwise the user does it again.
  */
 export class SaveConflictError extends SaveStoppedError {}
 
 /**
  * A save stopped after its temp file was written and the main file removed: the next load restores this save from
- * the temp file, and the next save of the file in this run writes it (DataCache builds on this value from now on).
+ * the temp file. The caller must build the next change on `value` (DataCache and the app.json queue do), so the next
+ * save of the file in this run writes it too.
  */
-export class SaveInterruptedError extends Error {}
+export class SaveInterruptedError extends Error {
+  constructor(message: string, readonly path: string, readonly value: unknown) { super(message); }
+}
 
 /** Whether a failed save may still come back from its temp file (so the submission should be left as it is). */
 export const mayBeRestored = (error: unknown) =>
@@ -74,7 +78,7 @@ export class JsonFiles {
 
   save(path: string, value: unknown): Promise<void> {
     const text = stringifyData(value);
-    return this.enqueue(() => this.saveNow(path, text));
+    return this.enqueue(() => this.saveNow(path, text, value));
   }
 
   /** History versions of a file, newest first. */
@@ -164,7 +168,7 @@ export class JsonFiles {
     return fileStamp(this.lastStampMs);
   }
 
-  private async saveNow(path: string, text: string) {
+  private async saveNow(path: string, text: string, value: unknown) {
     const { name } = splitPath(path);
     const tempPath = `${path}.tmp`;
     const previous = await this.folder.readText(path);
@@ -200,7 +204,7 @@ export class JsonFiles {
       // is left for the next load to repair, and this file is not written again in this run.
       if ('value' in now && now.value === null) {
         this.known.set(path, { text: null });
-        throw new SaveInterruptedError(`${path} 保存没有完成（${(error as Error)?.message ?? String(error)}）。这次的内容暂存在临时文件里：下次保存或重新打开 App 时会写好，不用再做一次`);
+        throw new SaveInterruptedError(`已记下，但 ${path} 还差最后一步没有写好（${(error as Error)?.message ?? String(error)}）。下次保存或重新打开 App 时会写好，不用再做一次`, path, value);
       }
       this.known.set(path, 'unusable');
       const cause = 'failure' in now ? now.failure : error;
@@ -217,7 +221,7 @@ export class JsonFiles {
     }
     if (placed.value !== text) {
       this.known.set(path, 'unusable');
-      throw new SaveConflictError(`${path} 同时被另一个 App 或浏览器写入，这次没有确认保存。请只留一个 App 使用这个数据文件夹，然后重新打开 App 再提交一次`);
+      throw new SaveConflictError(`${path} 同时被另一个 App 或浏览器写入，这次没有确认保存。请只留一个 App 使用这个数据文件夹，然后重新打开 App，看看这次的内容在不在，不在的话再做一次`);
     }
     this.known.set(path, { text });
     // The new data is in place now; failing to delete old history versions must not report the save as failed.

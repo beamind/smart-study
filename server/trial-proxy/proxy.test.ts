@@ -5,7 +5,7 @@ import { AiError, type Usage } from '../../src/ai/dashscope';
 import { parseGenerated, parseQuestions, parseWords } from '../../src/ai/parse';
 import { applyHits, modelRequest, parseUnderlineHits, type ModelTask } from '../../src/ai/tasks';
 import { defaultSettings } from '../../src/data/defaults';
-import { beijingDay, createProxy, DEFAULT_LIMITS, maxCost, MemoryCounters, RateLimiter, replyTokens, usableReply, type Limits } from './src/proxy';
+import { beijingDay, createProxy, DEFAULT_LIMITS, maxCost, MemoryCounters, RateLimiter, replyTokens, sourceTooLong, usableReply, type Limits } from './src/proxy';
 import { isConditionFailure } from './src/tablestore';
 
 const image = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ==';
@@ -192,6 +192,12 @@ describe('trial proxy', () => {
     expect(await proxy.call(english, '1.1.1.1')).toMatchObject({ status: 200 });
     expect(calls).toHaveLength(1);
     expect(counters.values.get(`device:${device}:generate`)).toBe(1);
+  });
+
+  it('counts the answer too, at 1,500 likely tokens, and never refuses English within the size limits', () => {
+    expect(sourceTooLong({ text: '中'.repeat(1400), answer: '中'.repeat(100) })).toBe(false);
+    expect(sourceTooLong({ text: '中'.repeat(1400), answer: '中'.repeat(101) })).toBe(true);
+    expect(sourceTooLong({ text: 'x'.repeat(4000), answer: 'y'.repeat(1500) })).toBe(false);
   });
 
   it('says "比较长" rather than "used up today" when a short question would still fit', async () => {

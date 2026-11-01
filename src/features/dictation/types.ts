@@ -24,16 +24,18 @@ export interface Run extends Plan {
   wrong: string[];
   startedAt: string;
   /**
-   * The id the submission will be saved under, chosen when the run starts. If a save was interrupted and later
-   * restored from the temp file, the session is already in the file: the draft is then recognised as saved.
+   * The id the submission will be saved under, chosen when the run starts. If a submission reported as failed is
+   * found in the file when the app is opened again, the draft is recognised as saved.
    * Missing in older drafts.
    */
   sessionId?: string;
   /**
-   * A submission failed in a way that may still be restored from the temp file, so the marks stay as they were:
-   * "interrupted" (the file can still be saved in this run: submit again), "stopped" (it cannot: open the app again).
+   * A submission failed in a way that cannot be checked in this run (SaveStoppedError: the file is not written again
+   * until the app is opened again). While the file cannot be written, the draft is kept as it is (marks, no
+   * discarding); once it is readable again, either the submission is in it (the draft is dropped) or it can be
+   * submitted again. Development builds stored a string here; any truthy value means the same.
    */
-  saveFailed?: 'interrupted' | 'stopped';
+  saveFailed?: boolean;
 }
 
 let counter = 0;

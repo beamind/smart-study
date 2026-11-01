@@ -10,8 +10,8 @@ import { addQuestions, deleteQuestions, editQuestion, newSessionId, questionRows
 import { sample } from '../../domain/sampling';
 import { drafts } from '../../services/device';
 import { pickPhoto, type PhotoSource } from '../../services/photo';
-import { mayBeRestored, SaveStoppedError } from '../../storage/jsonFiles';
-import { ArithmeticConfirm, errorText, Page, Sheet, useSettled, useToast } from '../../ui/components';
+import { mayBeRestored, SaveInterruptedError } from '../../storage/jsonFiles';
+import { ArithmeticConfirm, errorText, notSavedText, Page, Sheet, useSettled, useToast } from '../../ui/components';
 import { formatRelative, formatTime } from '../../ui/format';
 import { CropPhoto } from '../dictation/CropPhoto';
 import { useErrorBookFile } from '../useUserData';
@@ -49,13 +49,13 @@ export function ErrorBookPage() {
   const abort = useRef<AbortController | null>(null);
 
   useEffect(() => { void drafts.read<PracticeRun>(key).then(value => setSavedDraft(value)); }, [key]);
-  // A draft whose submission is in the file already (saved, then reported as failed, and restored from the temp
-  // file on the next start) is done: drop it instead of offering to submit it a second time.
+  // A draft whose submission is in the file already (saved, then reported as failed, and found when the app was
+  // opened again) is done: drop it instead of offering to submit it a second time.
   useEffect(() => {
     if (!savedDraft?.sessionId || !file?.sessions.some(session => session.id === savedDraft.sessionId)) return;
     void drafts.clear(key);
     setSavedDraft(null);
-    toast.show(`上次没能确认保存的那次${runTitle(savedDraft.kind)}已经恢复到错题本里了`);
+    toast.show(`上次没能确认保存的那次${runTitle(savedDraft.kind)}已经在错题本里了`);
   }, [savedDraft, file, key, toast]);
 
   /** Every change to a run is saved as a draft, so closing the app loses nothing. */
@@ -68,7 +68,7 @@ export function ErrorBookPage() {
 
   const undoToast = (text: string, sessionId: string) => toast.show(text, {
     label: '撤销',
-    run: () => { void update(value => ({ value: undoSession(value, sessionId), result: undefined })).then(() => toast.show('已撤销'), error => toast.show(`撤销失败：${errorText(error)}`)); },
+    run: () => { void update(value => ({ value: undoSession(value, sessionId), result: undefined })).then(() => toast.show('已撤销'), error => toast.show(error instanceof SaveInterruptedError ? errorText(error) : `撤销失败：${errorText(error)}`)); },
   });
 
   // ---------- capture ----------
@@ -98,10 +98,21 @@ export function ErrorBookPage() {
   };
 
   const saveCapture = async (items: CaptureItem[]) => {
-    const outcome = await update(value => {
-      const result = addQuestions(value, 'capture', items.map(item => ({ text: item.text, answer: item.answer, origin: item.origin })));
-      return { value: result.file, result };
-    });
+    let outcome: ReturnType<typeof addQuestions>;
+    try {
+      outcome = await update(value => {
+        const result = addQuestions(value, 'capture', items.map(item => ({ text: item.text, answer: item.answer, origin: item.origin })));
+        return { value: result.file, result };
+      });
+    } catch (error) {
+      // Kept, and written by the next save or start: the questions are in the book, so saving them again would
+      // count another wrong attempt.
+      if (!(error instanceof SaveInterruptedError)) throw error;
+      setCapture([]);
+      setStep({ kind: 'book' });
+      toast.show(errorText(error));
+      return;
+    }
     setCapture([]);
     setStep({ kind: 'book' });
     const saved = outcome.created + outcome.existing; // a question entered twice is saved once
@@ -126,10 +137,20 @@ export function ErrorBookPage() {
     const wrong = new Set(current.wrong);
     const sessionId = current.sessionId ?? newSessionId();
     const done = (text: string) => { changeRun(null); setStep({ kind: 'book' }); toast.show(text); };
-    // The temp file may hold this submission after such a failure: keep its marks as they are, also after leaving.
-    const saving = async <R,>(work: () => Promise<R>) => {
+    /**
+     * Save, or return 'kept' after an interrupted save: DataCache keeps the new value and the next save or start
+     * writes it, so the run is done. A save that cannot be checked in this run keeps the draft (saveFailed) so it is
+     * neither changed nor discarded until opening the app again shows whether it is in the file.
+     */
+    const saving = async <R,>(work: () => Promise<R>): Promise<R | 'kept'> => {
       try { return await work(); } catch (error) {
-        if (mayBeRestored(error)) changeRun({ ...current, sessionId, saveFailed: error instanceof SaveStoppedError ? 'stopped' : 'interrupted' });
+        if (error instanceof SaveInterruptedError) {
+          changeRun(null);
+          setStep({ kind: 'book' });
+          undoToast(errorText(error), sessionId);
+          return 'kept';
+        }
+        if (mayBeRestored(error)) changeRun({ ...current, sessionId, saveFailed: true });
         throw error;
       }
     };
@@ -150,6 +171,7 @@ export function ErrorBookPage() {
         })), undefined, sessionId);
         return { value: result.file, result };
       }));
+      if (outcome === 'kept') return;
       if (!outcome) { done('这次举一反三已经保存过了，没有再记一次'); return; }
       changeRun(null);
       setStep({ kind: 'book' });
@@ -165,6 +187,7 @@ export function ErrorBookPage() {
       const result = recordPractice(value, kept.map(item => ({ questionId: item.questionId!, correct: !wrong.has(item.key) })), undefined, sessionId);
       return { value: result.file, result: { sessionId: result.sessionId, kept: kept.length, wrong: kept.filter(item => wrong.has(item.key)).length } };
     }));
+    if (outcome === 'kept') return;
     if (!outcome) { done('这次练习已经保存过了，没有再记一次'); return; }
     changeRun(null);
     setStep({ kind: 'book' });
@@ -219,7 +242,7 @@ export function ErrorBookPage() {
       );
     }
     return (
-      <MarkPractice run={run}
+      <MarkPractice run={run} locked={!!run.saveFailed && entry?.status === 'unusable'}
         onToggle={itemKey => changeRun({ ...run, wrong: run.wrong.includes(itemKey) ? run.wrong.filter(item => item !== itemKey) : [...run.wrong, itemKey] })}
         onSubmit={() => finishSubmit(run)}
         onLeave={() => { setSavedDraft(run); setStep({ kind: 'book' }); }}
@@ -285,10 +308,14 @@ function QuestionBook({ file, problem, loading, draft, onResume, onDiscardDraft,
   }, [file]);
 
   const save = async (change: Parameters<typeof update>[0], done: string) => {
-    try { await update(change); toast.show(done); } catch (error) { toast.show(`没有保存：${errorText(error)}`); throw error; }
+    // An interrupted save is kept and written by the next save or start: it counts as done, with its own message.
+    try { await update(change); toast.show(done); } catch (error) { toast.show(notSavedText(error)); if (!(error instanceof SaveInterruptedError)) throw error; }
   };
   const toggle = (id: string) => setSelected(current => { const next = new Set(current); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   const total = file?.questions.length ?? 0;
+  // A submission that could not be checked, while its file cannot be written: only opening the app again tells
+  // whether it is in the file, so the draft is kept as it is until then.
+  const locked = !!draft?.saveFailed && !file && !loading;
 
   return (
     <Page title="英语错题本"
@@ -310,11 +337,11 @@ function QuestionBook({ file, problem, loading, draft, onResume, onDiscardDraft,
         <div className="card resume">
           <div className="grow">
             <b>{draft.phase === 'running' ? `上次的${runTitle(draft.kind)}还没做完（第 ${draft.index + 1} / ${draft.items.length} 题）` : `上次的${runTitle(draft.kind)}还没提交（${draft.items.length} 题）`}</b>
-            <div className="muted small">{draft.saveFailed === 'stopped' ? '上次提交时保存没有完成，结果暂存在临时文件里，重新打开 App 后会自动恢复'
-              : draft.saveFailed ? '上次提交时保存没有完成，结果暂存在临时文件里，点"继续对答案"再提交一次就会记好'
+            <div className="muted small">{locked ? '上次提交时保存没有完成，重新打开 App 后会检查这次记好了没有'
+              : draft.saveFailed ? '上次提交时没能确认保存，结果不在错题本里，可以再提交一次'
               : `${formatRelative(draft.startedAt)} 开始`}</div>
           </div>
-          {!draft.saveFailed && <button className={`button${settled ? '' : ' settling'}`} onClick={() => setDiscarding(true)}>放弃</button>}
+          {!locked && <button className={`button${settled ? '' : ' settling'}`} onClick={() => setDiscarding(true)}>放弃</button>}
           <button className={`button primary${settled ? '' : ' settling'}`} disabled={!file && !loading} onClick={() => onResume(draft)}>{draft.phase === 'running' ? '继续做' : '继续对答案'}</button>
         </div>
       )}
@@ -381,9 +408,9 @@ function QuestionBook({ file, problem, loading, draft, onResume, onDiscardDraft,
         // An unfinished practice, possibly with answers already marked, is never replaced silently.
         if (draft) setReplacing({ kind: choosing, count }); else onChoose(choosing, count);
       }} />}
-      {replacing && draft && (draft.saveFailed
+      {replacing && draft && (locked
         ? <Sheet title={`上次的${runTitle(draft.kind)}还没确认保存`} onClose={() => setReplacing(null)}>
-            <p className="muted">上次提交时保存没有完成，结果暂存在临时文件里。{draft.saveFailed === 'stopped' ? '请先重新打开 App，它会自动恢复，然后再开始新的。' : '请先把它再提交一次，再开始新的。'}</p>
+            <p className="muted">上次提交时保存没有完成。请先重新打开 App，它会检查这次记好了没有，然后再开始新的。</p>
             <button className="button primary" onClick={() => setReplacing(null)}>先不开始</button>
           </Sheet>
         : <Sheet title={draft.phase === 'running' ? `上次的${runTitle(draft.kind)}还没做完` : `上次的${runTitle(draft.kind)}还没提交`} onClose={() => setReplacing(null)}>

@@ -157,45 +157,42 @@ test('a practice draft whose submission is already in the file is not offered ag
   }, JSON.stringify(draft));
   await open(page);
   await page.getByRole('button', { name: /英语错题本/ }).click();
-  await expect(page.getByText('已经恢复到错题本里了')).toBeVisible();
+  await expect(page.getByText('已经在错题本里了')).toBeVisible();
   await expect(page.getByText(/上次的错题练习还没提交/)).toHaveCount(0);
 });
 
-test('a draft whose save may come back from the temp file keeps its marks and cannot be discarded', async ({ page }) => {
-  const draft = { kind: 'practice', items: [{ key: 'k1', text: 'Q', answer: 'A', questionId: 'q1' }], index: 0, phase: 'answers', wrong: ['k1'], startedAt: at, sessionId: 's_pending', saveFailed: 'interrupted' };
-  await seedPending(page, draft);
+const pendingDraft = { kind: 'practice', items: [{ key: 'k1', text: 'Q', answer: 'A', questionId: 'q1' }], index: 0, phase: 'answers', wrong: ['k1'], startedAt: at, sessionId: 's_pending', saveFailed: true };
+const pendingBook = {
+  schema: 'smart-study.error-book/1',
+  sessions: [{ id: 's_cap', kind: 'capture', at, questionIds: ['q1'] }],
+  questions: [{ id: 'q1', text: 'Q', answer: 'A', origin: 'manual', createdAt: at, attempts: [{ sessionId: 's_cap', correct: false }] }],
+};
+
+test('a draft whose save could not be checked, and is not in the file after reopening, is submitted again', async ({ page }) => {
+  await seedPending(page, pendingDraft, pendingBook);
   await open(page);
   await page.getByRole('button', { name: /英语错题本/ }).click();
-  await expect(page.getByText(/再提交一次就会记好/)).toBeVisible();
-  await expect(page.getByRole('button', { name: '放弃', exact: true })).toHaveCount(0);
+  await expect(page.getByText(/没能确认保存，结果不在错题本里/)).toBeVisible();
+  await expect(page.getByRole('button', { name: '放弃', exact: true })).toBeVisible();
   await page.getByRole('button', { name: '继续对答案' }).click();
-  await expect(page.getByRole('button', { name: /^1/ })).toBeDisabled();
-  await expect(page.getByRole('button', { name: '再提交一次' })).toBeVisible();
-  await page.getByRole('button', { name: '再提交一次' }).click();
+  await expect(page.getByRole('button', { name: /^1/ })).toBeEnabled();
+  await page.getByRole('button', { name: '提交（做错 1 题）' }).click();
   await expect(page.getByText(/已保存：1 题，做错 1 题/)).toBeVisible();
 });
 
-test('a draft whose file cannot be written again in this run only offers to leave', async ({ page }) => {
-  const draft = { kind: 'practice', items: [{ key: 'k1', text: 'Q', answer: 'A', questionId: 'q1' }], index: 0, phase: 'answers', wrong: ['k1'], startedAt: at, sessionId: 's_pending', saveFailed: 'stopped' };
-  await seedPending(page, draft);
+test('while its file cannot be written, such a draft is kept as it is', async ({ page }) => {
+  await seedPending(page, pendingDraft, { ...pendingBook, schema: 'smart-study.error-book/9' });
   await open(page);
   await page.getByRole('button', { name: /英语错题本/ }).click();
-  await expect(page.getByText(/重新打开 App 后会自动恢复/)).toBeVisible();
+  await expect(page.getByText(/重新打开 App 后会检查这次记好了没有/)).toBeVisible();
   await expect(page.getByRole('button', { name: '放弃', exact: true })).toHaveCount(0);
-  await page.getByRole('button', { name: '继续对答案' }).click();
-  await expect(page.getByRole('button', { name: /^1/ })).toBeDisabled();
-  await expect(page.getByRole('button', { name: '再提交一次' })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: '先离开，重新打开 App 后会自动恢复' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '继续对答案' })).toBeDisabled();
 });
 
-async function seedPending(page: Page, draft: object) {
+async function seedPending(page: Page, draft: object, book: object) {
   await seed(page, {
     'data/app.json': appFile([{ id: 'u1', name: '乐乐' }]),
-    'data/users/u1/error-book.json': {
-      schema: 'smart-study.error-book/1',
-      sessions: [{ id: 's_cap', kind: 'capture', at, questionIds: ['q1'] }],
-      questions: [{ id: 'q1', text: 'Q', answer: 'A', origin: 'manual', createdAt: at, attempts: [{ sessionId: 's_cap', correct: false }] }],
-    },
+    'data/users/u1/error-book.json': book,
   });
   await page.addInitScript(value => {
     if (sessionStorage.getItem('seeded-draft')) return;

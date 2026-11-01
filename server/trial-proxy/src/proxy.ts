@@ -209,11 +209,12 @@ const MAX_GENERATE_REPLY = 2000;
 const MAX_GENERATE_SOURCE = 1500;
 
 /**
- * Tokens a text will really take, for sizing a reply like it: about 4 Latin characters per token (counted as 3, to
- * leave room), about one per Chinese character, the UTF-8 bytes of anything else. Unlike textTokens this is no upper
- * bound: a longer reply is cut at max_tokens, which only matters if this is far too low.
+ * Tokens a text will really take, for sizing a reply like it: about 4 Latin characters per token (counted as
+ * `latinPerToken`, 3 by default to leave room), about one per Chinese character, the UTF-8 bytes of anything else.
+ * Unlike textTokens this is no upper bound: a longer reply is cut at max_tokens, which only matters if this is far
+ * too low.
  */
-function likelyTokens(text: string): number {
+function likelyTokens(text: string, latinPerToken = 3): number {
   let latin = 0;
   let other = 0;
   for (const char of text) {
@@ -221,8 +222,16 @@ function likelyTokens(text: string): number {
     if (code < 0x80) latin++;
     else other += (code >= 0x4E00 && code <= 0x9FFF) || (code >= 0x3000 && code <= 0x303F) || (code >= 0xFF01 && code <= 0xFF5E) ? 1 : encoder.encode(char).length;
   }
-  return Math.ceil(latin / 3 + other);
+  return Math.ceil(latin / latinPerToken + other);
 }
+
+/**
+ * Whether a new question about as long as this source would not fit in the longest reply. Latin letters are counted
+ * at their usual 4 per token here: the room left by counting 3 is for sizing replies, not for refusing sources (so an
+ * English source within MAX_TEXT and MAX_ANSWER is never refused).
+ */
+export const sourceTooLong = (source: { text: string; answer: string }) =>
+  likelyTokens(source.text, 4) + likelyTokens(source.answer, 4) > MAX_GENERATE_SOURCE;
 
 /**
  * The reply length allowed for a task. A new question (举一反三) is about as long as its source, so its limit grows
@@ -326,9 +335,9 @@ export function createProxy(deps: Dependencies) {
     // The table failed: also worth trying again, but not worth waiting here for.
     const tableFailed: Result = { status: 503, body: { error: 'busy', message: '试用服务暂时有点忙，请过一会儿再试' } };
     // A new question about as long as this source would not fit in the longest reply (MAX_GENERATE_REPLY): refuse it
-    // now, instead of spending the use and the money on a reply cut off half way. About 4,500 Latin letters, or 1,500
-    // Chinese characters, source and answer together.
-    if (task.task === 'generate' && likelyTokens(task.source.text) + likelyTokens(task.source.answer) > MAX_GENERATE_SOURCE) {
+    // now, instead of spending the use and the money on a reply cut off half way. About 1,500 Chinese characters,
+    // source and answer together; English sources within the size limits always fit.
+    if (task.task === 'generate' && sourceTooLong(task.source)) {
       return { status: 400, body: { error: 'bad-request', message: '这道题太长，试用时不能举一反三。填写自己的千问 API Key 后可以' } };
     }
     // A request that could not fit even into an untouched day: say what is wrong, instead of "used up today" every day.

@@ -41,7 +41,7 @@ describe('trialCall', () => {
   it('does not retry a refused request', async () => {
     const { deps, requests } = fake([reply(400, { error: 'bad-request', message: '照片格式不对' }), reply(413, { error: 'too-large', message: '请求太大' })]);
     const call = trialCall(URL, deps, 1000, 3);
-    await expect(call({ task: 'questions', image: 'x' })).rejects.toMatchObject({ kind: 'bad-request' });
+    await expect(call({ task: 'questions', image: 'x' })).rejects.toMatchObject({ kind: 'bad-request', message: '照片格式不对' });
     await expect(call({ task: 'questions', image: 'x' })).rejects.toMatchObject({ kind: 'bad-request' });
     expect(requests).toHaveLength(2);
   });

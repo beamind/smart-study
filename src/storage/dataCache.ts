@@ -5,7 +5,9 @@ import { SaveInterruptedError, SaveStoppedError, type JsonFiles } from './jsonFi
  * In-memory copy of the data files, as described in docs/decisions/002: each file is read once,
  * every change is applied to the latest in-memory value and written once, and changes to the
  * same file run one after another. When saving fails, memory keeps the previous value, so the
- * screen never shows data that is not on disk. A file that could not be read is never written.
+ * screen does not show data that is not on disk; the one exception is an interrupted save
+ * (SaveInterruptedError), whose value waits in the temp file and is kept so later changes build on it.
+ * A file that could not be read is never written.
  */
 export type Entry<T> =
   | { status: 'ok'; value: T; problem?: string }

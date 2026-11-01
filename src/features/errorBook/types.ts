@@ -23,16 +23,13 @@ export interface PracticeRun {
   wrong: string[];
   startedAt: string;
   /**
-   * The id the submission will be saved under, chosen when the run starts. If a save was interrupted and later
-   * restored from the temp file, the session is already in the file: the draft is then recognised as saved.
+   * The id the submission will be saved under, chosen when the run starts. If a submission reported as failed is
+   * found in the file when the app is opened again, the draft is recognised as saved.
    * Missing in drafts from before 2.0.0's trial release.
    */
   sessionId?: string;
-  /**
-   * A submission failed in a way that may still be restored from the temp file, so the marks stay as they were:
-   * "interrupted" (the file can still be saved in this run: submit again), "stopped" (it cannot: open the app again).
-   */
-  saveFailed?: 'interrupted' | 'stopped';
+  /** As in the dictation Run: a submission that could not be checked in this run. */
+  saveFailed?: boolean;
 }
 
 /** A recognised or typed question before it is saved. */

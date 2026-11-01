@@ -7,22 +7,19 @@ import { runTitle, type PracticeRun } from './types';
 /**
  * Show the answers, mark the questions answered wrong and submit (disabled while saving).
  * Leaving without submitting asks first; the marks stay in the draft.
+ * `locked`: as in MarkAnswers, a submission that could not be checked while its file cannot be written.
  */
-export function MarkPractice({ run, onToggle, onSubmit, onLeave, onDiscard }: {
-  run: PracticeRun; onToggle(key: string): void; onSubmit(): Promise<void>; onLeave(): void; onDiscard(): void;
+export function MarkPractice({ run, locked, onToggle, onSubmit, onLeave, onDiscard }: {
+  run: PracticeRun; locked: boolean; onToggle(key: string): void; onSubmit(): Promise<void>; onLeave(): void; onDiscard(): void;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  /** As in MarkAnswers: a save that may still be restored keeps the marks as they are (kept in the draft). */
-  const failed = !!run.saveFailed;
-  // The file cannot be written again in this run: only opening the app again finishes the save.
-  const stopped = run.saveFailed === 'stopped';
   const [leaving, setLeaving] = useState(false);
   const wrong = new Set(run.wrong);
   const settled = useSettled();
   const variation = run.kind === 'variation';
-  // Back is ignored while saving: leaving would hide a failed save.
-  useBackHandler(true, () => { if (!busy) setLeaving(true); });
+  // Back is ignored while saving: leaving would hide a failed save. Locked, there is nothing left to do here.
+  useBackHandler(true, () => { if (locked) onLeave(); else if (!busy) setLeaving(true); });
 
   const submit = async () => {
     setBusy(true);
@@ -32,17 +29,17 @@ export function MarkPractice({ run, onToggle, onSubmit, onLeave, onDiscard }: {
 
   return (
     <Page title={`${runTitle(run.kind)} · 对答案`}
-      footer={stopped
-        ? <button className={`button primary big grow${settled ? '' : ' settling'}`} onClick={onLeave}>先离开，重新打开 App 后会自动恢复</button>
+      footer={locked
+        ? <button className={`button primary big grow${settled ? '' : ' settling'}`} onClick={onLeave}>先离开</button>
         : <button className={`button primary big grow${settled ? '' : ' settling'}`} disabled={busy} onClick={() => void submit()}>
-          {busy ? '正在保存…' : failed ? '再提交一次' : wrong.size ? `提交（做错 ${wrong.size} 题）` : '提交（全对）'}
+          {busy ? '正在保存…' : wrong.size ? `提交（做错 ${wrong.size} 题）` : '提交（全对）'}
         </button>}>
-      <p className="muted small">{failed ? (stopped ? '这次的结果暂存在临时文件里，重新打开 App 后会自动恢复，所以不能再改对错。' : '这次的结果暂存在临时文件里，再提交一次就会记好，所以不能再改对错。')
-        : variation ? '点一下做错的题，再点一次取消。只有做错的新题会保存到错题本。' : '点一下仍然做错的题，再点一次取消。'}</p>
+      <p className="muted small">{locked ? '保存没有完成，重新打开 App 之前不能再保存。重新打开后会检查这次记好了没有，所以先不能改对错。'
+        : `${run.saveFailed ? '上次提交时没能确认保存，结果不在错题本里，可以再提交一次。' : ''}${variation ? '点一下做错的题，再点一次取消。只有做错的新题会保存到错题本。' : '点一下仍然做错的题，再点一次取消。'}`}</p>
       {error && <div className="notice error">{error}</div>}
       <div className="list">
         {run.items.map((item, index) => (
-          <button key={item.key} className={`list-row question-row${wrong.has(item.key) ? ' wrong-row' : ''}`} aria-pressed={wrong.has(item.key)} disabled={busy || failed} onClick={() => onToggle(item.key)}>
+          <button key={item.key} className={`list-row question-row${wrong.has(item.key) ? ' wrong-row' : ''}`} aria-pressed={wrong.has(item.key)} disabled={busy || locked} onClick={() => onToggle(item.key)}>
             <span className="index">{index + 1}</span>
             <div className="grow">
               <QuestionText text={item.text} />
@@ -54,12 +51,10 @@ export function MarkPractice({ run, onToggle, onSubmit, onLeave, onDiscard }: {
       </div>
       {leaving && (
         <Sheet title="还没有提交" onClose={() => setLeaving(false)}>
-          <p className="muted">{failed
-            ? (stopped ? '保存没有完成，这次的结果暂存在临时文件里，重新打开 App 后会自动恢复。' : '保存没有完成，这次的结果暂存在临时文件里：再提交一次，或者重新打开 App，都会把它记好。')
-            : `这次${runTitle(run.kind)}的结果还没有保存。`}</p>
+          <p className="muted">这次{runTitle(run.kind)}的结果还没有保存。</p>
           <button className="button primary" onClick={() => setLeaving(false)}>继续对答案</button>
           <button className="button" onClick={() => { setLeaving(false); onLeave(); }}>先离开，下次接着对答案</button>
-          {!failed && <button className="button danger" onClick={() => { setLeaving(false); onDiscard(); }}>放弃这次{runTitle(run.kind)}</button>}
+          <button className="button danger" onClick={() => { setLeaving(false); onDiscard(); }}>放弃这次{runTitle(run.kind)}</button>
         </Sheet>
       )}
     </Page>

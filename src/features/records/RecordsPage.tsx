@@ -6,7 +6,8 @@ import type { DictationFile, ErrorBookFile } from '../../data/schema';
 import * as dictation from '../../domain/dictation';
 import * as errorBook from '../../domain/errorBook';
 import { summarizeItems, summarizeSessions, totals, type ItemSummary, type RecordKind, type SessionSummary } from '../../domain/stats';
-import { ArithmeticConfirm, errorText, Page, Sheet, useToast } from '../../ui/components';
+import { SaveInterruptedError } from '../../storage/jsonFiles';
+import { ArithmeticConfirm, notSavedText, Page, Sheet, useToast } from '../../ui/components';
 import { formatTime } from '../../ui/format';
 import { EditWord } from '../dictation/WordBook';
 import { QuestionEditor } from '../errorBook/QuestionEditor';
@@ -90,8 +91,9 @@ export function RecordsPage() {
       else await (kind === 'chinese' ? chinese : english).update(value => ({ value: edit.dictation!(value), result: undefined }));
       toast.show(done);
     } catch (error) {
-      toast.show(`没有保存：${errorText(error)}`);
-      throw error;
+      toast.show(notSavedText(error));
+      // An interrupted save is kept and written by the next save or start: it counts as done.
+      if (!(error instanceof SaveInterruptedError)) throw error;
     }
   };
 
