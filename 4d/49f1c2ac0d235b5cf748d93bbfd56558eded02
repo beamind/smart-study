@@ -1,0 +1,82 @@
+server/trial-proxy/src/proxy.ts
+  s_853e3a05582c7f::t_a10cfad83e1120 212-215,217,225,228-234
+  s_853e3a05582c7f::t_58703198f1e6a4 338-340
+src/features/errorBook/MarkPractice.tsx
+  s_853e3a05582c7f::t_b350c0421f641e 10,12-13,21-22,32-33,35,37-38,42,54,57
+src/storage/dataCache.ts
+  s_853e3a05582c7f::t_606ba543b495ef 8-10
+server/trial-proxy/proxy.test.ts
+  s_853e3a05582c7f::t_77521dfbf44532 197-202
+  s_853e3a05582c7f::t_c06b2bed4238b9 8
+src/features/errorBook/types.ts
+  s_853e3a05582c7f::t_3c8b65b269b007 26-27
+src/features/dictation/types.ts
+  s_853e3a05582c7f::t_16a7114294feee 33-36,38
+src/features/errorBook/ErrorBookPage.tsx
+  s_853e3a05582c7f::t_96fd02905fcedd 340-341,344
+  s_853e3a05582c7f::t_7aa000c538d9ec 190
+  s_853e3a05582c7f::t_2ffce7a769e3c2 311-312,316-318
+  s_853e3a05582c7f::t_f6039fde8056cf 101-115
+  s_853e3a05582c7f::t_fe85a3a7612cff 71
+  s_853e3a05582c7f::t_39e1180b1b547c 245
+  s_853e3a05582c7f::t_311b5d8ec3672c 174
+  s_853e3a05582c7f::t_32d53403d9850d 411,413
+docs/decisions/002-public-documents-storage-via-saf.md
+  s_853e3a05582c7f::t_eb944c75dec667 27
+src/features/dictation/MarkAnswers.tsx
+  s_853e3a05582c7f::t_52b095d4252b4e 10-12,14-15,23-24,34-35,37,39-40,44,51,54
+src/storage/dataCache.test.ts
+  s_853e3a05582c7f::t_98a3fc6d85dc8b 7
+e2e/errorBook.spec.ts
+  s_853e3a05582c7f::t_a27cbae4ddc9f5 164-172,175-176,178-179,183-184,187,189,192,195
+  s_853e3a05582c7f::t_456de3b8ccf24b 160
+src/features/records/RecordsPage.tsx
+  s_853e3a05582c7f::t_016a79180d936b 10
+  s_853e3a05582c7f::t_e8c7d114899cda 94-96
+  s_853e3a05582c7f::t_4bb88c7322a75e 9
+src/app/workspace.tsx
+  s_853e3a05582c7f::t_11cc127a5d48eb 144-152
+  s_853e3a05582c7f::t_9454aaa2ae0c40 101
+src/features/dictation/WordBook.tsx
+  s_853e3a05582c7f::t_dbce2141284d68 7-8
+  s_853e3a05582c7f::t_75f52166bd7444 42,44
+src/features/dictation/DictationPage.tsx
+  s_853e3a05582c7f::t_520d44d213da79 9
+  s_853e3a05582c7f::t_c29ad4ac2223f7 55-56,61
+  s_853e3a05582c7f::t_0320f408970a9f 279-281
+  s_853e3a05582c7f::t_71ce3c1913ed49 123-129,133,142-150,157
+src/ui/components.tsx
+  s_853e3a05582c7f::t_07a67baacc0171 4
+  s_853e3a05582c7f::t_83b6bba553bca8 136-141
+src/ai/dashscope.ts
+  s_853e3a05582c7f::t_1edb49d83c0a3c 144
+docs/decisions/004-trial-proxy.md
+  s_853e3a05582c7f::t_7a53d19e648326 33,46
+src/ai/trial.ts
+  s_853e3a05582c7f::t_1b39c47580f733 68-69
+src/storage/jsonFiles.ts
+  s_853e3a05582c7f::t_bb04eb464690a6 207,224
+src/features/errorBook/GenerateVariations.tsx
+  s_853e3a05582c7f::t_b889af964b9fc5 97
+  s_853e3a05582c7f::t_3b7e5cd8503a22 81-82
+e2e/dictation.spec.ts
+  s_853e3a05582c7f::t_29d03462abd914 190
+src/storage/jsonFiles.test.ts
+  s_853e3a05582c7f::t_7f19cfd471fb43 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "4d49f1c2ac0d235b5cf748d93bbfd56558eded02",
+  "prompts": {},
+  "sessions": {
+    "s_853e3a05582c7f": {
+      "agent_id": {
+        "tool": "kiro-desktop",
+        "id": "sess_9412c325-cac8-43f4-88c4-d85afc226aaf",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "yandali <liyanda2017@163.com>"
+    }
+  }
+}
