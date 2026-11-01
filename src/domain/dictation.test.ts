@@ -126,3 +126,15 @@ describe('sample', () => {
     expect(counts.stale).toBeGreaterThan(counts.fresh * 3);
   });
 });
+
+describe('session ids chosen in advance', () => {
+  it('saves a dictation under the id it was given, and refuses that id once it is in the file', () => {
+    const first = submit(emptyDictationFile('chinese'), { kind: 'dictation', words: [{ text: '春天', correct: true }], sessionId: 's_draft1' });
+    expect(first.sessionId).toBe('s_draft1');
+    expect(first.file.sessions.map(session => session.id)).toEqual(['s_draft1']);
+    expect(() => submit(first.file, { kind: 'dictation', words: [{ text: '春天', correct: false }], sessionId: 's_draft1' })).toThrow('已经保存过了');
+    // After an undo, the same id may be used again (the draft still holds it).
+    const undone = undoSession(first.file, 's_draft1');
+    expect(submit(undone, { kind: 'dictation', words: [{ text: '春天', correct: false }], sessionId: 's_draft1' }).sessionId).toBe('s_draft1');
+  });
+});

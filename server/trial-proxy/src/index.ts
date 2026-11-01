@@ -1,8 +1,8 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { chatWithUsage } from '../../../src/ai/dashscope';
-import { MAX_REPLY_TOKENS, modelRequest } from '../../../src/ai/tasks';
+import { modelRequest } from '../../../src/ai/tasks';
 import { defaultSettings } from '../../../src/data/defaults';
-import { createProxy, DEFAULT_LIMITS, MemoryCounters, RateLimiter, type Counters, type Limits } from './proxy';
+import { createProxy, DEFAULT_LIMITS, MemoryCounters, RateLimiter, replyTokens, type Counters, type Limits } from './proxy';
 import { TablestoreCounters } from './tablestore';
 
 /**
@@ -61,13 +61,14 @@ const settings = defaultSettings();
 const MODEL_TIMEOUT_MS = 40_000;
 /**
  * Model calls running on this instance at once (requests waiting for budget do not count); more get a 503 the app
- * retries. Function Compute's "单实例并发度" is set to the same number (docs/trial-proxy.md, step 5).
+ * retries. Function Compute's "单实例并发度" is set a little higher (10, docs/trial-proxy.md, step 5), so requests
+ * waiting for budget do not take the places of others.
  */
 const MAX_IN_FLIGHT = 8;
 const proxy = createProxy({
   counters, limits, now: Date.now, ipSalt, maxInFlight: MAX_IN_FLIGHT,
   model: task => chatWithUsage({
-    ...modelRequest(settings, task), apiKey, maxTokens: MAX_REPLY_TOKENS[task.task],
+    ...modelRequest(settings, task), apiKey, maxTokens: replyTokens(task),
     timeoutMs: MODEL_TIMEOUT_MS, maxAttempts: 1,
   }),
 });

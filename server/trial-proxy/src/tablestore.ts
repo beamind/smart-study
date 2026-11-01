@@ -1,6 +1,9 @@
 import TableStore from 'tablestore';
 import type { Counters } from './proxy';
 
+/** Longest one table call may take, retries and connecting included; a normal one takes tens of milliseconds. */
+const CALL_LIMIT_MS = 4000;
+
 /**
  * Counters in a Tablestore table with a string primary key `id` and an integer column `n`.
  * Adding is a conditional write (the row must still hold the value just read), retried when another request
@@ -21,15 +24,21 @@ export class TablestoreCounters implements Counters {
       // apply because it parses error codes into HTTP status numbers (see isConditionFailure). So its retries never
       // add twice. A write whose answer was lost is reported by change(); the proxy gives the uses back. Recheck
       // lib/retry/retry_util.js after an SDK upgrade: the codes retried for every API all mean "refused, not done".
-      maxRetries: 2,
-      // An answer that never comes would otherwise hold the request (and its reservation) forever.
-      httpOptions: { timeout: 5000 },
+      maxRetries: 1,
+      // Per attempt, once connected; call() limits the whole call.
+      httpOptions: { timeout: 2000 },
     });
   }
 
   private call<T>(method: 'getRow' | 'putRow' | 'updateRow', params: object): Promise<T> {
+    // A whole call, SDK retries and connecting included, is given up after CALL_LIMIT_MS (the SDK's own timeout only
+    // starts once connected). A write given up this way may still have happened: the proxy treats it as unsure.
     return new Promise((resolve, reject) => {
-      (this.client[method] as (params: object, callback: (error: unknown, data: T) => void) => void)(params, (error, data) => (error ? reject(error) : resolve(data)));
+      const timer = setTimeout(() => reject(new Error(`表格存储 ${CALL_LIMIT_MS / 1000} 秒没有回应`)), CALL_LIMIT_MS);
+      (this.client[method] as (params: object, callback: (error: unknown, data: T) => void) => void)(params, (error, data) => {
+        clearTimeout(timer);
+        if (error) reject(error); else resolve(data);
+      });
     });
   }
 

@@ -111,3 +111,16 @@ describe('duplicates', () => {
     expect(Date.now() - started).toBeLessThan(500);
   });
 });
+
+describe('session ids chosen in advance', () => {
+  it('saves practice and 举一反三 under the id they were given, and refuses an id already in the file', () => {
+    const captured = addQuestions(emptyErrorBookFile(), 'capture', [{ text: 'It was ___ yesterday.', answer: 'rainy', origin: 'manual' }]);
+    const questionId = captured.file.questions[0].id;
+    const practised = recordPractice(captured.file, [{ questionId, correct: true }], undefined, 's_practice');
+    expect(practised.sessionId).toBe('s_practice');
+    expect(() => recordPractice(practised.file, [{ questionId, correct: false }], undefined, 's_practice')).toThrow('已经保存过了');
+    const generated = addQuestions(practised.file, 'variation', [{ text: 'It was ___ last week.', answer: 'sunny', origin: 'generated' }], undefined, 's_variation');
+    expect(generated.sessionId).toBe('s_variation');
+    expect(() => addQuestions(generated.file, 'variation', [{ text: 'Another ___.', answer: 'x', origin: 'generated' }], undefined, 's_variation')).toThrow('已经保存过了');
+  });
+});

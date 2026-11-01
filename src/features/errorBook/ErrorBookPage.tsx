@@ -222,7 +222,7 @@ export function ErrorBookPage() {
   return (
     <QuestionBook file={file} problem={entry?.status === 'unusable' ? entry.error : undefined} loading={!entry}
       draft={savedDraft ?? null}
-      onResume={draft => { setRun(draft); setSavedDraft(null); setStep({ kind: 'run' }); }}
+      onResume={draft => { changeRun({ ...draft, sessionId: draft.sessionId ?? newSessionId() }); setSavedDraft(null); setStep({ kind: 'run' }); }}
       onDiscardDraft={() => { void drafts.clear(key); setSavedDraft(null); }}
       onPhoto={source => void takePhoto(source)}
       onManual={() => { setCapture([]); setStep({ kind: 'confirm', manual: true }); }}

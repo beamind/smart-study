@@ -5,7 +5,7 @@ import { AiError, type Usage } from '../../src/ai/dashscope';
 import { parseGenerated, parseQuestions, parseWords } from '../../src/ai/parse';
 import { applyHits, modelRequest, parseUnderlineHits, type ModelTask } from '../../src/ai/tasks';
 import { defaultSettings } from '../../src/data/defaults';
-import { beijingDay, createProxy, DEFAULT_LIMITS, maxCost, MemoryCounters, RateLimiter, usableReply, type Limits } from './src/proxy';
+import { beijingDay, createProxy, DEFAULT_LIMITS, maxCost, MemoryCounters, RateLimiter, replyTokens, usableReply, type Limits } from './src/proxy';
 import { isConditionFailure } from './src/tablestore';
 
 const image = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ==';
@@ -165,15 +165,39 @@ describe('trial proxy', () => {
     expect(counters.values.get('device:device-1002:generate') ?? 0).toBe(0);
   });
 
-  it('counts only running model calls toward the in-flight limit', async () => {
-    const { proxy, hold } = setup({}, undefined, { maxInFlight: 1 });
+  it('counts only running model calls toward the in-flight limit, also for requests arriving together', async () => {
+    const { proxy, hold, calls } = setup({}, undefined, { maxInFlight: 2 });
     const release = hold();
-    const first = proxy.call({ device, task: 'translate', text: 'apple' }, '1.1.1.1');
+    const together = Promise.all(Array.from({ length: 6 }, (_, i) => proxy.call({ device: `device-${2000 + i}`, task: 'translate', text: 'apple' }, `1.1.1.${i}`)));
     await new Promise(resolve => setTimeout(resolve, 10));
-    expect(await proxy.call({ device: 'device-0002', task: 'translate', text: 'pear' }, '1.1.1.2')).toMatchObject({ status: 503 });
+    expect(calls).toHaveLength(2);
     release();
-    expect(await first).toMatchObject({ status: 200 });
-    expect(await proxy.call({ device: 'device-0002', task: 'translate', text: 'pear' }, '1.1.1.2')).toMatchObject({ status: 200 });
+    const statuses = (await together).map(result => result.status).sort();
+    expect(statuses).toEqual([200, 200, 503, 503, 503, 503]);
+    expect(await proxy.call({ device: 'device-0002', task: 'translate', text: 'pear' }, '1.1.1.9')).toMatchObject({ status: 200 });
+  });
+
+  it('refuses a 举一反三 whose source is too long for the day, saying so', async () => {
+    const { proxy, calls } = setup({ budgetGenerate: 0.05 });
+    const long = { device, task: 'generate', source: { text: 'x'.repeat(5000), answer: 'y' } };
+    expect(await proxy.call(long, '1.1.1.1')).toMatchObject({ status: 400, body: { message: expect.stringContaining('这道题太长') } });
+    expect(calls).toEqual([]);
+  });
+
+  it('lets a long source have a reply long enough for a question like it', () => {
+    expect(replyTokens({ task: 'generate', source: { text: 'Q ___', answer: 'a' } })).toBe(1000);
+    // Counted high (one token per Latin letter, about four times the real number), so a long source gets ample room.
+    expect(replyTokens({ task: 'generate', source: { text: 'x'.repeat(1000), answer: 'y' } })).toBeGreaterThan(1000 * 1.3);
+    expect(replyTokens({ task: 'generate', source: { text: 'x'.repeat(6000), answer: 'y'.repeat(2000) } })).toBe(4000);
+    expect(replyTokens({ task: 'translate', text: 'apple' })).toBe(200);
+  });
+
+  it('keeps device ids out of counter-failure logs beyond their first 8 characters', async () => {
+    const { proxy, counters, logged } = setup();
+    const add = counters.add.bind(counters);
+    counters.add = async (key, amount) => { if (key.startsWith('cost:')) throw new Error(`计数 device:${device}-abcdef:translate 一直在被同时修改`); return add(key, amount); };
+    await proxy.call({ device, task: 'translate', text: 'apple' }, '1.1.1.1');
+    expect(JSON.stringify(logged)).not.toContain(`${device}-abcdef`);
   });
 
   it('refuses a request that cannot fit without writing anything', async () => {
@@ -240,7 +264,7 @@ describe('trial proxy', () => {
     const add = counters.add.bind(counters);
     counters.add = async (key, amount) => { if (key.startsWith('cost:')) throw new Error('table busy'); return add(key, amount); };
     expect(await proxy.call({ device, task: 'translate', text: 'apple' }, '1.1.1.1')).toMatchObject({ status: 200, body: { reply: '苹果' } });
-    expect(logged).toContainEqual(expect.objectContaining({ counter: 'cost:2026-11-01:basic' }));
+    expect(logged).toContainEqual(expect.objectContaining({ counter: 'cost' }));
     // The reservation, which is the most the request could cost, stays counted.
     expect(counters.values.get('cost:2026-11-01:basic')).toBe(maxCost({ task: 'translate', text: 'apple' }, DEFAULT_LIMITS));
   });

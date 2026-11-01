@@ -189,19 +189,32 @@ export function usableReply(task: ModelTask, reply: string): string | null {
 }
 
 /**
- * Tokens of the text in a request, counted high: a common Chinese character or a few Latin letters are about one
- * token; any other character may be split into one token per UTF-8 byte (2–4).
+ * Tokens of the text in a request, counted high: a Latin letter is at most one token (one byte), a common Chinese
+ * character about one; any other character may be split into one token per UTF-8 byte (2–4).
  */
 const encoder = new TextEncoder();
 function textTokens(text: string): number {
   let tokens = 50;
   for (const char of text) {
     const code = char.codePointAt(0)!;
-    tokens += code < 0x80 || (code >= 0x4E00 && code <= 0x9FFF) || (code >= 0x3000 && code <= 0x303F)
-      || (code >= 0xFF01 && code <= 0xFF5E) || (code >= 0xFFE0 && code <= 0xFFE6)
-      ? 1.2 : encoder.encode(char).length;
+    tokens += code < 0x80 ? 1
+      : (code >= 0x4E00 && code <= 0x9FFF) || (code >= 0x3000 && code <= 0x303F) || (code >= 0xFF01 && code <= 0xFF5E) || (code >= 0xFFE0 && code <= 0xFFE6)
+        ? 1.2 : encoder.encode(char).length;
   }
   return Math.ceil(tokens);
+}
+
+/** Longest reply generation may need: a new question as long as the source (it keeps its form and options). */
+const MAX_GENERATE_REPLY = 4000;
+
+/**
+ * The reply length allowed for a task. A new question (举一反三) is about as long as its source, so its limit grows
+ * with the source; the others are fixed (MAX_REPLY_TOKENS).
+ */
+export function replyTokens(task: ModelTask): number {
+  if (task.task !== 'generate') return MAX_REPLY_TOKENS[task.task];
+  const source = textTokens(task.source.text) + textTokens(task.source.answer);
+  return Math.min(MAX_GENERATE_REPLY, Math.max(MAX_REPLY_TOKENS.generate, Math.ceil(source * 1.3) + 200));
 }
 
 /** The most a task can cost, in millionths of a yuan: its input counted high plus the longest reply allowed. */
@@ -212,10 +225,13 @@ export function maxCost(task: ModelTask, limits: Limits): number {
     const parts = typeof message.content === 'string' ? [{ type: 'text' as const, text: message.content }] : message.content;
     for (const part of parts) input += part.type === 'text' ? textTokens(part.text) : IMAGE_TOKENS;
   }
-  return Math.ceil(input * inPrice + MAX_REPLY_TOKENS[task.task] * outPrice);
+  return Math.ceil(input * inPrice + replyTokens(task) * outPrice);
 }
 
 const DEVICE = /^[A-Za-z0-9-]{8,64}$/;
+
+/** Counter names in an error message with the device id cut to its first 8 characters, as in the call log. */
+const shortenIds = (message: string) => message.replace(/device:([A-Za-z0-9-]{8})[A-Za-z0-9-]*/g, 'device:$1…');
 
 /** "2026-10-31" in Beijing time: the day allowances reset at midnight there. */
 export const beijingDay = (ms: number) => new Date(ms + 8 * 3_600_000).toISOString().slice(0, 10);
@@ -248,9 +264,12 @@ export function createProxy(deps: Dependencies) {
     };
   };
 
-  /** Counter changes that must not fail the request (giving back, settling): a failure is logged. */
+  /**
+   * Counter changes that must not fail the request (giving back, settling): a failure is logged, with the kind of
+   * counter only (the full key holds the whole device id, and logs keep only its first 8 characters).
+   */
   const quietly = async (what: string, change: () => Promise<void>) => {
-    try { await change(); } catch (error) { log({ counter: what, failed: (error as Error)?.message ?? String(error) }); }
+    try { await change(); } catch (error) { log({ counter: what.split(':')[0], failed: shortenIds((error as Error)?.message ?? String(error)) }); }
   };
 
   /** GET ?device=…: what is left for this device. */
@@ -287,9 +306,15 @@ export function createProxy(deps: Dependencies) {
     const busy: Result = { status: 503, body: { error: 'busy', message: '试用的人有点多，请过一会儿再试' } };
     // The table failed: also worth trying again, but not worth waiting here for.
     const tableFailed: Result = { status: 503, body: { error: 'busy', message: '试用服务暂时有点忙，请过一会儿再试' } };
-    if (running >= maxInFlight) return busy;
+    // A request that could not fit even into an untouched day: say what is wrong, instead of "used up today" every day.
+    if (reserved > budget) {
+      return { status: 400, body: { error: 'bad-request', message: kind === 'generate' ? '这道题太长，试用时不能举一反三。填写自己的千问 API Key 后可以' : '内容太多，试用时不能处理' } };
+    }
     /** Over the budget by what is already spent ("today"), or only because of what calls on this instance still hold. */
-    const budgetRefusal = (current: number) => (current - held[group] + reserved <= budget ? busy : today);
+    const budgetRefusal = (current: number) => (current - held[group] + reserved <= budget ? busy
+      // A long source reserves much of the day on its own: say that a shorter one may still fit.
+      : reserved > budget / 2 ? { status: 429 as const, body: { error: 'quota', message: `这道题比较长，今天剩下的${what}试用名额不够了。可以换一道短一些的题，明天再试，或在设置里填写自己的千问 API Key` } }
+      : today);
 
     /**
      * Reserve the device use, the IP use and the most this can cost, in this order. A read first refuses what cannot
@@ -297,7 +322,12 @@ export function createProxy(deps: Dependencies) {
      * requests may be doing the same. What was taken is given back when a later one does not fit or the table fails.
      */
     const reserve = async (): Promise<Result | null> => {
-      const [deviceNow, ipNow, costNow] = await counters.get([keys.device, keys.ip, keys.cost]);
+      let now: number[];
+      try { now = await counters.get([keys.device, keys.ip, keys.cost]); } catch (error) {
+        log({ task: task.task, counter: 'read', failed: shortenIds((error as Error)?.message ?? String(error)) });
+        return tableFailed;
+      }
+      const [deviceNow, ipNow, costNow] = now;
       if (deviceNow >= deviceLimit[kind]) return deviceUsed;
       if (ipNow >= ipLimit) return today;
       if (costNow + reserved > budget) return budgetRefusal(costNow);
@@ -326,36 +356,49 @@ export function createProxy(deps: Dependencies) {
         return null;
       } catch (error) {
         await giveBack();
-        log({ task: task.task, counter: 'reserve', failed: (error as Error)?.message ?? String(error) });
+        log({ task: task.task, counter: 'reserve', failed: shortenIds((error as Error)?.message ?? String(error)) });
         return tableFailed;
       }
     };
 
-    let refused = await reserve();
-    // Only calls on this instance that are still running hold the budget (often the other two of the same family's
-    // three 举一反三): wait for them to settle and try again, for a few seconds at most, rather than send the app away.
-    // Each time one finishes it is tried again; when none is running any more (it finished while this was reserving),
-    // once more straight away.
-    const deadline = Date.now() + (deps.busyWaitMs ?? BUSY_WAIT_MS);
-    let idleTry = false;
-    while (refused === busy && Date.now() < deadline) {
-      if (held[group] > 0) await settled(group, deadline - Date.now());
-      else if (idleTry) break;
-      else idleTry = true;
-      // The app gave up (cancelled, left the page) while this waited: take nothing for an answer nobody reads.
-      if (signal?.aborted) return busy;
-      refused = await reserve();
-    }
-    if (refused) return refused;
-
-    held[group] += reserved;
-    running++;
+    let refused: Result | null;
+    // A model-call slot is taken together with its check (no await in between), given up while waiting for budget,
+    // and taken again before trying once more: the limit holds, and waiting requests do not count.
+    let slot = false;
+    const claim = () => { if (running >= maxInFlight) return false; running++; slot = true; return true; };
+    const release = () => { if (slot) { slot = false; running--; } };
+    if (!claim()) return busy;
     try {
-      return await callModel(task, kind, id, keys, reserved);
+      let heldBefore = held[group];
+      refused = await reserve();
+      // Only calls on this instance that are still running hold the budget (often the other two of the same family's
+      // three 举一反三): wait for them to settle and try again, for a few seconds at most, rather than send the app
+      // away. When one settled while this was reserving, try again at once; when none is running, once more at most.
+      const deadline = Date.now() + (deps.busyWaitMs ?? BUSY_WAIT_MS);
+      let idleTry = false;
+      while (refused === busy && Date.now() < deadline) {
+        release();
+        if (held[group] < heldBefore) { /* room was made meanwhile */ }
+        else if (held[group] > 0) await settled(group, deadline - Date.now());
+        else if (idleTry) break;
+        else idleTry = true;
+        // The app gave up (cancelled, left the page) while this waited: take nothing for an answer nobody reads.
+        if (signal?.aborted) return busy;
+        if (!claim()) return busy;
+        heldBefore = held[group];
+        refused = await reserve();
+      }
+      if (refused) return refused;
+
+      held[group] += reserved;
+      try {
+        return await callModel(task, kind, id, keys, reserved);
+      } finally {
+        held[group] -= reserved;
+        for (const wake of waiting[group].splice(0)) wake();
+      }
     } finally {
-      running--;
-      held[group] -= reserved;
-      for (const wake of waiting[group].splice(0)) wake();
+      release();
     }
   }
 
