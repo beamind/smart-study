@@ -46,7 +46,7 @@ npx playwright test    # 浏览器里的界面流程（平板和手机两种尺�
 
   ```powershell
   npm run trial:build    # 打包成一个文件 server/trial-proxy/dist/index.cjs
-  $env:DASHSCOPE_API_KEY = '<只用于试用的 Key>'; $env:TRIAL_STORE = 'memory'; node server/trial-proxy/dist/index.cjs   # 端口 9000，计数存在内存里
+  $env:DASHSCOPE_API_KEY = '<只用于试用的 Key>'; $env:TRIAL_STORE = 'memory'; $env:IP_SALT = 'local-test-salt-0123'; node server/trial-proxy/dist/index.cjs   # 端口 9000，计数存在内存里
   $env:VITE_TRIAL_URL = 'http://127.0.0.1:9000/'; npm run dev    # 另开一个终端，不填 Key 的 App 就会走本机的中转服务
   ```
 

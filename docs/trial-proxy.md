@@ -82,7 +82,7 @@ Compress-Archive -Path server/trial-proxy/dist/index.cjs -DestinationPath server
 | 监听端口 | `9000` |
 | 规格 | 0.35 vCPU，512 MB |
 | 执行超时 | 60 秒（服务端等千问最多 40 秒） |
-| 单实例并发度 | 10 |
+| 单实例并发度 | 8（和代码里同时调用千问的上限 `MAX_IN_FLIGHT` 一样，这样请求多时平台会开第二个实例，而不是由代码拒绝） |
 | 实例数上限 | 2（被刷时也不会开很多实例） |
 | 函数角色 | 第 3 步的角色 |
 | 网络 | 不使用专有网络，允许访问公网 |

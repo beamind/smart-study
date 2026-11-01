@@ -188,7 +188,7 @@ export function DictationPage({ language, replay }: { language: DictationLanguag
   }
 
   return (
-    <DictationHome language={language} file={file} problem={entry?.status === 'unusable' ? entry.error : entry?.problem} loading={!entry}
+    <DictationHome language={language} file={file} problem={entry?.status === 'unusable' ? entry.error : undefined} loading={!entry}
       draft={savedDraft ?? null}
       onResume={draft => { setRun(draft); setSavedDraft(null); setStep({ kind: 'run' }); }}
       onDiscardDraft={() => { void drafts.clear(key); setSavedDraft(null); }}
@@ -256,7 +256,7 @@ function DictationHome({ language, file, problem, loading, draft, onResume, onDi
             <div className="muted small">{formatRelative(draft.startedAt)} 开始</div>
           </div>
           <button className={`button${settled ? '' : ' settling'}`} onClick={() => setDiscarding(true)}>放弃</button>
-          <button className={`button primary${settled ? '' : ' settling'}`} onClick={() => onResume(draft)}>{draft.phase === 'running' ? '继续听写' : '继续对答案'}</button>
+          <button className={`button primary${settled ? '' : ' settling'}`} disabled={unusable} onClick={() => onResume(draft)}>{draft.phase === 'running' ? '继续听写' : '继续对答案'}</button>
         </div>
       )}
       {draft && discarding && (

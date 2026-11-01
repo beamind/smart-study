@@ -103,7 +103,7 @@
 
 API Key 在 App 设置页填写，只保存在本机 App 私有存储里，不写进代码、APK 或 `Documents/smartstudy`。仓库可以开源，每个人用自己的 Key。重装 App 后需要重新填一次 Key。
 
-没有填 Key 时，App 经作者的中转服务试用（地址见 `src/ai/trial.ts` 的 `RELEASE_TRIAL_URL`，只用于构建 APK）：每台设备 20 次拍照识别、100 个词的翻译、10 道举一反三；服务端用固定的提示词和默认模型，每天的千问费用有上限。设置里改的模型和提示词在试用时不生效。见[架构决定 004](decisions/004-trial-proxy.md)。
+没有填 Key 时，App 经作者的中转服务试用（地址见 `src/ai/trial.ts` 的 `RELEASE_TRIAL_URL`，只用于构建 APK）：每台设备 20 次拍照识别、100 个词的翻译、10 道举一反三；服务端用固定的提示词和默认模型，每天的千问费用有上限。设置里改的模型、提示词、超时和重试次数在试用时不生效。见[架构决定 004](decisions/004-trial-proxy.md)。
 
 ## 测试
 

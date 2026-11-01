@@ -16,7 +16,9 @@ export class TablestoreCounters implements Counters {
       stsToken: options.securityToken,
       endpoint: options.endpoint,
       instancename: options.instance,
-      maxRetries: 2,
+      // No retries inside the SDK: a write that reached the table but whose answer was lost would be retried, fail its
+      // condition, and be added again by change(). Failures go up instead; the proxy gives back what it took.
+      maxRetries: 0,
     });
   }
 

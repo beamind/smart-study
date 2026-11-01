@@ -207,7 +207,7 @@ export function ErrorBookPage() {
   }
 
   return (
-    <QuestionBook file={file} problem={entry?.status === 'unusable' ? entry.error : entry?.problem} loading={!entry}
+    <QuestionBook file={file} problem={entry?.status === 'unusable' ? entry.error : undefined} loading={!entry}
       draft={savedDraft ?? null}
       onResume={draft => { setRun(draft); setSavedDraft(null); setStep({ kind: 'run' }); }}
       onDiscardDraft={() => { void drafts.clear(key); setSavedDraft(null); }}
@@ -292,7 +292,7 @@ function QuestionBook({ file, problem, loading, draft, onResume, onDiscardDraft,
             <div className="muted small">{formatRelative(draft.startedAt)} 开始</div>
           </div>
           <button className={`button${settled ? '' : ' settling'}`} onClick={() => setDiscarding(true)}>放弃</button>
-          <button className={`button primary${settled ? '' : ' settling'}`} onClick={() => onResume(draft)}>{draft.phase === 'running' ? '继续做' : '继续对答案'}</button>
+          <button className={`button primary${settled ? '' : ' settling'}`} disabled={!file && !loading} onClick={() => onResume(draft)}>{draft.phase === 'running' ? '继续做' : '继续对答案'}</button>
         </div>
       )}
       {draft && discarding && (

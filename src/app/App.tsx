@@ -5,7 +5,6 @@ import { Home } from '../features/home/Home';
 import { RecordsPage } from '../features/records/RecordsPage';
 import { Settings } from '../features/settings/Settings';
 import { Users } from '../features/users/Users';
-import { drafts } from '../services/device';
 import { ToastProvider } from '../ui/components';
 import { NavigationProvider, useNavigation } from './navigation';
 import { PageBoundary } from './PageBoundary';
@@ -22,8 +21,7 @@ export function App() {
 }
 
 function GuardedPage() {
-  const { reset } = useNavigation();
-  return <PageBoundary onHome={reset} onDiscardDrafts={drafts.clearAll}><CurrentPage /></PageBoundary>;
+  return <PageBoundary><CurrentPage /></PageBoundary>;
 }
 
 function CurrentPage() {

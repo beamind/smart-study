@@ -119,7 +119,7 @@ export class JsonFiles {
     if (temp.checked?.ok === false && temp.checked.reason === 'newer') return { status: 'unusable', reason: 'newer', error: temp.checked.error };
     if (temp.checked?.ok) {
       await restore(temp.text!, true);
-      return { status: 'ok', value: temp.checked.value, recoveredFrom: tempPath, keptBroken, problem: main.checked ? main.checked.error : '上次保存被中断，已用临时文件恢复' };
+      return { status: 'ok', value: temp.checked.value, recoveredFrom: tempPath, keptBroken, problem: main.checked ? main.checked.error : '上次保存被中断' };
     }
 
     for (const version of await this.history(path)) {
@@ -168,10 +168,19 @@ export class JsonFiles {
     try {
       await this.folder.rename(tempPath, name);
     } catch (error) {
-      // The main file is gone and the temp file holds this save, as after a crash: the next load restores it.
-      // Within this run the file is now missing, so the next save is not refused as "changed elsewhere".
-      this.known.set(path, { text: null });
-      throw error;
+      // What is there now decides what happened. A PC browser folder renames by copying then deleting, so the copy
+      // may have finished (the save is in place) or stopped half way; SAF and memory folders leave no main file.
+      const now = await this.folder.readText(path).catch(() => undefined);
+      if (now === text) {
+        this.known.set(path, { text });
+        await this.folder.remove(tempPath).catch(() => undefined);
+        return;
+      }
+      // A missing main file: the temp file holds this save, as after a crash, and the next load restores it, so
+      // saving again in this run is fine. Anything else (a half-copied file) is left for the next load to repair.
+      if (now === null) { this.known.set(path, { text: null }); throw error; }
+      this.known.set(path, 'unusable');
+      throw new Error(`${path} 保存中断，没有保存。请重新打开 App，会用临时文件恢复`);
     }
     this.known.set(path, { text });
     // The new data is in place now; failing to delete old history versions must not report the save as failed.

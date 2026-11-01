@@ -2,9 +2,10 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { AiError, type Usage } from '../../src/ai/dashscope';
+import { parseGenerated, parseQuestions, parseWords } from '../../src/ai/parse';
 import { modelRequest, type ModelTask } from '../../src/ai/tasks';
 import { defaultSettings } from '../../src/data/defaults';
-import { beijingDay, createProxy, DEFAULT_LIMITS, maxCost, MemoryCounters, RateLimiter, type Limits } from './src/proxy';
+import { beijingDay, createProxy, DEFAULT_LIMITS, maxCost, MemoryCounters, RateLimiter, usableReply, type Limits } from './src/proxy';
 import { isConditionFailure } from './src/tablestore';
 
 const image = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ==';
@@ -99,8 +100,8 @@ describe('trial proxy', () => {
     const devices = ['device-aaaa', 'device-bbbb', 'device-cccc'];
     for (const id of devices.slice(0, 2)) expect(await proxy.call({ device: id, task: 'translate', text: 'apple' }, '5.5.5.5')).toMatchObject({ status: 200 });
     expect(await proxy.call({ device: devices[2], task: 'translate', text: 'apple' }, '5.5.5.5')).toMatchObject({ status: 429, body: { message: expect.stringContaining('今天') } });
-    // The refused request gave its device use back.
-    expect(counters.values.get(`device:${devices[2]}:translate`)).toBe(0);
+    // The refused request took nothing: the read beforehand refused it without writing.
+    expect(counters.values.get(`device:${devices[2]}:translate`) ?? 0).toBe(0);
     expect(await proxy.call({ device: devices[2], task: 'translate', text: 'apple' }, '6.6.6.6')).toMatchObject({ status: 200 });
     expect(await proxy.call(generate(devices[0]), '5.5.5.5')).toMatchObject({ status: 200 });
     expect(await proxy.call(generate(devices[1]), '5.5.5.5')).toMatchObject({ status: 429 });
@@ -126,9 +127,12 @@ describe('trial proxy', () => {
     release();
     const statuses = (await results).map(result => result.status);
     expect(statuses.filter(status => status === 200)).toHaveLength(2);
-    expect(statuses.filter(status => status === 429)).toHaveLength(8);
+    // Refused only because the two running calls hold the budget: "busy", which the app retries, not "used up today".
+    expect(statuses.filter(status => status === 503)).toHaveLength(8);
     // Settled to the real cost: 1,500 input and 200 output tokens of the max model.
     expect(counters.values.get('cost:2026-11-01:generate')).toBe(2 * (1500 * 12 + 200 * 36));
+    // Nothing else stays reserved: the refused requests gave their device and IP uses back.
+    expect([...counters.values].filter(([key, value]) => key.startsWith('device:') && value > 0)).toHaveLength(2);
 
     const single = setup({ deviceGenerate: 1 });
     const releaseSingle = single.hold();
@@ -137,6 +141,34 @@ describe('trial proxy', () => {
     releaseSingle();
     expect((await same).map(result => result.status).sort()).toEqual([200, 429, 429]);
     expect(single.calls).toHaveLength(1);
+  });
+
+  it('refuses a request that cannot fit without writing anything', async () => {
+    const { proxy, counters } = setup({ devicePhoto: 1 });
+    counters.values.set(`device:${device}:photo`, 1);
+    const writes: string[] = [];
+    const add = counters.add.bind(counters);
+    const addWithin = counters.addWithin.bind(counters);
+    counters.add = async (key, amount) => { writes.push(key); return add(key, amount); };
+    counters.addWithin = async (key, amount, limit) => { writes.push(key); return addWithin(key, amount, limit); };
+    expect(await proxy.call({ device, task: 'questions', image }, '1.1.1.1')).toMatchObject({ status: 429 });
+    expect(writes).toEqual([]);
+  });
+
+  it('gives back what it reserved when the table fails in the middle of reserving, and says to try again', async () => {
+    const { proxy, counters, calls, logged } = setup();
+    const addWithin = counters.addWithin.bind(counters);
+    counters.addWithin = async (key, amount, limit) => { if (key.startsWith('cost:')) throw new Error('OTSServerBusy'); return addWithin(key, amount, limit); };
+    expect(await proxy.call({ device, task: 'translate', text: 'apple' }, '1.1.1.1')).toMatchObject({ status: 503, body: { error: 'busy' } });
+    expect([...counters.values.values()].every(value => value === 0)).toBe(true);
+    expect(calls).toEqual([]);
+    expect(logged).toContainEqual(expect.objectContaining({ counter: 'reserve' }));
+  });
+
+  it('says the day is used up only when what was already spent leaves no room', async () => {
+    const { proxy, counters } = setup();
+    counters.values.set('cost:2026-11-01:generate', 300_000 - 1000);
+    expect(await proxy.call(generate(), '1.1.1.1')).toMatchObject({ status: 429, body: { message: expect.stringContaining('今天的举一反三') } });
   });
 
   it('gives the use back when the model fails, and the money unless the work may have been done', async () => {
@@ -180,12 +212,35 @@ describe('trial proxy', () => {
     expect(counters.values.get('cost:2026-11-01:basic')).toBe(maxCost({ task: 'translate', text: 'apple' }, DEFAULT_LIMITS));
   });
 
-  it('does not pass on a reply that is not what the task asks for, but counts it', async () => {
+  it('passes on only what the parsers find, rebuilt, never the text around it', async () => {
     const { proxy, answer, counters } = setup();
     answer('Sure! Here is the poem you asked for: roses are red, violets are blue, and this is a very long answer.');
     expect(await proxy.call(generate(), '1.1.1.1')).toMatchObject({ status: 200, body: { reply: '' } });
     expect(await proxy.call({ device, task: 'translate', text: 'apple' }, '1.1.1.1')).toMatchObject({ status: 200, body: { reply: '' } });
     expect(counters.values.get(`device:${device}:generate`)).toBe(1);
+
+    // An essay with a valid answer attached: only the answer goes back.
+    answer('Here is a long essay about anything at all, as you asked.\n{"question":"It was ___ yesterday.","answer":"rainy"}');
+    const generated = await proxy.call(generate(), '1.1.1.1');
+    expect(generated).toMatchObject({ status: 200 });
+    const reply = (generated.body as { reply: string }).reply;
+    expect(reply).not.toContain('essay');
+    expect(parseGenerated(reply)).toEqual({ text: 'It was ___ yesterday.', answer: 'rainy' });
+
+    // Underlines must be in the questions sent; an essay next to "[]" goes nowhere.
+    answer('ESSAY about spring, anything at all.\n[{"question":"1","underlined":"foggy","word":"foggy"},{"question":"1","underlined":"secret","word":"secret"}]');
+    const underlines = await proxy.call({ device, task: 'underlines', image, questions: [{ text: 'It was __foggy__ yesterday.', answer: 'a' }] }, '1.1.1.1');
+    const hits = JSON.parse((underlines.body as { reply: string }).reply);
+    expect(hits).toEqual([{ question: '1', underlined: 'foggy', word: 'foggy' }]);
+  });
+
+  it('rebuilds replies that the app parses to the same result', () => {
+    const words = '识别结果：["春天","温暖","1. 柳树"]';
+    expect(parseWords(usableReply({ task: 'words', image, language: 'chinese' }, words)!, 'chinese')).toEqual(parseWords(words, 'chinese'));
+    const questions = '```json\n[{"question":"What is your name?\\\\nA. Tom\\nB. John","answer":"A"},{"question":"1+1","answer":2}]\n```';
+    expect(parseQuestions(usableReply({ task: 'questions', image }, questions)!)).toEqual(parseQuestions(questions));
+    expect(usableReply({ task: 'underlines', image, questions: [{ text: 'Q', answer: '' }] }, '[]')).toBe('[]');
+    expect(usableReply({ task: 'translate', text: 'apple' }, '“苹果”')).toBe('苹果');
   });
 
   it('keeps no IP address in the counter names', async () => {

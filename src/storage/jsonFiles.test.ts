@@ -175,6 +175,23 @@ describe('JsonFiles', () => {
     expect(new Set(await files.history(path)).size).toBe(3);
   });
 
+  it('after a rename that copied the file but could not delete the temp file (PC browser), counts the save as done', async () => {
+    const { folder, files, tick } = setup();
+    await files.save(path, app('小明'));
+    const rename = folder.rename.bind(folder);
+    folder.rename = async (from, to) => {
+      folder.files.set(`data/${to}`, folder.files.get(from)!); // copied …
+      throw new Error('could not delete the temp file'); // … but not removed
+    };
+    tick();
+    await expect(files.save(path, app('小红'))).resolves.toBeUndefined();
+    folder.rename = rename;
+    expect(folder.files.has(`${path}.tmp`)).toBe(false);
+    tick();
+    await expect(files.save(path, app('小刚'))).resolves.toBeUndefined();
+    expect(JSON.parse(folder.files.get(path)!).users[0].name).toBe('小刚');
+  });
+
   it('after a save stopped between removing the old file and renaming the new one, restores that save on the next load and saves normally', async () => {
     const { folder, files, tick } = setup();
     await files.save(path, app('小明'));

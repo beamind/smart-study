@@ -61,9 +61,10 @@ export interface Remaining { photo: number; translate: number; generate: number 
 
 export type Result =
   | { status: 200; body: { reply: string; remaining?: Remaining } | { remaining: Remaining } }
-  | { status: 400 | 429 | 502; body: { error: string; message: string } };
+  | { status: 400 | 429 | 502 | 503; body: { error: string; message: string } };
 
 type Kind = 'photo' | 'translate' | 'generate';
+type Group = 'basic' | 'generate';
 const kindOf = (task: ModelTask['task']): Kind => (task === 'translate' ? 'translate' : task === 'generate' ? 'generate' : 'photo');
 
 /** Photo recognition limits: a 1280px JPEG is about 0.3 MB; 2 MB of base64 leaves room and stops abuse. */
@@ -126,27 +127,56 @@ export function parseTask(body: Record<string, unknown>): ModelTask {
   }
 }
 
+/** A dictation list from one photo is never this long, nor an English item this long ("look forward to doing sth"). */
+const MAX_WORDS = 100;
+const MAX_ENGLISH_ITEM = 40;
+
 /**
- * Whether a reply is what the task asks for, checked with the app's own parsers. A reply that is not (for example
- * because the material told the model to do something else) is not passed on: the endpoint stays useless as a
- * general model. The app's parsers make the same check, so a real user loses nothing.
+ * The reply rebuilt from what the app's own parsers find in it, or null when they find nothing. The raw text is never
+ * passed on: words, questions and hits are written back as JSON the app parses to the same result, so text around
+ * them (for example an essay the material asked for) goes nowhere. Underlines must be words of the questions sent,
+ * so they cannot carry anything new. Question text itself stays free text, limited like the requests' text.
  */
 export function usableReply(task: ModelTask, reply: string): string | null {
+  const asJson = (item: { text: string; answer: string }) => ({ question: item.text.slice(0, MAX_TEXT), answer: item.answer.slice(0, MAX_ANSWER) });
   try {
     switch (task.task) {
-      case 'words': return parseWords(reply, task.language).length ? reply : null;
-      case 'questions': return parseQuestions(reply).length ? reply : null;
-      case 'underlines': parseUnderlineHits(reply); return reply;
+      case 'words': {
+        const words = parseWords(reply, task.language).filter(word => task.language === 'chinese' || word.length <= MAX_ENGLISH_ITEM).slice(0, MAX_WORDS);
+        return words.length ? JSON.stringify(words) : null;
+      }
+      case 'questions': {
+        const questions = parseQuestions(reply).slice(0, MAX_QUESTIONS);
+        return questions.length ? JSON.stringify(questions.map(asJson)) : null;
+      }
+      case 'underlines': {
+        const sent = task.questions.map(item => item.text.toLowerCase());
+        const hits = parseUnderlineHits(reply)
+          .filter(hit => sent.some(text => text.includes(hit.underlined.trim().toLowerCase())))
+          .slice(0, 200)
+          .map(hit => ({ question: hit.question === null ? '' : String(hit.question + 1), underlined: hit.underlined, word: hit.word.slice(0, MAX_WORD) }));
+        return JSON.stringify(hits);
+      }
       case 'translate': { const text = cleanTranslation(reply); return text && text.length <= MAX_WORD ? text : null; }
-      case 'generate': return parseGenerated(reply) ? reply : null;
+      case 'generate': { const generated = parseGenerated(reply); return generated ? JSON.stringify(asJson(generated)) : null; }
     }
   } catch {
     return null;
   }
 }
 
-/** Tokens of the text in a request, counted high: about one per Chinese character, fewer for English. */
-const textTokens = (text: string) => Math.ceil(text.length * 1.2) + 50;
+/**
+ * Tokens of the text in a request, counted high: a common Chinese character or a few Latin letters are about one
+ * token; a rare character (outside the common CJK block, e.g. extension A) may be split into one token per UTF-8 byte.
+ */
+function textTokens(text: string): number {
+  let tokens = 50;
+  for (const char of text) {
+    const code = char.codePointAt(0)!;
+    tokens += code < 0x3000 || (code >= 0x4E00 && code <= 0x9FFF) || (code >= 0xFF00 && code <= 0xFFEF) ? 1.2 : 4;
+  }
+  return Math.ceil(tokens);
+}
 
 /** The most a task can cost, in millionths of a yuan: its input counted high plus the longest reply allowed. */
 export function maxCost(task: ModelTask, limits: Limits): number {
@@ -174,6 +204,8 @@ export function createProxy(deps: Dependencies) {
   const log = deps.log ?? (entry => console.error(JSON.stringify(entry)));
   const deviceKeys = (device: string) => (['photo', 'translate', 'generate'] as Kind[]).map(kind => `device:${device}:${kind}`);
   const deviceLimit: Record<Kind, number> = { photo: limits.devicePhoto, translate: limits.deviceTranslate, generate: limits.deviceGenerate };
+  /** Budget reserved by model calls still running on this instance, by group. */
+  const held: Record<Group, number> = { basic: 0, generate: 0 };
 
   const remaining = async (device: string): Promise<Remaining> => {
     const [photo, translate, generate] = await counters.get(deviceKeys(device));
@@ -184,7 +216,7 @@ export function createProxy(deps: Dependencies) {
     };
   };
 
-  /** Counter changes after the model was called: a failure is logged, never turned into a failed request. */
+  /** Counter changes that must not fail the request (giving back, settling): a failure is logged. */
   const quietly = async (what: string, change: () => Promise<void>) => {
     try { await change(); } catch (error) { log({ counter: what, failed: (error as Error)?.message ?? String(error) }); }
   };
@@ -209,7 +241,7 @@ export function createProxy(deps: Dependencies) {
     }
     const id = device as string;
     const kind = kindOf(task.task);
-    const group = kind === 'generate' ? 'generate' : 'basic';
+    const group: Group = kind === 'generate' ? 'generate' : 'basic';
     const day = beijingDay(deps.now());
     const ipHash = createHash('sha256').update(`${deps.ipSalt}:${ip}`).digest('hex').slice(0, 24);
     const keys = { device: `device:${id}:${kind}`, ip: `ip:${day}:${ipHash}:${group}`, cost: `cost:${day}:${group}` };
@@ -217,22 +249,49 @@ export function createProxy(deps: Dependencies) {
     const budget = Math.round((group === 'generate' ? limits.budgetGenerate : limits.budgetBasic) * 1_000_000);
     const reserved = maxCost(task, limits);
     const what = { photo: '拍照识别', translate: '翻译', generate: '举一反三' }[kind];
-    const today = { status: 429 as const, body: { error: 'quota', message: `今天的${what}试用名额用完了，明天再试，或在设置里填写自己的千问 API Key` } };
+    const deviceUsed: Result = { status: 429, body: { error: 'quota', message: `这台设备的${what}试用次数用完了。在设置里填写自己的千问 API Key，就可以继续使用` } };
+    const today: Result = { status: 429, body: { error: 'quota', message: `今天的${what}试用名额用完了，明天再试，或在设置里填写自己的千问 API Key` } };
+    // Requests still running hold their reservations, and settle to much less within seconds: try again soon.
+    const busy: Result = { status: 503, body: { error: 'busy', message: '试用的人有点多，请过一会儿再试' } };
+    /** Over the budget by what is already spent ("today"), or only because of what calls on this instance still hold. */
+    const budgetRefusal = (current: number) => (current - held[group] + reserved <= budget ? busy : today);
 
-    // Reserve in this order, giving back what was taken when a later one does not fit.
-    if (!await counters.addWithin(keys.device, 1, deviceLimit[kind])) {
-      return { status: 429, body: { error: 'quota', message: `这台设备的${what}试用次数用完了。在设置里填写自己的千问 API Key，就可以继续使用` } };
-    }
-    if (!await counters.addWithin(keys.ip, 1, ipLimit)) {
-      await quietly(keys.device, () => counters.add(keys.device, -1));
-      return today;
-    }
-    if (!await counters.addWithin(keys.cost, reserved, budget)) {
-      await quietly(keys.device, () => counters.add(keys.device, -1));
-      await quietly(keys.ip, () => counters.add(keys.ip, -1));
-      return today;
+    // A read first, so a request that cannot fit is refused without writing anything.
+    const [deviceNow, ipNow, costNow] = await counters.get([keys.device, keys.ip, keys.cost]);
+    if (deviceNow >= deviceLimit[kind]) return deviceUsed;
+    if (ipNow >= ipLimit) return today;
+    if (costNow + reserved > budget) return budgetRefusal(costNow);
+
+    // Then reserve, in this order, each on condition that it still fits (other requests may be doing the same),
+    // giving back what was taken when a later one does not fit or the table fails.
+    const taken: Array<[string, number]> = [];
+    const giveBack = async () => { for (const [key, amount] of taken) await quietly(key, () => counters.add(key, -amount)); };
+    try {
+      if (!await counters.addWithin(keys.device, 1, deviceLimit[kind])) return deviceUsed;
+      taken.push([keys.device, 1]);
+      if (!await counters.addWithin(keys.ip, 1, ipLimit)) { await giveBack(); return today; }
+      taken.push([keys.ip, 1]);
+      if (!await counters.addWithin(keys.cost, reserved, budget)) {
+        await giveBack();
+        const [current] = await counters.get([keys.cost]).catch(() => [budget]);
+        return budgetRefusal(current);
+      }
+    } catch (error) {
+      await giveBack();
+      log({ task: task.task, counter: 'reserve', failed: (error as Error)?.message ?? String(error) });
+      return busy;
     }
 
+    held[group] += reserved;
+    try {
+      return await callModel(task, kind, id, keys, reserved);
+    } finally {
+      held[group] -= reserved;
+    }
+  }
+
+  /** The model call after everything is reserved, and settling the reservation afterwards. */
+  async function callModel(task: ModelTask, kind: Kind, id: string, keys: { device: string; ip: string; cost: string }, reserved: number): Promise<Result> {
     const [inPrice, outPrice] = kind === 'generate' ? limits.priceMax : limits.priceFlash;
     const costOf = (usage: Usage) => Math.ceil(usage.input * inPrice + usage.output * outPrice);
     let reply: string;
@@ -241,18 +300,19 @@ export function createProxy(deps: Dependencies) {
       ({ reply, usage } = await deps.model(task));
     } catch (error) {
       const failure = (error ?? {}) as ModelFailure;
-      // The use is given back; the money only when nothing can have been spent.
-      const spent = failure.usage ? costOf(failure.usage) : MAYBE_BILLED.has(failure.kind ?? '') ? reserved : 0;
+      // The use is given back; the money only when nothing can have been spent. A reply that came back empty was
+      // billed: by its reported usage, or the whole reservation when DashScope did not say.
+      const spent = failure.usage ? costOf(failure.usage)
+        : failure.usage === null || MAYBE_BILLED.has(failure.kind ?? '') ? reserved : 0;
       await quietly(keys.device, () => counters.add(keys.device, -1));
       await quietly(keys.ip, () => counters.add(keys.ip, -1));
       await quietly(keys.cost, () => counters.add(keys.cost, spent - reserved));
       log({ task: task.task, failed: failure.kind ?? 'unknown', message: failure.message, cost: spent });
-      const retry = RETRYABLE.has(failure.kind ?? '');
       // The server's own key or model being wrong, or DashScope refusing the request, is not something the user can
       // fix; its message (in English, about the server's account) stays in the log.
       return {
         status: 502,
-        body: retry
+        body: RETRYABLE.has(failure.kind ?? '')
           ? { error: 'upstream', message: '千问暂时没有返回结果，请稍后再试' }
           : { error: 'upstream-fatal', message: '试用服务暂时不能处理这个请求，可以稍后再试，或在设置里填写自己的千问 API Key' },
       };
@@ -261,8 +321,8 @@ export function createProxy(deps: Dependencies) {
     const cost = usage ? costOf(usage) : reserved;
     await quietly(keys.cost, () => counters.add(keys.cost, cost - reserved));
     console.log(JSON.stringify({ task: task.task, device: id.slice(0, 8), input: usage?.input, output: usage?.output, cost }));
-    // A reply the app could not use either is replaced by an empty one: the app then shows its usual
-    // "nothing recognised" message, and the use counts, as it would with the user's own key.
+    // A reply the app could not use either becomes an empty one: the app then shows its usual "nothing recognised"
+    // message, and the use counts, as it would with the user's own key.
     const usable = usableReply(task, reply) ?? '';
     let left: Remaining | undefined;
     try { left = await remaining(id); } catch { /* the reply matters more than the count */ }

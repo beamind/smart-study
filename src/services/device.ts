@@ -48,9 +48,4 @@ export const drafts = {
   async clear(key: string) {
     await Preferences.remove({ key: `draft:${key}` });
   },
-  /** Every draft of every child: the way out when a draft in an unexpected shape breaks its page. */
-  async clearAll() {
-    const { keys } = await Preferences.keys();
-    for (const key of keys) if (key.startsWith('draft:')) await Preferences.remove({ key });
-  },
 };

@@ -145,3 +145,25 @@ test('review dictation picks words from the word book, re-listen reuses a past d
   await page.getByRole('button', { name: '再听一遍' }).click();
   await expect(page.locator('.confirm-row')).toHaveCount(8);
 });
+
+test('a draft in an unexpected shape shows the error page, which can discard it without touching other children', async ({ page }) => {
+  await seed(page, { 'data/app.json': appFile([{ id: 'u1', name: '乐乐' }, { id: 'u2', name: '小红' }]) });
+  await page.addInitScript(() => {
+    if (sessionStorage.getItem('seeded-drafts')) return;
+    sessionStorage.setItem('seeded-drafts', '1');
+    // An older or broken shape: no words list.
+    localStorage.setItem('CapacitorStorage.draft:dictation:u1:chinese', JSON.stringify({ phase: 'running', index: 0, startedAt: '2026-10-22T20:44:25+08:00' }));
+    localStorage.setItem('CapacitorStorage.draft:dictation:u2:chinese', JSON.stringify({ kind: 'dictation', readMode: 'translation', words: [{ key: 'k', text: '春天', translation: '' }], index: 0, phase: 'answers', wrong: [], startedAt: '2026-10-22T20:44:25+08:00' }));
+  });
+  await open(page);
+  page.on('pageerror', () => undefined);
+  await page.getByRole('button', { name: /语文听写/ }).click();
+  await expect(page.getByRole('heading', { name: '这个页面出错了' })).toBeVisible();
+  await page.getByRole('button', { name: '放弃没做完的听写和练习…' }).click();
+  await page.getByRole('button', { name: '放弃乐乐没做完的听写和练习' }).click();
+  await expect(page.locator('.user-switch', { hasText: '乐乐' })).toBeVisible();
+  await page.getByRole('button', { name: /语文听写/ }).click();
+  await expect(page.getByRole('heading', { name: '新的听写' })).toBeVisible();
+  // The other child's draft is still there.
+  expect(await page.evaluate(() => localStorage.getItem('CapacitorStorage.draft:dictation:u2:chinese'))).not.toBeNull();
+});

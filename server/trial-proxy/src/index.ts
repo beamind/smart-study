@@ -54,8 +54,10 @@ const counters: Counters = env.TRIAL_STORE === 'memory' ? new MemoryCounters() :
 
 // Models and prompts are the app's defaults; the request cannot choose them.
 const settings = defaultSettings();
-// One attempt, finishing before the app's own timeout (45 s by default): the app retries, and each retry is a new,
-// counted request. A server-side retry would keep spending after the app has given up.
+// One attempt, finishing well before the app gives up (TRIAL_TIMEOUT_MS, 55 s, counted from when the app starts
+// sending; it also covers uploading the photo, a cold start and the counter reads and writes): the app retries, and
+// each retry is a new, counted request. A server-side retry would keep spending after the app has given up.
+// Function Compute's own limit for the function is 60 s (docs/trial-proxy.md, step 5).
 const MODEL_TIMEOUT_MS = 40_000;
 const proxy = createProxy({
   counters, limits, now: Date.now, ipSalt,
@@ -68,7 +70,10 @@ const proxy = createProxy({
 const MAX_BODY = 2_500_000;
 /** Requests one IP may make per minute on this instance, of any kind. The app needs far fewer, even translating a list. */
 const PER_IP_PER_MINUTE = 60;
-/** Model calls in progress on this instance at once; more wait their turn in the app (it retries a 503). */
+/**
+ * Model calls in progress on this instance at once; more get a 503 the app retries. Function Compute's "单实例并发度"
+ * is set to the same number (docs/trial-proxy.md, step 5), so the platform starts a second instance instead.
+ */
 const MAX_IN_FLIGHT = 8;
 const limiter = new RateLimiter(PER_IP_PER_MINUTE, 60_000);
 let inFlight = 0;
